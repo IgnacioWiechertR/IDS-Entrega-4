@@ -21,6 +21,5 @@ Checklist
 
 Después de mergear
 - [ ] Abrir PR de back-merge hotfix/<descripción> → develop (template backmerge.md)
-
 - [ ] Si hay un release/* abierto, mergear también ahí
 - [ ] Borrar la rama hotfix/<descripción>
