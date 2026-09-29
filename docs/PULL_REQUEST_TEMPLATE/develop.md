@@ -1,15 +1,25 @@
 Develop
 
-Rama: release/* o hotfix/* → develop
+Rama: Release/<version> o hotfix/<descripción> → Develop
 
 Origen
- Release v_._._ (PR #)
- Hotfix (PR #)
-Propósito
+<!-- Indicar el release o hotfix y su PR hacia main -->
+Release vX.Y.Z (PR #)
+Hotfix (PR #)
 
-Sincronizar develop con los cambios que ya entraron a main, para que no se pierdan en el siguiente release.
+Propósito
+Sincronizar Develop con los cambios que ya entraron a main, para que no se pierdan en el siguiente release.
+
+Verificación
+<!-- Qué se probó y cuáles fueron los resultados -->
 
 Checklist
- Conflictos resueltos, conservando lo que ya estaba en develop
- Corre localmente después del merge
- No agregué cambios nuevos en este PR
+- [ ] El release o hotfix ya fue integrado en main
+- [ ] Los conflictos están resueltos, conservando los cambios de Develop
+- [ ] Verifiqué que la versión resultante funciona localmente
+- [ ] No agregué funcionalidades ni correcciones ajenas a la sincronización
+- [ ] El PR cuenta con las aprobaciones acordadas por el equipo
+
+Después de mergear
+- [ ] Comprobar que Develop contiene los ajustes del release o hotfix
+- [ ] Borrar la rama de origen cuando esté integrada en todos sus destinos
