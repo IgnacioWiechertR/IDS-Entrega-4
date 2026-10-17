@@ -1,0 +1,27 @@
+test:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+
+# One bucket per university. Any S3-compatible provider works (AWS S3, Backblaze B2...):
+# S3_ENDPOINT is only needed when the provider is not AWS. Credentials come from env vars.
+amazon_u1: &amazon
+  service: S3
+  access_key_id: <%= ENV["AWS_ACCESS_KEY_ID"] %>
+  secret_access_key: <%= ENV["AWS_SECRET_ACCESS_KEY"] %>
+  region: <%= ENV["AWS_REGION"] %>
+  bucket: <%= ENV["S3_BUCKET_U1"] %>
+  <% if ENV["S3_ENDPOINT"].present? %>
+  endpoint: <%= ENV["S3_ENDPOINT"] %>
+  <% end %>
+  # Newer aws-sdk-s3 versions send CRC32 checksums by default, which some
+  # S3-compatible providers reject; only send them when the API requires it.
+  request_checksum_calculation: when_required
+  response_checksum_validation: when_required
+
+amazon_u2:
+  <<: *amazon
+  bucket: <%= ENV["S3_BUCKET_U2"] %>
