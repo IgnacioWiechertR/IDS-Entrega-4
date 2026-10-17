@@ -1,0 +1,58 @@
+# Render Blueprint: web service (Docker) + PostgreSQL + Key Value (Redis), all on the free plan.
+# Sidekiq runs embedded in the web process (SIDEKIQ_EMBEDDED). See docs/decisiones.md.
+databases:
+  - name: sga-db
+    plan: free
+    databaseName: sga_production
+    user: sga
+
+services:
+  - type: web
+    name: sga-web
+    runtime: docker
+    plan: free
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /up
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sga-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: sga-redis
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: SIDEKIQ_EMBEDDED
+        value: "true"
+      # Thruster listens on Render's default port and proxies to Puma.
+      - key: HTTP_PORT
+        value: "10000"
+      - key: SEED_PASSWORD
+        sync: false
+      # Leave empty to use local disk; set to amazon_u1 once the buckets exist.
+      - key: ACTIVE_STORAGE_SERVICE
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET_U1
+        sync: false
+      - key: S3_BUCKET_U2
+        sync: false
+
+  - type: keyvalue
+    name: sga-redis
+    plan: free
+    # Sidekiq must not lose jobs to eviction.
+    maxmemoryPolicy: noeviction
+    # Only reachable from Render's private network.
+    ipAllowList: []
