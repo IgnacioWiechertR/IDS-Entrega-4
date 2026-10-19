@@ -1,9 +1,9 @@
 class CoursesController < ApplicationController
+  load_and_authorize_resource
   before_action :set_course, only: %i[ show edit update destroy ]
 
-  # GET /courses
+  # GET /courses ("Mis cursos"): load_and_authorize_resource loads only the courses the user can read.
   def index
-    @courses = Course.all
   end
 
   # GET /courses/1

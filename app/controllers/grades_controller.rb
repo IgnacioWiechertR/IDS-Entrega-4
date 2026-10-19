@@ -1,4 +1,5 @@
 class GradesController < ApplicationController
+  load_and_authorize_resource
   before_action :set_grade, only: %i[ show edit update destroy ]
 
   # GET /grades

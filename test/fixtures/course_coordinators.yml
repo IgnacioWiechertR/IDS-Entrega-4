@@ -3,11 +3,11 @@
 one:
   course: one
   term: one
-  user: one
-  assigned_by: one
+  user: profesor
+  assigned_by: administrativo
 
 two:
   course: two
   term: two
-  user: two
-  assigned_by: two
+  user: profesor
+  assigned_by: administrativo

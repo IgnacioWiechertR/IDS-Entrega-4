@@ -1,4 +1,5 @@
 class TermsController < ApplicationController
+  load_and_authorize_resource
   before_action :set_term, only: %i[ show edit update destroy ]
 
   # GET /terms

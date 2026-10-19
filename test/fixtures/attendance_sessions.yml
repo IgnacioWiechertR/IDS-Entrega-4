@@ -3,9 +3,9 @@
 one:
   section: one
   held_on: 2026-10-18
-  recorded_by: one
+  recorded_by: profesor
 
 two:
   section: two
   held_on: 2026-10-18
-  recorded_by: two
+  recorded_by: profesor

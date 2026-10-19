@@ -1,13 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  university: one
+  university: ucv
   course: one
   term: one
   number: 1
 
 two:
-  university: two
+  university: iusa
   course: two
   term: two
   number: 1
