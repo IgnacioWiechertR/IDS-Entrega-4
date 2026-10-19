@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   resources :accounts, only: :index
   resources :teacher_assignments, only: %i[ index create ]
 
+  # The director's active university (A3).
+  resource :university_selection, only: :update
+
   resources :notifications
   resources :announcements
   resources :attendance_records

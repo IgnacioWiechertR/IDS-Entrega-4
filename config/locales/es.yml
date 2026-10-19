@@ -9,6 +9,9 @@ es:
   authorization:
     denied: No tienes permiso para ver esa página.
 
+  university_selection:
+    changed: Ahora estás viendo %{name}.
+
   activerecord:
     models:
       university:

@@ -36,7 +36,18 @@
             <% if can?(:index, Course) %><%= nav_link_to "Mis cursos", courses_path %><% end %>
           </nav>
 
-          <div class="flex items-center gap-3 text-sm">
+          <div class="flex flex-wrap items-center gap-3 text-sm">
+            <% if can?(:switch, University) %>
+              <%= form_with url: university_selection_path, method: :patch, class: "flex items-center gap-2" do |form| %>
+                <%= form.label :university_id, "Universidad activa", class: "sr-only" %>
+                <%= form.select :university_id, University.order(:name).pluck(:name, :id),
+                      { selected: current_university&.id },
+                      class: "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-slate-700" %>
+                <%= form.submit "Cambiar", class: "rounded-md border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-50" %>
+              <% end %>
+            <% elsif current_university %>
+              <span class="rounded-md bg-indigo-50 px-2 py-1 font-medium text-indigo-700"><%= current_university.name %></span>
+            <% end %>
             <span class="text-slate-600"><%= current_user.name %> · <%= current_user.role_name %></span>
             <%= button_to "Cerrar sesión", destroy_user_session_path, method: :delete,
                   class: "rounded-md border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-50" %>
