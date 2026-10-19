@@ -49,6 +49,22 @@ class MyCoursesTest < ActionDispatch::IntegrationTest
     assert_redirected_to courses_path
   end
 
+  test "una inscripción desactivada no da acceso al curso" do
+    enrollments(:one).update!(active: false)
+    sign_in users(:alumno)
+
+    get courses_path
+    assert_select "#courses", count: 0
+    assert_select "p", text: /Todavía no tienes cursos asignados/
+
+    get course_path(courses(:one))
+    assert_redirected_to courses_path
+  end
+
+  test "una inscripción nueva queda activa por defecto" do
+    assert Enrollment.new.active
+  end
+
   test "el alumno no ve el botón para crear asignaturas" do
     sign_in users(:alumno)
     get courses_path
