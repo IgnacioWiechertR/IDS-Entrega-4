@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_152907) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_201956) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -102,7 +102,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_152907) do
   create_table "enrollments", force: :cascade do |t|
     t.bigint "section_id", null: false
     t.bigint "student_id", null: false
-    t.boolean "active"
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["section_id"], name: "index_enrollments_on_section_id"
