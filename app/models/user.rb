@@ -1,6 +1,17 @@
 class User < ApplicationRecord
-  belongs_to :university, optional: true
+  # Agregamos :lockable a la configuración que ya tenías
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable, :lockable
 
+  # Definición de roles (según tu diagrama C4)
+  enum :role, { director: 0, administrativo: 1, profesor: 2, ayudante: 3, alumno: 4 }
+
+  # Validaciones de datos mínimos requeridos
+  validates :name, :rut, :role, presence: true
+  validate :validar_rut_chileno
+
+  # TUS ASOCIACIONES ORIGINALES (Intactas)
+  belongs_to :university, optional: true
   has_many :user_roles, dependent: :destroy
   has_many :course_coordinators, dependent: :destroy
   has_many :assigned_course_coordinators, class_name: "CourseCoordinator", foreign_key: :assigned_by_id, dependent: :destroy
@@ -14,4 +25,24 @@ class User < ApplicationRecord
   has_many :attendance_records, foreign_key: :student_id, dependent: :destroy
   has_many :announcements, foreign_key: :author_id, dependent: :destroy
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
+
+  before_validation :set_default_role, on: :create
+
+  private
+
+  # Método de validación del RUT
+  def validar_rut_chileno
+    return if rut.blank?
+    unless rut.match?(/\A\d{7,8}-[Kk\d]\z/)
+      errors.add(:rut, "no tiene un formato válido. Ej: 12345678-9")
+    end
+  end
 end
+
+
+
+  private
+
+  def set_default_role
+    self.role ||= :alumno
+  end
