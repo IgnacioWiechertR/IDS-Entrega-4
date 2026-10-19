@@ -8,7 +8,7 @@ class SectionPolicy
     can :manage, Section, university_id: user.university_id if user.administrativo?
 
     # El coordinador puede crear/editar/eliminar secciones de sus cursos asignados
-    can %i[create update destroy], Section, course: { course_coordinators: { user_id: user.id } }
+    can :manage, Section, course: { course_coordinators: { user_id: user.id } }
 
     # Profesores y ayudantes pueden leer las secciones donde están asignados
     can :read, Section, section_staffs: { user_id: user.id }

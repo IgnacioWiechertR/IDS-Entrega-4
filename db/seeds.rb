@@ -113,3 +113,11 @@ SectionStaff.create!(
   role: "Profesor Titular",
   assigned_by_id: admin_ucv.id
 )
+
+CourseCoordinator.find_or_create_by!(
+  course: curso_icc,
+  term: Term.find_by!(name: "Primer Semestre 2026", university: ucv),
+  user: profesor_ucv
+) do |cc|
+  cc.assigned_by_id = admin_ucv.id
+end
