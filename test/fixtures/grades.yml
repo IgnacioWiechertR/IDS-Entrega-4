@@ -2,20 +2,20 @@
 
 one:
   evaluation: one
-  student: one
+  student: alumno
   score: 5.5
   status: MyString
   feedback: MyText
   rejection_comment: MyText
-  entered_by: one
-  reviewed_by: one
+  entered_by: ayudante
+  reviewed_by: profesor
 
 two:
   evaluation: two
-  student: two
+  student: alumno_iusa
   score: 6.0
   status: MyString
   feedback: MyText
   rejection_comment: MyText
-  entered_by: two
-  reviewed_by: two
+  entered_by: ayudante
+  reviewed_by: profesor

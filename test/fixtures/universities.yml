@@ -1,9 +1,9 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+ucv:
+  name: Universidad Central del Valle
+  slug: ucv
+  size: grande
 
-one:
-  name: MyString
-  slug: uandes
-
-two:
-  name: MyString
-  slug: uchile
+iusa:
+  name: Instituto Universitario de Salud Austral
+  slug: iusa
+  size: pequena

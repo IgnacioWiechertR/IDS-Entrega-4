@@ -5,11 +5,11 @@ one:
   section: one
   subject: MyString
   body: MyText
-  author: one
+  author: profesor
 
 two:
   course: two
   section: two
   subject: MyString
   body: MyText
-  author: two
+  author: profesor

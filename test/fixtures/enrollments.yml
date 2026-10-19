@@ -1,11 +1,9 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
   section: one
-  student: one
-  active: false
+  student: alumno
+  active: true
 
 two:
   section: two
-  student: two
-  active: false
+  student: alumno_iusa
+  active: true
