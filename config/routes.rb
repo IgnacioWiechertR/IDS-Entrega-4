@@ -17,7 +17,9 @@ Rails.application.routes.draw do
   resources :section_staffs
   resources :course_coordinators
   resources :sections
-  resources :courses
+  resources :courses do
+    resources :sections
+  end
   resources :terms
   resources :faculties
   resources :user_roles

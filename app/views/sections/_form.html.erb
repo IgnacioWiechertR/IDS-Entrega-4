@@ -1,4 +1,4 @@
-<%= form_with(model: section, class: "contents") do |form| %>
+<%= form_with(model: [@course, section], class: "contents") do |form| %>
   <% if section.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
       <h2><%= pluralize(section.errors.count, "error") %> prohibited this section from being saved:</h2>
@@ -11,23 +11,31 @@
     </div>
   <% end %>
 
+  <!-- Campos heredados (Solo lectura) -->
   <div class="my-5">
-    <%= form.label :university_id %>
-    <%= form.text_field :university_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:university_id].none?, "border-red-400 focus:outline-red-600": section.errors[:university_id].any?}] %>
+    <label class="block font-medium text-slate-700">Universidad</label>
+    <div class="mt-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-slate-500 cursor-not-allowed">
+      <%= @course.university.name %>
+    </div>
+    <%= form.hidden_field :university_id, value: @course.university_id %>
   </div>
 
   <div class="my-5">
-    <%= form.label :course_id %>
-    <%= form.text_field :course_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:course_id].none?, "border-red-400 focus:outline-red-600": section.errors[:course_id].any?}] %>
+    <label class="block font-medium text-slate-700">Curso</label>
+    <div class="mt-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-slate-500 cursor-not-allowed">
+      <%= @course.code %> - <%= @course.name %>
+    </div>
+  </div>
+
+  <!-- Campos editables -->
+  <div class="my-5">
+    <%= form.label :term_id, "Periodo Académico" %>
+    <!-- Reemplazamos el text_field por un collection_select -->
+    <%= form.collection_select :term_id, @course.university.terms, :id, :name, { prompt: "Selecciona un periodo..." }, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full bg-white", {"border-gray-400 focus:outline-blue-600": section.errors[:term_id].none?, "border-red-400 focus:outline-red-600": section.errors[:term_id].any?}] %>
   </div>
 
   <div class="my-5">
-    <%= form.label :term_id %>
-    <%= form.text_field :term_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:term_id].none?, "border-red-400 focus:outline-red-600": section.errors[:term_id].any?}] %>
-  </div>
-
-  <div class="my-5">
-    <%= form.label :number %>
+    <%= form.label :number, "Número de Sección" %>
     <%= form.number_field :number, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:number].none?, "border-red-400 focus:outline-red-600": section.errors[:number].any?}] %>
   </div>
 

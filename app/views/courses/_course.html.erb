@@ -1,11 +1,11 @@
 <div id="<%= dom_id course %>" class="w-full sm:w-auto my-5 space-y-5">
   <div>
     <strong class="block font-medium mb-1">University:</strong>
-    <%= course.university_id %>
+    <%= course.university.name %>
   </div>
   <div>
     <strong class="block font-medium mb-1">Faculty:</strong>
-    <%= course.faculty_id %>
+    <%= course.faculty.name %>
   </div>
   <div>
     <strong class="block font-medium mb-1">Code:</strong>

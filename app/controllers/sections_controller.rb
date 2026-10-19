@@ -1,59 +1,62 @@
 class SectionsController < ApplicationController
-  load_and_authorize_resource
+  before_action :set_course
   before_action :set_section, only: %i[ show edit update destroy ]
 
-  # GET /sections
+  # GET /courses/:course_id/sections
   def index
-    @sections = Section.all
+    @sections = @course.sections
   end
 
-  # GET /sections/1
+  # GET /courses/:course_id/sections/1
   def show
   end
 
-  # GET /sections/new
+  # GET /courses/:course_id/sections/new
   def new
-    @section = Section.new
+    @section = @course.sections.build
   end
 
-  # GET /sections/1/edit
+  # GET /courses/:course_id/sections/1/edit
   def edit
   end
 
-  # POST /sections
+  # POST /courses/:course_id/sections
   def create
-    @section = Section.new(section_params)
+    @section = @course.sections.build(section_params)
 
     if @section.save
-      redirect_to @section, notice: "Section was successfully created."
+      redirect_to course_section_path(@course, @section), notice: "La sección fue creada exitosamente."
     else
       render :new, status: :unprocessable_content
     end
   end
 
-  # PATCH/PUT /sections/1
+  # PATCH/PUT /courses/:course_id/sections/1
   def update
     if @section.update(section_params)
-      redirect_to @section, notice: "Section was successfully updated.", status: :see_other
+      redirect_to course_section_path(@course, @section), notice: "La sección fue actualizada exitosamente.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
   end
 
-  # DELETE /sections/1
+  # DELETE /courses/:course_id/sections/1
   def destroy
     @section.destroy!
-    redirect_to sections_path, notice: "Section was successfully destroyed.", status: :see_other
+    redirect_to course_sections_path(@course), notice: "La sección fue eliminada exitosamente.", status: :see_other
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_section
-      @section = Section.find(params.expect(:id))
+    def set_course
+      @course = Course.find(params[:course_id])
+      authorize! :read, @course
     end
 
-    # Only allow a list of trusted parameters through.
+    def set_section
+      @section = @course.sections.find(params.expect(:id))
+    end
+
     def section_params
-      params.expect(section: [ :university_id, :course_id, :term_id, :number ])
+      params.expect(section: [ :university_id, :term_id, :number ])
     end
 end
