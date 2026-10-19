@@ -4,10 +4,10 @@ one:
   university: ucv
   attendance_session: one
   student: alumno
-  status: MyString
+  status: presente
 
 two:
   university: iusa
   attendance_session: two
   student: alumno_iusa
-  status: MyString
+  status: ausente

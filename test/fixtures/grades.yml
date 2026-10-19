@@ -5,19 +5,17 @@ one:
   evaluation: one
   student: alumno
   score: 5.5
-  status: MyString
+  status: pendiente
   feedback: MyText
-  rejection_comment: MyText
   entered_by: ayudante
-  reviewed_by: profesor
 
 two:
   university: iusa
   evaluation: two
   student: alumno_iusa
   score: 6.0
-  status: MyString
+  status: rechazada
   feedback: MyText
-  rejection_comment: MyText
+  rejection_comment: Revisa la pregunta 2
   entered_by: ayudante
   reviewed_by: profesor

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_215312) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,10 +58,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
   create_table "attendance_records", force: :cascade do |t|
     t.bigint "attendance_session_id", null: false
     t.bigint "student_id", null: false
-    t.string "status"
+    t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.index ["attendance_session_id", "student_id"], name: "index_attendance_records_on_session_and_student", unique: true
     t.index ["attendance_session_id"], name: "index_attendance_records_on_attendance_session_id"
     t.index ["student_id"], name: "index_attendance_records_on_student_id"
     t.index ["university_id"], name: "index_attendance_records_on_university_id"
@@ -69,12 +70,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
 
   create_table "attendance_sessions", force: :cascade do |t|
     t.bigint "section_id", null: false
-    t.date "held_on"
+    t.date "held_on", null: false
     t.bigint "recorded_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
     t.index ["recorded_by_id"], name: "index_attendance_sessions_on_recorded_by_id"
+    t.index ["section_id", "held_on"], name: "index_attendance_sessions_on_section_id_and_held_on", unique: true
     t.index ["section_id"], name: "index_attendance_sessions_on_section_id"
     t.index ["university_id"], name: "index_attendance_sessions_on_university_id"
   end
@@ -88,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
     t.index ["assigned_by_id"], name: "index_course_coordinators_on_assigned_by_id"
+    t.index ["course_id", "term_id"], name: "index_course_coordinators_on_course_id_and_term_id", unique: true
     t.index ["course_id"], name: "index_course_coordinators_on_course_id"
     t.index ["term_id"], name: "index_course_coordinators_on_term_id"
     t.index ["university_id"], name: "index_course_coordinators_on_university_id"
@@ -97,11 +100,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
   create_table "courses", force: :cascade do |t|
     t.bigint "university_id", null: false
     t.bigint "faculty_id", null: false
-    t.string "code"
-    t.string "name"
+    t.string "code", null: false
+    t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["faculty_id"], name: "index_courses_on_faculty_id"
+    t.index ["university_id", "code"], name: "index_courses_on_university_id_and_code", unique: true
     t.index ["university_id"], name: "index_courses_on_university_id"
   end
 
@@ -112,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.index ["section_id", "student_id"], name: "index_enrollments_on_section_id_and_student_id", unique: true
     t.index ["section_id"], name: "index_enrollments_on_section_id"
     t.index ["student_id"], name: "index_enrollments_on_student_id"
     t.index ["university_id"], name: "index_enrollments_on_university_id"
@@ -119,8 +124,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
 
   create_table "evaluations", force: :cascade do |t|
     t.bigint "section_id", null: false
-    t.string "name"
-    t.decimal "weight", precision: 5, scale: 2
+    t.string "name", null: false
+    t.decimal "weight", precision: 5, scale: 2, null: false
     t.date "due_on"
     t.text "rubric"
     t.datetime "created_at", null: false
@@ -141,8 +146,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
   create_table "grades", force: :cascade do |t|
     t.bigint "evaluation_id", null: false
     t.bigint "student_id", null: false
-    t.decimal "score", precision: 2, scale: 1
-    t.string "status"
+    t.decimal "score", precision: 2, scale: 1, null: false
+    t.string "status", default: "pendiente", null: false
     t.text "feedback"
     t.text "rejection_comment"
     t.bigint "entered_by_id", null: false
@@ -150,7 +155,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.decimal "points", precision: 6, scale: 2
     t.index ["entered_by_id"], name: "index_grades_on_entered_by_id"
+    t.index ["evaluation_id", "student_id"], name: "index_grades_on_evaluation_id_and_student_id", unique: true
     t.index ["evaluation_id"], name: "index_grades_on_evaluation_id"
     t.index ["reviewed_by_id"], name: "index_grades_on_reviewed_by_id"
     t.index ["student_id"], name: "index_grades_on_student_id"
@@ -167,8 +174,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
 
   create_table "notifications", force: :cascade do |t|
     t.bigint "recipient_id", null: false
-    t.string "kind"
-    t.string "message"
+    t.string "kind", null: false
+    t.string "message", null: false
     t.datetime "read_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -180,12 +187,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
   create_table "section_staffs", force: :cascade do |t|
     t.bigint "section_id", null: false
     t.bigint "user_id", null: false
-    t.string "role"
+    t.string "role", null: false
     t.bigint "assigned_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
     t.index ["assigned_by_id"], name: "index_section_staffs_on_assigned_by_id"
+    t.index ["section_id", "user_id"], name: "index_section_staffs_on_section_id_and_user_id", unique: true
     t.index ["section_id"], name: "index_section_staffs_on_section_id"
     t.index ["university_id"], name: "index_section_staffs_on_university_id"
     t.index ["user_id"], name: "index_section_staffs_on_user_id"
@@ -195,9 +203,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
     t.bigint "university_id", null: false
     t.bigint "course_id", null: false
     t.bigint "term_id", null: false
-    t.integer "number"
+    t.integer "number", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["course_id", "term_id", "number"], name: "index_sections_on_course_id_and_term_id_and_number", unique: true
     t.index ["course_id"], name: "index_sections_on_course_id"
     t.index ["term_id"], name: "index_sections_on_term_id"
     t.index ["university_id"], name: "index_sections_on_university_id"
@@ -205,13 +214,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
 
   create_table "terms", force: :cascade do |t|
     t.bigint "university_id", null: false
-    t.string "name"
-    t.date "starts_on"
-    t.date "ends_on"
-    t.boolean "current"
+    t.string "name", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.boolean "current", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["university_id"], name: "index_terms_on_university_id"
+    t.index ["university_id"], name: "index_terms_on_university_id_current", unique: true, where: "current"
   end
 
   create_table "universities", force: :cascade do |t|
