@@ -47,6 +47,13 @@ gem "rails-i18n", "~> 8.1"
 # S3-compatible storage for Active Storage
 gem "aws-sdk-s3", "~> 1.233", require: false
 
+# Authentication [https://github.com/heartcombo/devise]
+gem "devise", "~> 5.0"
+gem "devise-i18n", "~> 1.16"
+
+# Authorization [https://github.com/CanCanCommunity/cancancan]
+gem "cancancan", "~> 3.7"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
