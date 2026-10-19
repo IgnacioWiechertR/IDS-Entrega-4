@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_213430) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,8 +61,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["attendance_session_id"], name: "index_attendance_records_on_attendance_session_id"
     t.index ["student_id"], name: "index_attendance_records_on_student_id"
+    t.index ["university_id"], name: "index_attendance_records_on_university_id"
   end
 
   create_table "attendance_sessions", force: :cascade do |t|
@@ -71,8 +73,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.bigint "recorded_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["recorded_by_id"], name: "index_attendance_sessions_on_recorded_by_id"
     t.index ["section_id"], name: "index_attendance_sessions_on_section_id"
+    t.index ["university_id"], name: "index_attendance_sessions_on_university_id"
   end
 
   create_table "course_coordinators", force: :cascade do |t|
@@ -82,9 +86,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.bigint "assigned_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["assigned_by_id"], name: "index_course_coordinators_on_assigned_by_id"
     t.index ["course_id"], name: "index_course_coordinators_on_course_id"
     t.index ["term_id"], name: "index_course_coordinators_on_term_id"
+    t.index ["university_id"], name: "index_course_coordinators_on_university_id"
     t.index ["user_id"], name: "index_course_coordinators_on_user_id"
   end
 
@@ -105,8 +111,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["section_id"], name: "index_enrollments_on_section_id"
     t.index ["student_id"], name: "index_enrollments_on_student_id"
+    t.index ["university_id"], name: "index_enrollments_on_university_id"
   end
 
   create_table "evaluations", force: :cascade do |t|
@@ -117,7 +125,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.text "rubric"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["section_id"], name: "index_evaluations_on_section_id"
+    t.index ["university_id"], name: "index_evaluations_on_university_id"
   end
 
   create_table "faculties", force: :cascade do |t|
@@ -139,10 +149,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.bigint "reviewed_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["entered_by_id"], name: "index_grades_on_entered_by_id"
     t.index ["evaluation_id"], name: "index_grades_on_evaluation_id"
     t.index ["reviewed_by_id"], name: "index_grades_on_reviewed_by_id"
     t.index ["student_id"], name: "index_grades_on_student_id"
+    t.index ["university_id"], name: "index_grades_on_university_id"
   end
 
   create_table "materials", force: :cascade do |t|
@@ -160,7 +172,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.datetime "read_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
+    t.index ["university_id"], name: "index_notifications_on_university_id"
   end
 
   create_table "section_staffs", force: :cascade do |t|
@@ -170,8 +184,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
     t.bigint "assigned_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["assigned_by_id"], name: "index_section_staffs_on_assigned_by_id"
     t.index ["section_id"], name: "index_section_staffs_on_section_id"
+    t.index ["university_id"], name: "index_section_staffs_on_university_id"
     t.index ["user_id"], name: "index_section_staffs_on_user_id"
   end
 
@@ -234,26 +250,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_211828) do
   add_foreign_key "announcements", "sections"
   add_foreign_key "announcements", "users", column: "author_id"
   add_foreign_key "attendance_records", "attendance_sessions"
+  add_foreign_key "attendance_records", "universities"
   add_foreign_key "attendance_records", "users", column: "student_id"
   add_foreign_key "attendance_sessions", "sections"
+  add_foreign_key "attendance_sessions", "universities"
   add_foreign_key "attendance_sessions", "users", column: "recorded_by_id"
   add_foreign_key "course_coordinators", "courses"
   add_foreign_key "course_coordinators", "terms"
+  add_foreign_key "course_coordinators", "universities"
   add_foreign_key "course_coordinators", "users"
   add_foreign_key "course_coordinators", "users", column: "assigned_by_id"
   add_foreign_key "courses", "faculties"
   add_foreign_key "courses", "universities"
   add_foreign_key "enrollments", "sections"
+  add_foreign_key "enrollments", "universities"
   add_foreign_key "enrollments", "users", column: "student_id"
   add_foreign_key "evaluations", "sections"
+  add_foreign_key "evaluations", "universities"
   add_foreign_key "faculties", "universities"
   add_foreign_key "grades", "evaluations"
+  add_foreign_key "grades", "universities"
   add_foreign_key "grades", "users", column: "entered_by_id"
   add_foreign_key "grades", "users", column: "reviewed_by_id"
   add_foreign_key "grades", "users", column: "student_id"
   add_foreign_key "materials", "courses"
+  add_foreign_key "notifications", "universities"
   add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "section_staffs", "sections"
+  add_foreign_key "section_staffs", "universities"
   add_foreign_key "section_staffs", "users"
   add_foreign_key "section_staffs", "users", column: "assigned_by_id"
   add_foreign_key "sections", "courses"

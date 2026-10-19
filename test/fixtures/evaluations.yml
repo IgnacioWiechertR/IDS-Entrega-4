@@ -1,6 +1,7 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
+  university: ucv
   section: one
   name: MyString
   weight: 9.99
@@ -8,6 +9,7 @@ one:
   rubric: MyText
 
 two:
+  university: iusa
   section: two
   name: MyString
   weight: 9.99

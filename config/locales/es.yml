@@ -10,6 +10,9 @@ es:
     denied: No tienes permiso para ver esa página.
 
   activerecord:
+    errors:
+      messages:
+        must_match_parent: debe ser la misma del registro al que pertenece
     models:
       university:
         one: Universidad

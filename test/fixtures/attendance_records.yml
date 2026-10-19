@@ -1,11 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
+  university: ucv
   attendance_session: one
   student: alumno
   status: MyString
 
 two:
+  university: iusa
   attendance_session: two
   student: alumno_iusa
   status: MyString
