@@ -40,7 +40,7 @@ class UserTest < ActiveSupport::TestCase
 
   test "el mismo RUT puede existir en la otra universidad" do
     assert_equal users(:alumno).rut, users(:alumno_iusa).rut
-    assert build_user(rut: users(:profesor).rut, university: universities(:iusa), email: "otra@iusa.test").valid?
+    assert build_user(rut: users(:ayudante).rut, university: universities(:iusa), email: "otra@iusa.test").valid?
   end
 
   test "el correo es único en todo el sistema" do
