@@ -21,3 +21,7 @@
 
   <p class="mt-10 text-sm text-slate-500">El inicio de sesión estará disponible en la próxima versión.</p>
 </section>
+
+<% if Rails.env.development? %>
+  <%= render "accounts/list_preview" %>
+<% end %>
