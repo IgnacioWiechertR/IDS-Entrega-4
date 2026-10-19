@@ -1,0 +1,32 @@
+<%= form_with(model: attendance_session, class: "contents") do |form| %>
+  <% if attendance_session.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(attendance_session.errors.count, "error") %> prohibited this attendance_session from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% attendance_session.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :section_id %>
+    <%= form.text_field :section_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": attendance_session.errors[:section_id].none?, "border-red-400 focus:outline-red-600": attendance_session.errors[:section_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :held_on %>
+    <%= form.date_field :held_on, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": attendance_session.errors[:held_on].none?, "border-red-400 focus:outline-red-600": attendance_session.errors[:held_on].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :recorded_by_id %>
+    <%= form.text_field :recorded_by_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": attendance_session.errors[:recorded_by_id].none?, "border-red-400 focus:outline-red-600": attendance_session.errors[:recorded_by_id].any?}] %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

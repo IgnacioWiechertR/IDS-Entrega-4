@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  section: one
+  name: MyString
+  weight: 9.99
+  due_on: 2026-10-18
+  rubric: MyText
+
+two:
+  section: two
+  name: MyString
+  weight: 9.99
+  due_on: 2026-10-18
+  rubric: MyText

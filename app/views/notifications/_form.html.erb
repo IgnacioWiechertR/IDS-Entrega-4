@@ -1,0 +1,37 @@
+<%= form_with(model: notification, class: "contents") do |form| %>
+  <% if notification.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(notification.errors.count, "error") %> prohibited this notification from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% notification.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :recipient_id %>
+    <%= form.text_field :recipient_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": notification.errors[:recipient_id].none?, "border-red-400 focus:outline-red-600": notification.errors[:recipient_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :kind %>
+    <%= form.text_field :kind, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": notification.errors[:kind].none?, "border-red-400 focus:outline-red-600": notification.errors[:kind].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :message %>
+    <%= form.text_field :message, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": notification.errors[:message].none?, "border-red-400 focus:outline-red-600": notification.errors[:message].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :read_at %>
+    <%= form.datetime_field :read_at, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": notification.errors[:read_at].none?, "border-red-400 focus:outline-red-600": notification.errors[:read_at].any?}] %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  university: one
+  name: MyString
+  starts_on: 2026-10-18
+  ends_on: 2026-10-18
+  current: false
+
+two:
+  university: two
+  name: MyString
+  starts_on: 2026-10-18
+  ends_on: 2026-10-18
+  current: false
