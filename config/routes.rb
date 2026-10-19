@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+  # Only sign in / sign out: accounts are created by staff and locks expire on their own.
+  devise_for :users, only: :sessions
+
+  # Landing panel of each role (A1). Their content arrives with D1, A5 and the course cards.
+  get "dashboard" => "dashboard#index", as: :dashboard
+  resources :accounts, only: :index
+
   resources :notifications
   resources :announcements
   resources :attendance_records

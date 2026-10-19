@@ -19,5 +19,7 @@
     </div>
   </div>
 
-  <p class="mt-10 text-sm text-slate-500">El inicio de sesión estará disponible en la próxima versión.</p>
+  <div class="mt-10">
+    <%= link_to "Iniciar sesión", new_user_session_path, class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+  </div>
 </section>
