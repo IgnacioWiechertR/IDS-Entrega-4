@@ -5,7 +5,7 @@ require "test_helper"
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
     /announcements /attendance_records /attendance_sessions /course_coordinators /enrollments
-    /evaluations /faculties /grades /materials /notifications /section_staffs 
+    /evaluations /faculties /grades /materials /notifications /section_staffs
     /terms /universities /user_roles /users
   ].freeze
 
