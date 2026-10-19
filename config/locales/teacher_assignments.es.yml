@@ -1,0 +1,10 @@
+es:
+  activerecord:
+    models:
+      section_staff: Asignación docente
+    attributes:
+      section_staff:
+        section: La sección
+        section_id: La sección
+        user: El profesor
+        assigned_by: La persona que asigna
