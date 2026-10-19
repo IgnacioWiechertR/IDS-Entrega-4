@@ -21,7 +21,6 @@ es:
       university:
         name: Nombre
         slug: Identificador
-        size: Tamaño
       user:
         first_name: Nombre
         last_name: Apellido

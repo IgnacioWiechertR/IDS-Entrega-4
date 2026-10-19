@@ -3,12 +3,10 @@
 
 ucv = University.find_or_create_by!(slug: "ucv") do |university|
   university.name = "Universidad Central del Valle"
-  university.size = "grande"
 end
 
 iusa = University.find_or_create_by!(slug: "iusa") do |university|
   university.name = "Instituto Universitario de Salud Austral"
-  university.size = "pequena"
 end
 
 password = ENV["SEED_PASSWORD"]

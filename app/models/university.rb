@@ -1,6 +1,4 @@
 class University < ApplicationRecord
-  enum :size, { grande: "grande", pequena: "pequena" }, validate: true
-
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 

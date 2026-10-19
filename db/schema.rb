@@ -203,7 +203,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_201956) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "size"
     t.index ["slug"], name: "index_universities_on_slug", unique: true
   end
 

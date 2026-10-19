@@ -1,9 +1,7 @@
 ucv:
   name: Universidad Central del Valle
   slug: ucv
-  size: grande
 
 iusa:
   name: Instituto Universitario de Salud Austral
   slug: iusa
-  size: pequena
