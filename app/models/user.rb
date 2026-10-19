@@ -40,4 +40,9 @@ class User < ApplicationRecord
   def role_name
     I18n.t("roles.#{role}")
   end
+
+  # An ayudante is also a student: it can be enrolled in other courses (Trello A23).
+  def student_account?
+    alumno? || ayudante?
+  end
 end

@@ -50,6 +50,13 @@ class GradeTest < ActiveSupport::TestCase
     assert duplicate.errors.added?(:student_id, :taken, value: users(:alumno).id)
   end
 
+  test "el alumno es de la misma universidad que la evaluación" do
+    grade = build_grade(student: users(:alumno_iusa))
+
+    assert_not grade.valid?
+    assert_includes grade.errors[:student], "debe ser de la misma universidad"
+  end
+
   test "preliminares son las pendientes y rechazadas; publicadas, las oficiales" do
     publicada = build_grade(status: "publicada").tap(&:save!)
 

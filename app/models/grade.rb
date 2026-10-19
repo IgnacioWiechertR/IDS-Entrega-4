@@ -12,6 +12,7 @@ class Grade < ApplicationRecord
   belongs_to :reviewed_by, class_name: "User", optional: true
 
   inherits_university_from :evaluation
+  accounts_in_university :student
 
   scope :preliminares, -> { where(status: %w[pendiente rechazada]) }
   scope :publicadas, -> { publicada }

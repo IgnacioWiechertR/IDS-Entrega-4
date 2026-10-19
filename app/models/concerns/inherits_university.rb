@@ -14,5 +14,15 @@ module InheritsUniversity
         errors.add(:university, :must_match_parent) if owner && university_id != owner.university_id
       end
     end
+
+    # The accounts that take part in the record (a student, a teacher) belong to its university.
+    def accounts_in_university(*accounts)
+      validate do
+        accounts.each do |account|
+          person = public_send(account)
+          errors.add(account, :must_match_university) if person && person.university_id != university_id
+        end
+      end
+    end
   end
 end
