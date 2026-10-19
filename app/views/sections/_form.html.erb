@@ -1,0 +1,37 @@
+<%= form_with(model: section, class: "contents") do |form| %>
+  <% if section.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(section.errors.count, "error") %> prohibited this section from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% section.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :university_id %>
+    <%= form.text_field :university_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:university_id].none?, "border-red-400 focus:outline-red-600": section.errors[:university_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :course_id %>
+    <%= form.text_field :course_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:course_id].none?, "border-red-400 focus:outline-red-600": section.errors[:course_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :term_id %>
+    <%= form.text_field :term_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:term_id].none?, "border-red-400 focus:outline-red-600": section.errors[:term_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :number %>
+    <%= form.number_field :number, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": section.errors[:number].none?, "border-red-400 focus:outline-red-600": section.errors[:number].any?}] %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

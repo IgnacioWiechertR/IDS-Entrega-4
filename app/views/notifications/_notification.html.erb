@@ -1,0 +1,18 @@
+<div id="<%= dom_id notification %>" class="w-full sm:w-auto my-5 space-y-5">
+  <div>
+    <strong class="block font-medium mb-1">Recipient:</strong>
+    <%= notification.recipient_id %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Kind:</strong>
+    <%= notification.kind %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Message:</strong>
+    <%= notification.message %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Read at:</strong>
+    <%= notification.read_at %>
+  </div>
+</div>
