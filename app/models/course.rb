@@ -1,5 +1,5 @@
 class Course < ApplicationRecord
-  belongs_to :university
+  acts_as_tenant :university
   belongs_to :faculty
   has_many :sections, dependent: :destroy
   has_many :course_coordinators, dependent: :destroy

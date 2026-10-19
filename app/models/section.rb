@@ -1,5 +1,5 @@
 class Section < ApplicationRecord
-  belongs_to :university
+  acts_as_tenant :university
   belongs_to :course
   belongs_to :term
   has_many :section_staffs, dependent: :destroy
