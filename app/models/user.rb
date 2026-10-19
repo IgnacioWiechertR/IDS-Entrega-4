@@ -2,7 +2,7 @@ class User < ApplicationRecord
   # Accounts are created by staff (no :registerable). Password recovery (A2) is not enabled yet.
   devise :database_authenticatable, :rememberable, :validatable, :lockable
 
-  # The role lives in users.role, as in the C4 code level (user_roles is not used for authorization).
+  # One role per account. The role in each course lives in section_staffs (profesor/ayudante) and enrollments (alumno).
   enum :role, {
     director: "director",
     administrativo: "administrativo",
@@ -15,7 +15,6 @@ class User < ApplicationRecord
   # The director manages both universities and has no university of its own.
   belongs_to :university, optional: true
 
-  has_many :user_roles, dependent: :destroy
   has_many :course_coordinators, dependent: :destroy
   has_many :assigned_course_coordinators, class_name: "CourseCoordinator", foreign_key: :assigned_by_id, dependent: :destroy
   has_many :section_staffs, dependent: :destroy

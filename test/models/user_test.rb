@@ -61,4 +61,9 @@ class UserTest < ActiveSupport::TestCase
   test "muestra el nombre del rol en español" do
     assert_equal "Administrativo", users(:administrativo).role_name
   end
+
+  test "el rol de la cuenta vive solo en users.role" do
+    assert_not ActiveRecord::Base.connection.table_exists?(:user_roles)
+    assert_nil User.reflect_on_association(:user_roles)
+  end
 end
