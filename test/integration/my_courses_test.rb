@@ -50,7 +50,7 @@ class MyCoursesTest < ActionDispatch::IntegrationTest
   end
 
   test "una inscripción desactivada no da acceso al curso" do
-    enrollments(:one).update!(active: false)
+    ActsAsTenant.with_tenant(universities(:ucv)) { enrollments(:one).update!(active: false) }
     sign_in users(:alumno)
 
     get courses_path
