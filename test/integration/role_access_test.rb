@@ -19,6 +19,8 @@ class RoleAccessTest < ActionDispatch::IntegrationTest
 
     get accounts_path
     assert_response :success
+    get courses_path
+    assert_response :success
 
     get dashboard_path
     assert_redirected_to accounts_path

@@ -65,10 +65,11 @@ class MyCoursesTest < ActionDispatch::IntegrationTest
     assert Enrollment.new.active
   end
 
-  test "el alumno no ve el botón para crear asignaturas" do
+  test "el alumno no ve el botón para crear cursos" do
     sign_in users(:alumno)
     get courses_path
 
-    assert_select "a", text: "Nueva asignatura", count: 0
+    assert_select "h1", "Mis cursos"
+    assert_select "a", text: "Nuevo curso", count: 0
   end
 end

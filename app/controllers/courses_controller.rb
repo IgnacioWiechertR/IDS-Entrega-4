@@ -1,9 +1,9 @@
 class CoursesController < ApplicationController
   load_and_authorize_resource
-  before_action :set_course, only: %i[ show edit update destroy ]
 
-  # GET /courses ("Mis cursos"): load_and_authorize_resource loads only the courses the user can read.
   def index
+    @courses = @courses.includes(:faculty).order(:code)
+    @coordinators = current_user.administrativo? ? current_coordinators_for(@courses) : {}
   end
 
   # GET /courses/1
@@ -12,47 +12,53 @@ class CoursesController < ApplicationController
 
   # GET /courses/new
   def new
-    @course = Course.new
   end
 
   # GET /courses/1/edit
   def edit
   end
 
-  # POST /courses
+  # POST /courses (A11)
   def create
-    @course = Course.new(course_params)
-
     if @course.save
-      redirect_to @course, notice: "Course was successfully created."
+      redirect_to @course, notice: "El curso fue creado."
     else
       render :new, status: :unprocessable_content
     end
   end
 
-  # PATCH/PUT /courses/1
+  # PATCH/PUT /courses/1 (A13)
   def update
     if @course.update(course_params)
-      redirect_to @course, notice: "Course was successfully updated.", status: :see_other
+      redirect_to @course, notice: "El curso fue actualizado.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
   end
 
-  # DELETE /courses/1
+  # DELETE /courses/1 (A14)
   def destroy
-    @course.destroy!
-    redirect_to courses_path, notice: "Course was successfully destroyed.", status: :see_other
+    if @course.destroy
+      redirect_to courses_path, notice: "El curso fue eliminado.", status: :see_other
+    else
+      redirect_to @course, status: :see_other,
+        alert: "No se puede eliminar el curso #{@course.errors.full_messages.to_sentence}. " \
+               "Para mantener la trazabilidad, solo se eliminan cursos sin secciones, coordinadores, materiales ni avisos."
+    end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_course
-      @course = Course.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def course_params
-      params.expect(course: [ :university_id, :faculty_id, :code, :name ])
-    end
+  # The university comes from the active tenant, never from the form.
+  def course_params
+    params.expect(course: [ :faculty_id, :code, :name ])
+  end
+
+  # Coordinator of each course in the current term, indexed by course_id. Without a current term, none.
+  def current_coordinators_for(courses)
+    term = Term.find_by(current: true)
+    return {} unless term
+
+    CourseCoordinator.includes(:user).where(term: term, course_id: courses.map(&:id)).index_by(&:course_id)
+  end
 end

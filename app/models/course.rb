@@ -1,10 +1,11 @@
 class Course < ApplicationRecord
   acts_as_tenant :university
   belongs_to :faculty
-  has_many :sections, dependent: :destroy
-  has_many :course_coordinators, dependent: :destroy
-  has_many :materials, dependent: :destroy
-  has_many :announcements, dependent: :destroy
+
+  has_many :sections, dependent: :restrict_with_error
+  has_many :course_coordinators, dependent: :restrict_with_error
+  has_many :materials, dependent: :restrict_with_error
+  has_many :announcements, dependent: :restrict_with_error
 
   validates :code, :name, presence: true
   validates :code, uniqueness: { scope: :university_id }

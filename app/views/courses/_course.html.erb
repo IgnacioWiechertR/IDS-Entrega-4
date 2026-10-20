@@ -1,18 +1,18 @@
-<div id="<%= dom_id course %>" class="w-full sm:w-auto my-5 space-y-5">
+<dl id="<%= dom_id course %>" class="mt-6 space-y-4">
   <div>
-    <strong class="block font-medium mb-1">University:</strong>
-    <%= course.university.name %>
+    <dt class="text-sm font-medium text-slate-500">Código</dt>
+    <dd class="text-slate-900"><%= course.code %></dd>
   </div>
   <div>
-    <strong class="block font-medium mb-1">Faculty:</strong>
-    <%= course.faculty.name %>
+    <dt class="text-sm font-medium text-slate-500">Nombre</dt>
+    <dd class="text-slate-900"><%= course.name %></dd>
   </div>
   <div>
-    <strong class="block font-medium mb-1">Code:</strong>
-    <%= course.code %>
+    <dt class="text-sm font-medium text-slate-500">Facultad</dt>
+    <dd class="text-slate-900"><%= course.faculty.name %></dd>
   </div>
   <div>
-    <strong class="block font-medium mb-1">Name:</strong>
-    <%= course.name %>
+    <dt class="text-sm font-medium text-slate-500">Universidad</dt>
+    <dd class="text-slate-900"><%= course.university.name %></dd>
   </div>
-</div>
+</dl>

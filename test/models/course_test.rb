@@ -32,4 +32,16 @@ class CourseTest < ActiveSupport::TestCase
     assert_not course.valid?
     assert_includes course.errors[:faculty], "debe ser de la misma universidad"
   end
+
+  test "se elimina un curso sin registros asociados" do
+    assert courses(:three).destroy
+  end
+
+  test "no se elimina un curso con secciones, coordinadores, materiales o avisos" do
+    course = courses(:one)
+
+    assert_not course.destroy
+    assert course.errors[:base].any?
+    assert Course.exists?(course.id)
+  end
 end

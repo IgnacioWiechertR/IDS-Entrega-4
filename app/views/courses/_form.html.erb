@@ -1,9 +1,8 @@
-<%= form_with(model: course, class: "contents") do |form| %>
+<%= form_with(model: course, class: "mt-6 space-y-5") do |form| %>
   <% if course.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-      <h2><%= pluralize(course.errors.count, "error") %> prohibited this course from being saved:</h2>
-
-      <ul class="list-disc ml-6">
+    <div id="error_explanation" class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+      <p class="font-medium">No se pudo guardar el curso:</p>
+      <ul class="ml-5 mt-1 list-disc">
         <% course.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -11,27 +10,22 @@
     </div>
   <% end %>
 
-  <div class="my-5">
-    <%= form.label :university_id %>
-    <%= form.text_field :university_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": course.errors[:university_id].none?, "border-red-400 focus:outline-red-600": course.errors[:university_id].any?}] %>
+  <div>
+    <%= form.label :code, class: "block text-sm font-medium text-slate-700" %>
+    <%= form.text_field :code, required: true, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :faculty_id %>
-    <%= form.text_field :faculty_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": course.errors[:faculty_id].none?, "border-red-400 focus:outline-red-600": course.errors[:faculty_id].any?}] %>
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-slate-700" %>
+    <%= form.text_field :name, required: true, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :code %>
-    <%= form.text_field :code, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": course.errors[:code].none?, "border-red-400 focus:outline-red-600": course.errors[:code].any?}] %>
+  <div>
+    <%= form.label :faculty_id, class: "block text-sm font-medium text-slate-700" %>
+    <%# Faculty is scoped to the active university (A3): only its faculties are listed. %>
+    <%= form.collection_select :faculty_id, Faculty.order(:name), :id, :name,
+          { prompt: "Selecciona una facultad" }, required: true, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :name %>
-    <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": course.errors[:name].none?, "border-red-400 focus:outline-red-600": course.errors[:name].any?}] %>
-  </div>
-
-  <div class="inline">
-    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
-  </div>
+  <%= form.submit course.new_record? ? "Crear curso" : "Guardar cambios", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
 <% end %>
