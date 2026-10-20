@@ -195,8 +195,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.index ["assigned_by_id"], name: "index_section_staffs_on_assigned_by_id"
     t.index ["section_id", "user_id"], name: "index_section_staffs_on_section_id_and_user_id", unique: true
     t.index ["section_id"], name: "index_section_staffs_on_section_id"
-    t.index ["university_id"], name: "index_section_staffs_on_university_id"
     t.index ["section_id"], name: "index_section_staffs_one_professor_per_section", unique: true, where: "((role)::text = 'profesor'::text)"
+    t.index ["university_id"], name: "index_section_staffs_on_university_id"
     t.index ["user_id"], name: "index_section_staffs_on_user_id"
   end
 

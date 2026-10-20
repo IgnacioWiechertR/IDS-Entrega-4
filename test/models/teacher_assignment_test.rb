@@ -60,7 +60,7 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuya asignatura pertenece a otra universidad" do
-    @section.update!(course: @other_section.course)
+    @section.update_columns(course_id: @other_section.course_id)
     assignment = professor_assignment
 
     assert_not assignment.valid?
@@ -68,7 +68,7 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
-    @section.update!(term: @other_section.term)
+    @section.update_columns(term_id: @other_section.term_id)
     assignment = professor_assignment
 
     assert_not assignment.valid?
