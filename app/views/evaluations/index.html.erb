@@ -36,7 +36,9 @@
               <td class="px-4 py-2 text-slate-600"><%= evaluation.rubric.present? ? "Sí" : "—" %></td>
               <td class="px-4 py-2 text-right">
                 <% if can?(:enter_grades, evaluation) %>
-                  <%= link_to "Ingresar notas", edit_section_evaluation_grade_sheet_path(@section, evaluation),
+                  <% rejected = evaluation.grades.rechazada.count %>
+                  <%= link_to rejected.zero? ? "Ingresar notas" : "Ingresar notas (#{rejected} por corregir)",
+                        edit_section_evaluation_grade_sheet_path(@section, evaluation),
                         class: "text-sm font-semibold text-indigo-700 hover:underline" %>
                 <% end %>
                 <% if can?(:review_grades, evaluation) %>
