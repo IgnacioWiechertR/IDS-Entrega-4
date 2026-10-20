@@ -4,23 +4,29 @@ require "test_helper"
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators /enrollments
-    /evaluations /faculties /grades /materials /notifications /section_staffs /sections
+    /announcements /attendance_records /attendance_sessions /course_coordinators
+    /evaluations /faculties /grades /materials /notifications
     /terms /universities /users
   ].freeze
 
   test "los scaffolds exigen iniciar sesión" do
-    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{Course.first.id}/sections" ]).each do |path|
+    curso = Course.first
+    seccion = curso.sections.first
+
+    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end
   end
 
   test "con sesión iniciada, los scaffolds se niegan por defecto" do
+    curso = Course.first
+    seccion = curso.sections.first
+
     %i[director administrativo profesor alumno].each do |fixture|
       sign_in users(fixture)
 
-      (SCAFFOLD_PATHS + [ "/courses/#{Course.first.id}/sections" ]).each do |path|
+      (SCAFFOLD_PATHS + [ "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
         get path
         assert_response :redirect, "#{fixture} no debería entrar a #{path}"
         assert_equal "No tienes permiso para ver esa página.", flash[:alert]
