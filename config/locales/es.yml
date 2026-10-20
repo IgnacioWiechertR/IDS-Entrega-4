@@ -18,6 +18,14 @@ es:
         acts_as_tenant:
           tenant_mismatch: debe ser la universidad activa
           association_invalid: debe pertenecer a la misma universidad
+        must_match_parent: debe ser la misma del registro al que pertenece
+        must_match_university: debe ser de la misma universidad
+        only_one_current: ya hay otro período vigente en la universidad
+        before_start: debe ser posterior a la fecha de inicio
+        exceeds_section_total: supera el 100 % de la sección (queda %{available} % disponible)
+        must_be_profesor: debe ser una cuenta de profesor
+        must_be_student: debe ser una cuenta de alumno o ayudante
+        one_role_per_course: ya tiene un rol en este curso durante el período
     models:
       university:
         one: Universidad

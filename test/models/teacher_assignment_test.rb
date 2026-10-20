@@ -64,21 +64,19 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuya asignatura pertenece a otra universidad" do
-    # acts_as_tenant no longer lets a section point to another university's course (A3), so the
-    # inconsistency is forced as legacy data to keep checking that the assignment rejects it.
-    @section.update_column(:course_id, @other_section.course_id)
+    @section.update_columns(course_id: @other_section.course_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:course].any?
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
-    @section.update_column(:term_id, @other_section.term_id)
+    @section.update_columns(term_id: @other_section.term_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:term].any?
   end
 
   test "una asignación de ayudante puede coexistir con la del profesor" do

@@ -102,7 +102,7 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "no reemplaza al profesor existente" do
-    professor_assignment.save!
+    ActsAsTenant.with_tenant(@university) { professor_assignment.save! }
     sign_in @admin
 
     assert_no_difference "SectionStaff.count" do
@@ -144,8 +144,7 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "oculta y rechaza secciones con relaciones de otra universidad" do
-    # Forced as legacy data: acts_as_tenant rejects this inconsistency on save (A3).
-    @section.update_column(:course_id, @other_section.course_id)
+    @section.update_columns(course_id: @other_section.course_id)
     sign_in @admin
 
     get teacher_assignments_path

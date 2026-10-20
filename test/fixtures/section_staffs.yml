@@ -1,10 +1,12 @@
 one:
+  university: ucv
   section: one
   user: profesor
   role: profesor
   assigned_by: administrativo
 
 two:
+  university: ucv
   section: one
   user: ayudante
   role: ayudante
