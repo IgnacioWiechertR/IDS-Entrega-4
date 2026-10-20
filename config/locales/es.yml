@@ -13,6 +13,11 @@ es:
     changed: Ahora estás viendo %{name}.
 
   activerecord:
+    errors:
+      messages:
+        acts_as_tenant:
+          tenant_mismatch: debe ser la universidad activa
+          association_invalid: debe pertenecer a la misma universidad
     models:
       university:
         one: Universidad
