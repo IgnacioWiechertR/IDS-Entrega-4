@@ -8,4 +8,12 @@ class NotificationTest < ActiveSupport::TestCase
     assert notification.errors.added?(:kind, :blank)
     assert notification.errors.added?(:message, :blank)
   end
+
+  test "las no leídas son las que no tienen read_at" do
+    unread = Notification.create!(recipient: users(:alumno), kind: "prueba", message: "Nueva")
+    read = Notification.create!(recipient: users(:alumno), kind: "prueba", message: "Vista", read_at: 1.hour.ago)
+
+    assert_includes Notification.unread, unread
+    assert_not_includes Notification.unread, read
+  end
 end
