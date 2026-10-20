@@ -43,24 +43,33 @@
               <tr id="student_<%= student.id %>" class="<%= 'bg-red-50' if row_errors.any? %>">
                 <th scope="row" class="whitespace-nowrap px-4 py-2 text-left font-medium text-slate-900">
                   <%= student.name %>
+                  <% if grade&.rechazada? %>
+                    <p class="mt-1 max-w-xs whitespace-normal text-xs font-normal text-amber-800">
+                      Rechazada por el profesor: «<%= grade.rejection_comment %>»
+                    </p>
+                  <% end %>
                   <% row_errors.each do |message| %>
                     <p class="mt-1 text-xs font-normal text-red-700"><%= message %></p>
                   <% end %>
                 </th>
-                <% if grade %>
+                <% if grade && !grade.rechazada? %>
                   <td class="px-4 py-2 font-semibold"><%= grade_score(grade) %></td>
                   <td colspan="2" class="px-4 py-2 text-slate-600"><%= grade_status_label(grade) %></td>
                 <% else %>
+                  <%# New grade, or a rejected one to correct (C7), prefilled with its current values. %>
+                  <% score = entry.fetch("score") { grade && grade_score(grade) } %>
+                  <% feedback = entry.fetch("feedback") { grade&.feedback } %>
+                  <% points = entry.fetch("points") { grade&.points && number_with_precision(grade.points, precision: 2, strip_insignificant_zeros: true) } %>
                   <td class="px-4 py-2">
-                    <%= text_field_tag "entries[#{student.id}][score]", entry["score"], inputmode: "decimal", placeholder: "1,0 – 7,0",
+                    <%= text_field_tag "entries[#{student.id}][score]", score, inputmode: "decimal", placeholder: "1,0 – 7,0",
                           aria: { label: "Nota de #{student.name}" }, class: "w-24 #{ApplicationHelper::INPUT_CLASSES}" %>
                   </td>
                   <td class="px-4 py-2">
-                    <%= text_field_tag "entries[#{student.id}][feedback]", entry["feedback"],
+                    <%= text_field_tag "entries[#{student.id}][feedback]", feedback,
                           aria: { label: "Comentario para #{student.name}" }, class: ApplicationHelper::INPUT_CLASSES %>
                   </td>
                   <td class="px-4 py-2">
-                    <%= text_field_tag "entries[#{student.id}][points]", entry["points"], inputmode: "decimal",
+                    <%= text_field_tag "entries[#{student.id}][points]", points, inputmode: "decimal",
                           aria: { label: "Puntaje de #{student.name}" }, class: "w-24 #{ApplicationHelper::INPUT_CLASSES}" %>
                   </td>
                 <% end %>

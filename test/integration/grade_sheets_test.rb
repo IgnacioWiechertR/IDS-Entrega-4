@@ -112,6 +112,42 @@ class GradeSheetsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # C7: the ayudante sees the rejected grades with the profesor's comment, corrects them and sends them again.
+  def reject_grade
+    Grade.create!(evaluation: @evaluation, student: @student, score: 4.0, feedback: "Sin justificar", status: "rechazada",
+                  rejection_comment: "Revisa la pregunta 2", entered_by: users(:ayudante), reviewed_by: users(:profesor))
+  end
+
+  test "el ayudante ve la nota rechazada con el comentario del profesor, lista para corregir" do
+    reject_grade
+    sign_in users(:ayudante)
+    get sheet_path
+
+    assert_select "#student_#{@student.id}", text: /Rechazada por el profesor: «Revisa la pregunta 2»/
+    assert_select "input[name=?][value=?]", "entries[#{@student.id}][score]", "4,0"
+    assert_select "input[name=?][value=?]", "entries[#{@student.id}][feedback]", "Sin justificar"
+  end
+
+  test "al reenviar la nota corregida vuelve a pendiente y se avisa al profesor" do
+    grade = reject_grade
+    sign_in users(:ayudante)
+
+    assert_enqueued_with(job: GradeSubmissionNotificationJob, args: [ @evaluation, 1 ]) do
+      submit(@student.id => { score: "5,0", feedback: "Pregunta 2 corregida" })
+    end
+    assert_equal "1 nota enviada a revisión.", flash[:notice]
+    assert grade.reload.pendiente?
+    assert_equal 5.0, grade.score
+  end
+
+  test "la lista de evaluaciones avisa cuántas notas hay por corregir" do
+    reject_grade
+    sign_in users(:ayudante)
+    get section_evaluations_path(@section)
+
+    assert_select "a[href=?]", sheet_path, text: "Ingresar notas (1 por corregir)"
+  end
+
   test "la lista de evaluaciones muestra Ingresar notas solo al ayudante" do
     sign_in users(:ayudante)
     get section_evaluations_path(@section)

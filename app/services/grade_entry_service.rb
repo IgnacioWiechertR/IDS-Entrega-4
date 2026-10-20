@@ -1,6 +1,8 @@
 # C1: the ayudante enters the preliminary grades of an evaluation, all in one submission.
-# entries: { student_id => { score:, feedback:, points: } }. Rows without a score, students that are not actively
-# enrolled in the section and students that already have a grade in the evaluation (editing it is C3) are skipped.
+# C7: a grade the profesor rejected is corrected in the same submission and goes back to `pendiente` (its
+# rejection comment is kept as history). Pending and published grades are not touched here (editing them is C3).
+# entries: { student_id => { score:, feedback:, points: } }. Rows without a score and students that are not
+# actively enrolled in the section are skipped.
 # All or nothing: if one grade is invalid, none is saved and the errors come back by student_id.
 class GradeEntryService
   Result = Struct.new(:saved_count, :errors, keyword_init: true) do
@@ -29,15 +31,17 @@ class GradeEntryService
 
   def build_grades
     students = @evaluation.section.active_students.index_by(&:id)
-    already_graded = @evaluation.grades.pluck(:student_id).to_set
+    existing = @evaluation.grades.index_by(&:student_id)
 
     @entries.filter_map do |student_id, values|
       student = students[student_id.to_i]
       score = decimal(values[:score])
-      next if student.nil? || already_graded.include?(student.id) || score.blank?
+      grade = student && existing[student.id]
+      next if student.nil? || score.blank? || (grade && !grade.rechazada?)
 
-      Grade.new(evaluation: @evaluation, student: student, entered_by: @author, status: "pendiente",
-                score: score, feedback: values[:feedback].presence, points: decimal(values[:points]).presence)
+      attributes = { entered_by: @author, status: "pendiente", score: score, feedback: values[:feedback].presence,
+                     points: decimal(values[:points]).presence }
+      grade ? grade.tap { |rejected| rejected.assign_attributes(attributes) } : Grade.new(evaluation: @evaluation, student: student, **attributes)
     end
   end
 

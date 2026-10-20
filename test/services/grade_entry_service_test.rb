@@ -72,6 +72,46 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     assert_equal 5.5, grades(:one).reload.score
   end
 
+  # C7: the ayudante corrects the grades the profesor rejected and sends them again.
+  def rejected_grade
+    @rejected_grade ||= Grade.create!(evaluation: @evaluation, student: @first, score: 4.0, feedback: "Sin justificar",
+      status: "rechazada", rejection_comment: "Revisa la pregunta 2", entered_by: users(:ayudante), reviewed_by: users(:profesor))
+  end
+
+  test "una nota rechazada corregida vuelve a pendiente, conservando el comentario del profesor" do
+    grade = rejected_grade
+
+    result = enter({ @first.id.to_s => { score: "5,0", feedback: "Pregunta 2 corregida", points: "40" } })
+
+    assert result.success?
+    assert_equal 1, result.saved_count
+    grade.reload
+    assert grade.pendiente?
+    assert_equal 5.0, grade.score
+    assert_equal "Pregunta 2 corregida", grade.feedback
+    assert_equal "Revisa la pregunta 2", grade.rejection_comment
+  end
+
+  test "una nota rechazada que no viene en el envío se queda rechazada" do
+    grade = rejected_grade
+
+    result = enter({ @second.id.to_s => { score: "6.0" } })
+
+    assert_equal 1, result.saved_count
+    assert grade.reload.rechazada?
+  end
+
+  test "una corrección fuera de rango no guarda nada" do
+    grade = rejected_grade
+
+    result = enter({ @first.id.to_s => { score: "9" }, @second.id.to_s => { score: "6.0" } })
+
+    assert_not result.success?
+    assert grade.reload.rechazada?
+    assert_equal 4.0, grade.score
+    assert_nil @evaluation.grades.find_by(student: @second)
+  end
+
   test "ignora a quien no está inscrito en la sección" do
     result = enter({ users(:profesor).id.to_s => { score: "6.0" } })
 
