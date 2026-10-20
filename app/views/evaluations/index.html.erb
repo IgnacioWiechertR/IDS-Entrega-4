@@ -24,6 +24,7 @@
             <th class="px-4 py-2 font-semibold">Ponderación</th>
             <th class="px-4 py-2 font-semibold">Fecha</th>
             <th class="px-4 py-2 font-semibold">Pauta</th>
+            <th class="px-4 py-2"><span class="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody id="evaluations" class="divide-y divide-slate-100">
@@ -33,6 +34,12 @@
               <td class="px-4 py-2"><%= weight_percentage(evaluation.weight) %></td>
               <td class="px-4 py-2"><%= l(evaluation.due_on) %></td>
               <td class="px-4 py-2 text-slate-600"><%= evaluation.rubric.present? ? "Sí" : "—" %></td>
+              <td class="px-4 py-2 text-right">
+                <% if can?(:enter_grades, evaluation) %>
+                  <%= link_to "Ingresar notas", edit_section_evaluation_grade_sheet_path(@section, evaluation),
+                        class: "text-sm font-semibold text-indigo-700 hover:underline" %>
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>
