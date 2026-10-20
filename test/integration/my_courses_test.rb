@@ -39,11 +39,11 @@ class MyCoursesTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Todavía no tienes cursos asignados/
   end
 
-  test "no se puede abrir un curso de la propia universidad donde no se participa" do
+  test "el alumno va directo a su sección y no abre un curso donde no participa" do
     sign_in users(:alumno)
 
     get course_path(courses(:one))
-    assert_response :success
+    assert_redirected_to course_section_path(courses(:one), sections(:one))
 
     get course_path(courses(:three))
     assert_redirected_to courses_path
