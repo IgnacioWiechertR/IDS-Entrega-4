@@ -26,6 +26,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # C10: the student's official grades, by course, and the detail of each correction.
+  resources :my_grades, only: %i[ index show ]
+
   resources :notifications
   resources :announcements
   resources :attendance_records
