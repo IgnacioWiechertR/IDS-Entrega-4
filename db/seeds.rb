@@ -112,4 +112,24 @@ assignments.each do |university, data|
   end
 end
 
+# Asistencia semanal de las primeras 8 semanas del período vigente en las secciones con alumnos (B6),
+# para que la demo muestre porcentajes. Fechas y marcas son fijas: correr los seeds de nuevo no cambia nada.
+puts "Registrando asistencia..."
+class_dates = (0...8).map { |week| Date.new(2026, 8, 10) + week.weeks }
+
+[ ucv, iusa ].each do |university|
+  ActsAsTenant.with_tenant(university) do
+    SectionStaff.where(university: university, role: "profesor").includes(:user).each do |staff|
+      students = staff.section.active_students.to_a
+      next if students.empty?
+
+      class_dates.each_with_index do |held_on, week|
+        statuses = students.each_with_index.to_h { |student, index| [ student.id.to_s, (index + week) % 4 == 0 ? "ausente" : "presente" ] }
+        recorder = AttendanceRecorderService.new(section: staff.section, held_on: held_on, recorded_by: staff.user)
+        raise "No se pudo registrar la asistencia del #{held_on}: #{recorder.session.errors.full_messages.to_sentence}" unless recorder.call(statuses)
+      end
+    end
+  end
+end
+
 puts "Datos académicos demo listos: #{academic_structure.values.flat_map { |data| data[:courses].map { |code, (name, _)| "#{code} #{name}" } }.join(', ')}"

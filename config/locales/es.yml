@@ -26,6 +26,7 @@ es:
         must_be_profesor: debe ser una cuenta de profesor
         must_be_student: debe ser una cuenta de alumno o ayudante
         one_role_per_course: ya tiene un rol en este curso durante el período
+        in_the_future: no puede ser una fecha futura
     models:
       university:
         one: Universidad
@@ -34,6 +35,8 @@ es:
         one: Usuario
         other: Usuarios
     attributes:
+      attendance_session:
+        held_on: Fecha
       university:
         name: Nombre
         slug: Identificador
