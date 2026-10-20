@@ -54,6 +54,9 @@ gem "devise-i18n", "~> 1.16"
 # Authorization [https://github.com/CanCanCommunity/cancancan]
 gem "cancancan", "~> 3.7"
 
+# Row-level multi-tenancy by university_id [https://github.com/ErwinM/acts_as_tenant]
+gem "acts_as_tenant", "~> 2.2"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

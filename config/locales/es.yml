@@ -9,9 +9,15 @@ es:
   authorization:
     denied: No tienes permiso para ver esa página.
 
+  university_selection:
+    changed: Ahora estás viendo %{name}.
+
   activerecord:
     errors:
       messages:
+        acts_as_tenant:
+          tenant_mismatch: debe ser la universidad activa
+          association_invalid: debe pertenecer a la misma universidad
         must_match_parent: debe ser la misma del registro al que pertenece
         must_match_university: debe ser de la misma universidad
         only_one_current: ya hay otro período vigente en la universidad

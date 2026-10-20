@@ -21,7 +21,9 @@ class CourseTest < ActiveSupport::TestCase
   end
 
   test "el mismo código puede existir en la otra universidad" do
-    assert build_course(code: courses(:one).code, university: universities(:iusa), faculty: faculties(:two)).valid?
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      assert build_course(code: courses(:one).code, university: universities(:iusa), faculty: faculties(:two)).valid?
+    end
   end
 
   test "la facultad es de la misma universidad" do

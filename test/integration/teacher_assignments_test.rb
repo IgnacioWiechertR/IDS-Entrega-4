@@ -102,7 +102,7 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "no reemplaza al profesor existente" do
-    professor_assignment.save!
+    ActsAsTenant.with_tenant(@university) { professor_assignment.save! }
     sign_in @admin
 
     assert_no_difference "SectionStaff.count" do

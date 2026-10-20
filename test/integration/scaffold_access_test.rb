@@ -10,8 +10,8 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   ].freeze
 
   test "los scaffolds exigen iniciar sesión" do
-    curso = Course.first
-    seccion = curso.sections.first
+    seccion = ActsAsTenant.without_tenant { Section.first }
+    curso = ActsAsTenant.without_tenant { seccion.course }
 
     (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
@@ -20,13 +20,14 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   end
 
   test "con sesión iniciada, los scaffolds se niegan por defecto" do
-    curso = Course.first
-    seccion = curso.sections.first
+    curso = ActsAsTenant.without_tenant { Course.first }
 
     %i[director administrativo profesor alumno].each do |fixture|
       sign_in users(fixture)
 
-      (SCAFFOLD_PATHS + [ "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
+      patch university_selection_path, params: { university_id: curso.university_id } if fixture == :director
+
+      SCAFFOLD_PATHS.each do |path|
         get path
         assert_response :redirect, "#{fixture} no debería entrar a #{path}"
         assert_equal "No tienes permiso para ver esa página.", flash[:alert]
@@ -52,7 +53,7 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     patch user_path(users(:alumno)), params: { user: { first_name: "Cambiado" } }
     assert_equal "Alumno", users(:alumno).reload.first_name
 
-    assert_no_difference "Course.count" do
+    assert_no_difference -> { ActsAsTenant.without_tenant { Course.count } } do
       post courses_path, params: { course: { code: "X1", name: "Intrusa" } }
     end
   end

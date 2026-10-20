@@ -51,3 +51,13 @@ alumno_iusa:
   role: alumno
   university: iusa
   encrypted_password: <%= password %>
+
+# The same person as "profesor" (same RUT), with a separate account in the other university.
+profesor_iusa:
+  first_name: Profesor
+  last_name: UCV
+  rut: "33333333-3"
+  email: profesor@iusa.test
+  role: profesor
+  university: iusa
+  encrypted_password: <%= password %>

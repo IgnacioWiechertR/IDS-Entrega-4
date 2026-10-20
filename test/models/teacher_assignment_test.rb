@@ -4,7 +4,11 @@ require_relative "../support/teacher_assignment_data"
 class TeacherAssignmentTest < ActiveSupport::TestCase
   include TeacherAssignmentData
 
-  setup { prepare_teacher_assignment_data }
+  setup do
+    prepare_teacher_assignment_data
+    # The validations read the section's course and term, which are scoped by university (A3).
+    ActsAsTenant.current_tenant = @university
+  end
 
   test "el administrativo asigna un profesor de su universidad" do
     assignment = professor_assignment

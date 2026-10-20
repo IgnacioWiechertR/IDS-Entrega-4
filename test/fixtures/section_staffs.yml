@@ -11,3 +11,10 @@ two:
   user: ayudante
   role: ayudante
   assigned_by: administrativo
+
+three:
+  university: iusa
+  section: two
+  user: profesor_iusa
+  role: profesor
+  assigned_by: administrativo

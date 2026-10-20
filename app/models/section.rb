@@ -1,5 +1,5 @@
 class Section < ApplicationRecord
-  belongs_to :university
+  acts_as_tenant :university
   belongs_to :course
   belongs_to :term
   has_many :section_staffs, dependent: :destroy
@@ -15,7 +15,13 @@ class Section < ApplicationRecord
   private
 
   def course_and_term_in_same_university
-    errors.add(:course, :must_match_university) if course && course.university_id != university_id
-    errors.add(:term, :must_match_university) if term && term.university_id != university_id
+    errors.add(:course, :must_match_university) unless same_university?(course_id, course)
+    errors.add(:term, :must_match_university) unless same_university?(term_id, term)
+  end
+
+  # Inside the active university (A3) a course or term of another university is not visible, so an id
+  # without a visible record also counts as a mismatch.
+  def same_university?(id, record)
+    record ? record.university_id == university_id : id.nil?
   end
 end

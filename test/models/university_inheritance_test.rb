@@ -40,9 +40,11 @@ class UniversityInheritanceTest < ActiveSupport::TestCase
   end
 
   test "las fixtures tienen la universidad de su padre" do
-    CASES.each do |model, (parent, _build)|
-      model.find_each do |record|
-        assert_equal record.public_send(parent).university_id, record.university_id, "#{model} ##{record.id}"
+    ActsAsTenant.without_tenant do
+      CASES.each do |model, (parent, _build)|
+        model.find_each do |record|
+          assert_equal record.public_send(parent).university_id, record.university_id, "#{model} ##{record.id}"
+        end
       end
     end
   end
