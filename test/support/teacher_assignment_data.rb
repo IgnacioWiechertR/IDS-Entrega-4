@@ -32,6 +32,7 @@ module TeacherAssignmentData
 
   def professor_assignment(**attributes)
     attributes = { section: @section, user: @professor, role: "profesor", assigned_by: @admin }.merge(attributes)
-    SectionStaff.new(attributes.merge(university_id: attributes[:section].university_id))
+    # save!(validate: false) skips the callback that copies the section's university, so set it here.
+    SectionStaff.new(university: attributes[:section].university, **attributes)
   end
 end
