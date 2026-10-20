@@ -45,6 +45,11 @@ es:
         weight: Ponderación
         due_on: Fecha
         rubric: Pauta
+      grade:
+        score: Nota
+        feedback: Comentario
+        points: Puntaje
+        student: Alumno
       university:
         name: Nombre
         slug: Identificador
