@@ -129,11 +129,15 @@ class CoursesManagementTest < ActionDispatch::IntegrationTest
     assert_equal "ICC2002", ActsAsTenant.without_tenant { courses(:three).reload.code }
   end
 
-  test "un curso de otra universidad responde 404" do
+  test "editar un curso de otra universidad responde 404" do
     get edit_course_path(courses(:two))
-    assert_response :not_found
 
+    assert_response :not_found
+  end
+
+  test "actualizar un curso de otra universidad responde 404 y no lo cambia" do
     patch course_path(courses(:two)), params: { course: { name: "Cambiado" } }
+
     assert_response :not_found
     assert_equal "Anatomía", ActsAsTenant.without_tenant { courses(:two).reload.name }
   end
