@@ -7,7 +7,12 @@ class SectionPolicy
 
     return unless user.profesor? || user.ayudante? || user.administrativo? || user.alumno?
 
-    can :manage, Section, university_id: user.university_id if user.administrativo?
+    if user.administrativo?
+      can :manage, Section, university_id: user.university_id
+      # :manage covers any action, also the ones of other cards. Taking attendance is only for the profesor of the
+      # section (B6). This policy is merged after AttendancePolicy, so the denial has to live here to win.
+      cannot :take_attendance, Section
+    end
 
     can [ :read, :create, :update, :destroy ], Section, course: { course_coordinators: { user_id: user.id } }
 
