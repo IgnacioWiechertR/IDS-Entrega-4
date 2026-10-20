@@ -1,16 +1,21 @@
-<% content_for :title, "Showing course" %>
+<% content_for :title, "#{@course.name} · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">Showing course</h1>
+<section class="py-8 md:w-2/3">
+  <p class="text-sm font-semibold text-indigo-600"><%= @course.code %></p>
+  <h1 class="text-2xl font-bold text-slate-900"><%= @course.name %></h1>
 
   <%= render @course %>
 
-  <%= link_to "Ver secciones", course_sections_path(@course), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <% if can?(:update, @course) %>
-    <%= link_to "Editar curso", edit_course_path(@course), class: "..." %>
-  <% end %>
-  <%= link_to "Volver a cursos", courses_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <% if can?(:destroy, @course) %>
-    <%= button_to "Eliminar curso", @course, method: :delete, form_class: "sm:inline-block mt-2 sm:mt-0 sm:ml-2", class: "w-full rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-  <% end %>
-</div>
+  <div class="mt-8 flex flex-wrap items-center gap-2 text-sm">
+    <%= link_to "Secciones", course_sections_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% if can?(:update, @course) %>
+      <%= link_to "Editar curso", edit_course_path(@course), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <% end %>
+    <%= link_to "Volver a cursos", courses_path, class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <% if can?(:destroy, @course) %>
+      <%= button_to "Eliminar curso", @course, method: :delete,
+            form: { data: { turbo_confirm: "¿Eliminar el curso #{@course.code} · #{@course.name}? Esta acción no se puede deshacer." } },
+            class: "rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 cursor-pointer" %>
+    <% end %>
+  </div>
+</section>

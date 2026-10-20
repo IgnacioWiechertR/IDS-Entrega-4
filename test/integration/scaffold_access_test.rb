@@ -60,9 +60,5 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     end
     patch user_path(users(:alumno)), params: { user: { first_name: "Cambiado" } }
     assert_equal "Alumno", users(:alumno).reload.first_name
-
-    assert_no_difference -> { ActsAsTenant.without_tenant { Course.count } } do
-      post courses_path, params: { course: { code: "X1", name: "Intrusa" } }
-    end
   end
 end

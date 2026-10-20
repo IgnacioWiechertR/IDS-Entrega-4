@@ -27,7 +27,14 @@ es:
         must_be_student: debe ser una cuenta de alumno o ayudante
         one_role_per_course: ya tiene un rol en este curso durante el período
         in_the_future: no puede ser una fecha futura
+      models:
+        course:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
     models:
+      course:
+        one: Curso
+        other: Cursos
       university:
         one: Universidad
         other: Universidades
@@ -50,6 +57,15 @@ es:
         feedback: Comentario
         points: Puntaje
         student: Alumno
+      course:
+        code: Código
+        name: Nombre
+        faculty: Facultad
+        faculty_id: Facultad
+        sections: Secciones
+        course_coordinators: Coordinadores
+        materials: Materiales
+        announcements: Avisos
       university:
         name: Nombre
         slug: Identificador
