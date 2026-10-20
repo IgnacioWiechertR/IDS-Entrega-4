@@ -1,0 +1,75 @@
+<% content_for :title, "Revisar notas · SGA" %>
+
+<section class="py-8">
+  <p class="text-sm">
+    <%= link_to "← Evaluaciones de la sección", section_evaluations_path(@section), class: "text-indigo-700 hover:underline" %>
+  </p>
+
+  <p class="mt-2 text-sm font-semibold text-indigo-600">
+    <%= @section.course.code %> · Sección <%= @section.number %> · <%= @section.term.name %>
+  </p>
+  <h1 class="text-2xl font-bold text-slate-900">Revisar notas: <%= @evaluation.name %></h1>
+  <p id="review-summary" class="mt-1 text-sm text-slate-600">
+    <%= @pending.size %> pendientes · <%= @rejected_count %> rechazadas (esperan corrección del ayudante) ·
+    <%= @published_count %> publicadas
+  </p>
+
+  <% if @pending.empty? %>
+    <p id="no-pending" class="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      No hay notas pendientes de revisión.
+    </p>
+  <% else %>
+    <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <table id="pending-grades" class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-slate-600">
+          <tr>
+            <th class="px-4 py-2 font-semibold">Alumno</th>
+            <th class="px-4 py-2 font-semibold">Nota</th>
+            <th class="px-4 py-2 font-semibold">Comentario</th>
+            <th class="px-4 py-2 font-semibold">Puntaje</th>
+            <th class="px-4 py-2 font-semibold">Ingresada por</th>
+            <th class="px-4 py-2 font-semibold">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% @pending.each do |grade| %>
+            <tr id="<%= dom_id grade %>">
+              <td class="px-4 py-2 font-medium text-slate-900"><%= grade.student.name %></td>
+              <td class="px-4 py-2 font-semibold"><%= grade_score(grade) %></td>
+              <td class="px-4 py-2 text-slate-600"><%= grade.feedback.presence || "—" %></td>
+              <td class="px-4 py-2"><%= grade.points ? number_with_precision(grade.points, precision: 2, strip_insignificant_zeros: true) : "—" %></td>
+              <td class="px-4 py-2 text-slate-600"><%= grade.entered_by.name %></td>
+              <td class="px-4 py-2"><span class="rounded bg-amber-50 px-2 py-0.5 text-amber-800"><%= grade_status_label(grade) %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="mt-6 grid gap-6 md:grid-cols-2">
+    <div class="rounded-lg border border-slate-200 bg-white p-5">
+      <h2 class="font-semibold text-slate-900">Aceptar notas</h2>
+      <p class="mt-1 text-sm text-slate-600">Las notas pendientes pasan a oficiales y cada alumno recibe un aviso.</p>
+      <%= button_to "Aceptar notas", approve_section_evaluation_grade_review_path(@section, @evaluation),
+            disabled: @pending.empty?, form_class: "mt-4",
+            data: { turbo_confirm: "¿Publicar #{@pending.size} notas? Los alumnos las verán de inmediato." },
+            class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} disabled:cursor-not-allowed disabled:opacity-50" %>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white p-5">
+      <h2 class="font-semibold text-slate-900">Rechazar notas</h2>
+      <p class="mt-1 text-sm text-slate-600">Vuelven al ayudante para que las corrija. El comentario es obligatorio.</p>
+
+      <%= form_with url: reject_section_evaluation_grade_review_path(@section, @evaluation), method: :post, class: "mt-4 space-y-3" do |form| %>
+        <% if @comment_error %>
+          <p class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert"><%= @comment_error %></p>
+        <% end %>
+        <%= form.label :rejection_comment, "Comentario para el ayudante", class: "block text-sm font-medium text-slate-700" %>
+        <%= form.text_area :rejection_comment, rows: 3, disabled: @pending.empty?, class: ApplicationHelper::INPUT_CLASSES %>
+        <%= form.submit "Rechazar notas", disabled: @pending.empty?,
+              class: "inline-flex rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50" %>
+      <% end %>
+    </div>
+  </div>
+</section>
