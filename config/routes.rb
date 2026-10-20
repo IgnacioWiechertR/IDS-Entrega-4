@@ -18,6 +18,11 @@ Rails.application.routes.draw do
     resources :evaluations, only: %i[ index new create ] do
       # C1: the ayudante enters the preliminary grades of the evaluation.
       resource :grade_sheet, only: %i[ edit update ]
+      # C2, C5, C6: the profesor reviews the pending grades and approves or rejects them.
+      resource :grade_review, only: :show do
+        post :approve
+        post :reject
+      end
     end
   end
 
