@@ -3,6 +3,7 @@ class SectionStaff < ApplicationRecord
   include OneRolePerCourse
 
   ROLES = %w[profesor ayudante].freeze
+  include ProfessorAssignment
 
   belongs_to :section
   belongs_to :user
