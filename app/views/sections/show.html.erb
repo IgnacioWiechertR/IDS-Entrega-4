@@ -1,15 +1,19 @@
-<% content_for :title, "Showing section" %>
-
-<div class="md:w-2/3 w-full">
+<div class="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
   <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+    <p class="rounded-lg bg-green-50 px-3 py-2 font-medium text-green-500" id="notice"><%= notice %></p>
   <% end %>
-
-  <h1 class="font-bold text-4xl">Showing section</h1>
 
   <%= render @section %>
 
-  <%= link_to "Edit this section", edit_course_section_path(@course, @section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "Back to sections", course_sections_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= button_to "Destroy this section", course_section_path(@course, @section), method: :delete, form_class: "sm:inline-block mt-2 sm:mt-0 sm:ml-2", class: "w-full rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
+  <div class="flex flex-wrap items-center gap-4">
+    <% if @course %>
+      <%= link_to "Edit this section", edit_course_section_path(@course, @section), class: "rounded-md bg-slate-100 px-3.5 py-2.5 font-medium text-slate-700 hover:bg-slate-200" %>
+      <%= link_to "Back to sections", course_sections_path(@course), class: "font-medium text-indigo-600 hover:underline" %>
+      <%= button_to "Destroy this section", course_section_path(@course, @section), method: :delete, data: { turbo_confirm: "¿Estás seguro?" }, class: "rounded-md bg-red-600 px-3.5 py-2.5 font-medium text-white hover:bg-red-500" %>
+    <% else %>
+      <%= link_to "Edit this section", edit_section_path(@section), class: "rounded-md bg-slate-100 px-3.5 py-2.5 font-medium text-slate-700 hover:bg-slate-200" %>
+      <%= link_to "Back to sections", sections_path, class: "font-medium text-indigo-600 hover:underline" %>
+      <%= button_to "Destroy this section", section_path(@section), method: :delete, data: { turbo_confirm: "¿Estás seguro?" }, class: "rounded-md bg-red-600 px-3.5 py-2.5 font-medium text-white hover:bg-red-500" %>
+    <% end %>
+  </div>
 </div>

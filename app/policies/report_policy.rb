@@ -2,6 +2,8 @@ class ReportPolicy
   include CanCan::Ability
 
   def initialize(user)
-    can :read, :dashboard if user.director?
+    return unless user
+    
+    # Lógica de reportes futura
   end
 end
