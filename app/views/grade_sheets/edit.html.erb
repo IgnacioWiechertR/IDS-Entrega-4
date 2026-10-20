@@ -1,0 +1,79 @@
+<% content_for :title, "Ingresar notas · SGA" %>
+
+<section class="py-8">
+  <p class="text-sm">
+    <%= link_to "← Evaluaciones de la sección", section_evaluations_path(@section), class: "text-indigo-700 hover:underline" %>
+  </p>
+
+  <p class="mt-2 text-sm font-semibold text-indigo-600">
+    <%= @section.course.code %> · Sección <%= @section.number %> · <%= @section.term.name %>
+  </p>
+  <h1 class="text-2xl font-bold text-slate-900">Ingresar notas: <%= @evaluation.name %></h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Ponderación <%= weight_percentage(@evaluation.weight) %> · Notas de 1,0 a 7,0. Quedan pendientes hasta que el profesor las revise.
+  </p>
+
+  <% if @errors.any? %>
+    <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+      No se guardó ninguna nota. Revisa las filas marcadas en rojo.
+    </div>
+  <% end %>
+
+  <%= form_with url: section_evaluation_grade_sheet_path(@section, @evaluation), method: :patch, class: "mt-6" do |form| %>
+    <% if @students.empty? %>
+      <p id="no-students" class="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+        Sección sin matrículas activas.
+      </p>
+    <% else %>
+      <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table id="grade-sheet" class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-slate-600">
+            <tr>
+              <th class="px-4 py-2 font-semibold">Alumno</th>
+              <th class="px-4 py-2 font-semibold">Nota</th>
+              <th class="px-4 py-2 font-semibold">Pauta o comentario (opcional)</th>
+              <th class="px-4 py-2 font-semibold">Puntaje (opcional)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% @students.each do |student| %>
+              <% grade = @grades[student.id] %>
+              <% entry = @entries.fetch(student.id.to_s, {}) %>
+              <% row_errors = @errors.fetch(student.id, []) %>
+              <tr id="student_<%= student.id %>" class="<%= 'bg-red-50' if row_errors.any? %>">
+                <th scope="row" class="whitespace-nowrap px-4 py-2 text-left font-medium text-slate-900">
+                  <%= student.name %>
+                  <% row_errors.each do |message| %>
+                    <p class="mt-1 text-xs font-normal text-red-700"><%= message %></p>
+                  <% end %>
+                </th>
+                <% if grade %>
+                  <td class="px-4 py-2 font-semibold"><%= grade_score(grade) %></td>
+                  <td colspan="2" class="px-4 py-2 text-slate-600"><%= grade_status_label(grade) %></td>
+                <% else %>
+                  <td class="px-4 py-2">
+                    <%= text_field_tag "entries[#{student.id}][score]", entry["score"], inputmode: "decimal", placeholder: "1,0 – 7,0",
+                          aria: { label: "Nota de #{student.name}" }, class: "w-24 #{ApplicationHelper::INPUT_CLASSES}" %>
+                  </td>
+                  <td class="px-4 py-2">
+                    <%= text_field_tag "entries[#{student.id}][feedback]", entry["feedback"],
+                          aria: { label: "Comentario para #{student.name}" }, class: ApplicationHelper::INPUT_CLASSES %>
+                  </td>
+                  <td class="px-4 py-2">
+                    <%= text_field_tag "entries[#{student.id}][points]", entry["points"], inputmode: "decimal",
+                          aria: { label: "Puntaje de #{student.name}" }, class: "w-24 #{ApplicationHelper::INPUT_CLASSES}" %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <div class="mt-4">
+      <%= form.submit "Subir a revisión", disabled: @students.empty?,
+            class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} disabled:cursor-not-allowed disabled:opacity-50" %>
+    </div>
+  <% end %>
+</section>

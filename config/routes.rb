@@ -15,7 +15,10 @@ Rails.application.routes.draw do
   resources :sections, only: [] do
     resource :attendance, only: %i[ show edit update ], controller: "attendance"
     # C13: evaluations always belong to a section.
-    resources :evaluations, only: %i[ index new create ]
+    resources :evaluations, only: %i[ index new create ] do
+      # C1: the ayudante enters the preliminary grades of the evaluation.
+      resource :grade_sheet, only: %i[ edit update ]
+    end
   end
 
   resources :notifications
