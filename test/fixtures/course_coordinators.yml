@@ -1,12 +1,14 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
+  university: ucv
   course: one
   term: one
   user: profesor
   assigned_by: administrativo
 
 two:
+  university: iusa
   course: two
   term: two
   user: profesor

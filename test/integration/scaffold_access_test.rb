@@ -5,8 +5,8 @@ require "test_helper"
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
     /announcements /attendance_records /attendance_sessions /course_coordinators /enrollments
-    /evaluations /faculties /grades /materials /notifications /section_staffs
-    /terms /universities /user_roles /users
+    /evaluations /faculties /grades /materials /notifications /section_staffs /sections
+    /terms /universities /users
   ].freeze
 
   test "los scaffolds exigen iniciar sesión" do
@@ -28,6 +28,13 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
 
       sign_out :user
     end
+  end
+
+  test "user_roles ya no tiene ruta" do
+    sign_in users(:administrativo)
+
+    get "/user_roles"
+    assert_response :not_found
   end
 
   test "no se puede borrar ni editar a través de un scaffold" do

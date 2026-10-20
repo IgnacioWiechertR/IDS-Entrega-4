@@ -144,7 +144,7 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "oculta y rechaza secciones con relaciones de otra universidad" do
-    @section.update!(course: @other_section.course)
+    @section.update_columns(course_id: @other_section.course_id)
     sign_in @admin
 
     get teacher_assignments_path
