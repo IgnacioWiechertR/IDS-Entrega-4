@@ -4,8 +4,8 @@ class Section < ApplicationRecord
   belongs_to :term
   has_many :section_staffs, dependent: :destroy
   has_many :enrollments, dependent: :destroy
-  has_many :evaluations, dependent: :destroy
-  has_many :attendance_sessions, dependent: :destroy
+  has_many :evaluations, dependent: :restrict_with_error
+  has_many :attendance_sessions, dependent: :restrict_with_error
   has_many :announcements, dependent: :destroy
 
   validates :number, numericality: { only_integer: true, greater_than: 0 }

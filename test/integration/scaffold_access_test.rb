@@ -10,7 +10,7 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   ].freeze
 
   test "los scaffolds exigen iniciar sesión" do
-    (SCAFFOLD_PATHS + [ "/courses/new" ]).each do |path|
+    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{Course.first.id}/sections" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end
@@ -20,7 +20,7 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     %i[director administrativo profesor alumno].each do |fixture|
       sign_in users(fixture)
 
-      SCAFFOLD_PATHS.each do |path|
+      (SCAFFOLD_PATHS + [ "/courses/#{Course.first.id}/sections" ]).each do |path|
         get path
         assert_response :redirect, "#{fixture} no debería entrar a #{path}"
         assert_equal "No tienes permiso para ver esa página.", flash[:alert]
