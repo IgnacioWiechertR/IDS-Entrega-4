@@ -1,21 +1,127 @@
 <% content_for :title, "#{@course.name} · SGA" %>
 
-<section class="py-8 md:w-2/3">
-  <p class="text-sm font-semibold text-indigo-600"><%= @course.code %></p>
-  <h1 class="text-2xl font-bold text-slate-900"><%= @course.name %></h1>
+<section class="py-8">
+  <p class="text-sm"><%= link_to "← Cursos", courses_path, class: "text-indigo-700 hover:underline" %></p>
 
-  <%= render @course %>
-
-  <div class="mt-8 flex flex-wrap items-center gap-2 text-sm">
-    <%= link_to "Secciones", course_sections_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
-    <% if can?(:update, @course) %>
-      <%= link_to "Editar curso", edit_course_path(@course), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
-    <% end %>
-    <%= link_to "Volver a cursos", courses_path, class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
-    <% if can?(:destroy, @course) %>
-      <%= button_to "Eliminar curso", @course, method: :delete,
-            form: { data: { turbo_confirm: "¿Eliminar el curso #{@course.code} · #{@course.name}? Esta acción no se puede deshacer." } },
-            class: "rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 cursor-pointer" %>
-    <% end %>
+  <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="text-sm font-semibold text-indigo-600"><%= @course.code %></p>
+      <h1 class="text-2xl font-bold text-slate-900"><%= @course.name %></h1>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      <% if can?(:create, Section.new(course: @course)) %>
+        <%= link_to "Nueva sección", new_course_section_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <% end %>
+      <%= link_to "Todas las secciones", course_sections_path(@course), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+      <% if can?(:update, @course) %>
+        <%= link_to "Editar curso", edit_course_path(@course), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+      <% if can?(:destroy, @course) %>
+        <%= button_to "Eliminar curso", @course, method: :delete,
+              form: { data: { turbo_confirm: "¿Eliminar el curso #{@course.code} · #{@course.name}? Esta acción no se puede deshacer." } },
+              class: "rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 cursor-pointer" %>
+      <% end %>
+    </div>
   </div>
+
+  <% if @terms.many? %>
+    <nav id="term_tabs" class="mt-4 flex flex-wrap gap-2" aria-label="Períodos del curso">
+      <% @terms.each do |term| %>
+        <%= overview_tab "#{term.name}#{' (vigente)' if term.current}", course_path(@course, term_id: term.id), term == @term %>
+      <% end %>
+    </nav>
+  <% end %>
+
+  <h2 class="mt-8 text-lg font-semibold text-slate-900">Información general</h2>
+  <dl id="course_info" class="mt-3 grid gap-4 rounded-lg border border-slate-200 bg-white p-5 sm:grid-cols-2">
+    <div>
+      <dt class="text-sm font-medium text-slate-500">Facultad</dt>
+      <dd class="text-slate-900"><%= @course.faculty.name %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-slate-500">Universidad</dt>
+      <dd class="text-slate-900"><%= @course.university.name %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-slate-500">Período</dt>
+      <dd class="text-slate-900"><%= @term ? term_period(@term) : "Sin secciones" %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-slate-500">Coordinador</dt>
+      <dd class="text-slate-900"><%= @coordinator&.name || "Sin coordinador" %></dd>
+    </div>
+    <div class="sm:col-span-2">
+      <dt class="text-sm font-medium text-slate-500">Profesores</dt>
+      <dd class="text-slate-900">
+        <% if @sections.any? %>
+          <%= @sections.map { |section| "Sección #{section.number}: #{section_professor(section)}" }.join(" · ") %>
+        <% else %>
+          —
+        <% end %>
+      </dd>
+    </div>
+  </dl>
+
+  <h2 class="mt-8 text-lg font-semibold text-slate-900">Secciones</h2>
+  <% if @sections.any? %>
+    <ul id="course_sections" class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <% @sections.each do |section| %>
+        <% stats = @stats[section.id] %>
+        <li>
+          <%= link_to course_section_path(@course, section), id: dom_id(section, :card),
+                class: "block h-full rounded-lg border border-slate-200 bg-white p-5 hover:border-indigo-300" do %>
+            <p class="font-semibold text-slate-900">Sección <%= section.number %></p>
+            <p class="mt-1 text-sm text-slate-600"><%= section_professor(section) %></p>
+            <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div>
+                <dt class="text-xs text-slate-500">Alumnos</dt>
+                <dd class="text-lg font-semibold text-slate-900"><%= stats.students.size %></dd>
+              </div>
+              <div>
+                <dt class="text-xs text-slate-500">Promedio</dt>
+                <dd class="text-lg font-semibold text-slate-900"><%= grade_average(stats.average) %></dd>
+              </div>
+              <div>
+                <dt class="text-xs text-slate-500">Asistencia</dt>
+                <dd class="text-lg font-semibold text-slate-900"><%= attendance_percentage(stats.attendance_percentage) %></dd>
+              </div>
+            </dl>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p id="course_sections_empty" class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      Este curso todavía no tiene secciones.
+    </p>
+  <% end %>
+
+  <% rows = @sections.flat_map { |section| @stats[section.id].students.map { |student| [ student, section ] } } %>
+  <h2 class="mt-8 text-lg font-semibold text-slate-900">Alumnos (<%= rows.size %>)</h2>
+  <% if rows.any? %>
+    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <table id="course_students" class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-slate-600">
+          <tr>
+            <th scope="col" class="px-4 py-2 font-semibold">RUT</th>
+            <th scope="col" class="px-4 py-2 font-semibold">Nombre</th>
+            <th scope="col" class="px-4 py-2 font-semibold">Sección</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% rows.sort_by { |student, section| [ student.last_name.to_s, student.first_name.to_s, section.number ] }.each do |student, section| %>
+            <tr>
+              <td class="whitespace-nowrap px-4 py-2 text-slate-700"><%= student.rut %></td>
+              <td class="px-4 py-2 font-medium text-slate-900"><%= student.name %></td>
+              <td class="px-4 py-2 text-slate-700"><%= section.number %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      Sin alumnos inscritos en este período.
+    </p>
+  <% end %>
 </section>
