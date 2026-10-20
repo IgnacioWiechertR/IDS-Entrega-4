@@ -60,19 +60,17 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuya asignatura pertenece a otra universidad" do
-    @section.update!(course: @other_section.course)
-    assignment = professor_assignment
+    @section.course = @other_section.course
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:course].any?
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
-    @section.update!(term: @other_section.term)
-    assignment = professor_assignment
+    @section.term = @other_section.term
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:term].any?
   end
 
   test "una asignación de ayudante puede coexistir con la del profesor" do
