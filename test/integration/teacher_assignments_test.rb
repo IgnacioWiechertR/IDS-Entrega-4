@@ -144,7 +144,8 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "oculta y rechaza secciones con relaciones de otra universidad" do
-    @section.update!(course: @other_section.course)
+    # Forced as legacy data: acts_as_tenant rejects this inconsistency on save (A3).
+    @section.update_column(:course_id, @other_section.course_id)
     sign_in @admin
 
     get teacher_assignments_path

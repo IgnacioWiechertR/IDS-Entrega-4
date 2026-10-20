@@ -4,7 +4,11 @@ require_relative "../support/teacher_assignment_data"
 class TeacherAssignmentTest < ActiveSupport::TestCase
   include TeacherAssignmentData
 
-  setup { prepare_teacher_assignment_data }
+  setup do
+    prepare_teacher_assignment_data
+    # The validations read the section's course and term, which are scoped by university (A3).
+    ActsAsTenant.current_tenant = @university
+  end
 
   test "el administrativo asigna un profesor de su universidad" do
     assignment = professor_assignment
@@ -60,7 +64,9 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuya asignatura pertenece a otra universidad" do
-    @section.update!(course: @other_section.course)
+    # acts_as_tenant no longer lets a section point to another university's course (A3), so the
+    # inconsistency is forced as legacy data to keep checking that the assignment rejects it.
+    @section.update_column(:course_id, @other_section.course_id)
     assignment = professor_assignment
 
     assert_not assignment.valid?
@@ -68,7 +74,7 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
-    @section.update!(term: @other_section.term)
+    @section.update_column(:term_id, @other_section.term_id)
     assignment = professor_assignment
 
     assert_not assignment.valid?
