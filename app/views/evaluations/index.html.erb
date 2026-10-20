@@ -8,7 +8,13 @@
       </p>
       <h1 class="text-2xl font-bold text-slate-900">Evaluaciones de <%= @section.course.name %></h1>
     </div>
-    <%= link_to "Nueva evaluación", new_section_evaluation_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <div class="flex flex-wrap items-center gap-3">
+      <% if can?(:read_gradebook, @section) %>
+        <%= link_to "Ver todas las notas", section_gradebook_path(@section),
+              class: "inline-flex rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+      <%= link_to "Nueva evaluación", new_section_evaluation_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    </div>
   </div>
 
   <p id="weight_total" class="mt-4 text-sm text-slate-600">

@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   get "attendance" => "attendance#index", as: :attendance
   resources :sections, only: [] do
     resource :attendance, only: %i[ show edit update ], controller: "attendance"
+    # C11: all the grades of the section with their status, for its profesor and ayudantes.
+    resource :gradebook, only: :show
     # C13: evaluations always belong to a section.
     resources :evaluations, only: %i[ index new create ] do
       # C1: the ayudante enters the preliminary grades of the evaluation.
