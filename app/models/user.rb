@@ -9,8 +9,9 @@ class User < ApplicationRecord
   # Validaciones de datos mínimos requeridos
   validates :name, :rut, :role, presence: true
   validate :validar_rut_chileno
+  validate :validar_rut_unico_por_universidad
 
-  # TUS ASOCIACIONES ORIGINALES (Intactas)
+  
   belongs_to :university, optional: true
   has_many :user_roles, dependent: :destroy
   has_many :course_coordinators, dependent: :destroy
@@ -26,9 +27,15 @@ class User < ApplicationRecord
   has_many :announcements, foreign_key: :author_id, dependent: :destroy
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
 
+  # Asigna rol por defecto antes de validar la creación de la cuenta
   before_validation :set_default_role, on: :create
 
   private
+
+  # Método para asignar el rol por defecto si no viene uno
+  def set_default_role
+    self.role ||= :alumno
+  end
 
   # Método de validación del RUT
   def validar_rut_chileno
@@ -37,12 +44,16 @@ class User < ApplicationRecord
       errors.add(:rut, "no tiene un formato válido. Ej: 12345678-9")
     end
   end
-end
 
+  # Método para garantizar unicidad por sede e indicar la cuenta existente
+  def validar_rut_unico_por_universidad
+    return if rut.blank? || university_id.blank?
 
-
-  private
-
-  def set_default_role
-    self.role ||= :alumno
+    # Busca si existe otro usuario con el mismo RUT en la misma universidad
+    usuario_existente = User.where(rut: rut, university_id: university_id).where.not(id: id).first
+    
+    if usuario_existente
+      errors.add(:rut, "ya está registrado en esta sede a nombre de #{usuario_existente.name}")
+    end
   end
+end
