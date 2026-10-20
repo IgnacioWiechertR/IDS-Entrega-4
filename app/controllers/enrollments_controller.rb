@@ -6,10 +6,7 @@ class EnrollmentsController < ApplicationController
 
   def index
     @enrollments = @section.enrollments.includes(:student)
-
-    @available_students = User.where(role: "alumno", university_id: @section.university_id)
-                              .where.not(id: @enrollments.select(:student_id))
-                              .order(:last_name, :first_name)
+    @available_students = available_students
   end
 
   def create
@@ -22,17 +19,49 @@ class EnrollmentsController < ApplicationController
       return
     end
 
-    student_ids.each do |student_id|
-      @section.enrollments.find_or_create_by!(student_id: student_id) do |enrollment|
-        enrollment.active = true
-      end
-    end
+    rejected = enroll_all(student_ids)
 
-    redirect_to course_section_enrollments_path(@course, @section), notice: "Alumnos inscritos correctamente."
+    if rejected.any?
+      reasons = rejected.map { |enrollment| "#{enrollment.student&.name}: #{enrollment.errors.map(&:message).to_sentence}" }
+      redirect_to course_section_enrollments_path(@course, @section), alert: "No se inscribió a nadie. #{reasons.join(' · ')}"
+    else
+      redirect_to course_section_enrollments_path(@course, @section), notice: "Alumnos inscritos correctamente."
+    end
   end
 
   def destroy
     @enrollment.destroy
     redirect_to course_section_enrollments_path(@course, @section), notice: "El alumno ha sido removido de la sección.", status: :see_other
+  end
+
+  private
+
+  # All or nothing: if one student cannot be enrolled (for example, they already have a role in another
+  # section of the course), nobody is, and the rejected enrollments are returned with their errors.
+  def enroll_all(student_ids)
+    rejected = []
+
+    Enrollment.transaction do
+      student_ids.each do |student_id|
+        enrollment = @section.enrollments.find_or_initialize_by(student_id: student_id)
+        enrollment.active = true
+        rejected << enrollment unless enrollment.save
+      end
+      raise ActiveRecord::Rollback if rejected.any?
+    end
+
+    rejected
+  end
+
+  # Student accounts (an ayudante can study other courses, Trello A23) of the university, without an
+  # active enrollment or a teaching role in any section of this course in this term.
+  def available_students
+    same_course = Section.where(course_id: @section.course_id, term_id: @section.term_id)
+    enrolled = Enrollment.where(section: same_course, active: true).select(:student_id)
+    staff = SectionStaff.where(section: same_course).select(:user_id)
+
+    User.where(role: %w[alumno ayudante], university_id: @section.university_id)
+      .where.not(id: enrolled).where.not(id: staff)
+      .order(:last_name, :first_name)
   end
 end
