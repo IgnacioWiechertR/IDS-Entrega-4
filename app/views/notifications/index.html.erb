@@ -1,29 +1,23 @@
-<% content_for :title, "Notifications" %>
+<% content_for :title, "Notificaciones · SGA" %>
 
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
+<section class="mx-auto max-w-3xl py-8">
+  <h1 class="text-2xl font-bold text-slate-900">Notificaciones</h1>
 
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Notifications</h1>
-    <%= link_to "New notification", new_notification_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
-  </div>
-
-  <div id="notifications" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @notifications.any? %>
+  <% if @notifications.empty? %>
+    <p id="no-notifications" class="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      No tienes notificaciones.
+    </p>
+  <% else %>
+    <ul id="notifications" class="mt-6 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
       <% @notifications.each do |notification| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render notification %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", notification, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_notification_path(notification), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", notification, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-          </div>
-        </div>
+        <%# Unread ones (when the page was opened) are shown in bold; opening the inbox marks them as read. %>
+        <li id="<%= dom_id notification %>" class="flex items-start justify-between gap-4 px-5 py-3 text-sm <%= notification.read_at ? 'text-slate-600' : 'font-semibold text-slate-900' %>">
+          <span><%= notification.message %></span>
+          <time datetime="<%= notification.created_at.iso8601 %>" class="shrink-0 text-xs font-normal text-slate-500">
+            <%= l(notification.created_at, format: "%d/%m %H:%M") %>
+          </time>
+        </li>
       <% end %>
-    <% else %>
-      <p class="text-center my-10">No notifications found.</p>
-    <% end %>
-  </div>
-</div>
+    </ul>
+  <% end %>
+</section>

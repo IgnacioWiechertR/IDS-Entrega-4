@@ -20,6 +20,6 @@ class GradeSubmissionNotificationJobTest < ActiveJob::TestCase
     assert_difference -> { Notification.count }, 1 do
       GradeSubmissionNotificationJob.perform_now(evaluations(:one), 1)
     end
-    assert_match "1 nota de", Notification.order(:id).last.message
+    assert_equal "1 nota de #{evaluations(:one).name} (ICC1001 · Sección 1) espera tu revisión.", Notification.order(:id).last.message
   end
 end

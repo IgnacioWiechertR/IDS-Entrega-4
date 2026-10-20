@@ -31,7 +31,8 @@ Rails.application.routes.draw do
   # C10: the student's official grades, by course, and the detail of each correction.
   resources :my_grades, only: %i[ index show ]
 
-  resources :notifications
+  # C12: the user's inbox (the old scaffold listed every notification).
+  resources :notifications, only: :index
   resources :announcements
   resources :attendance_records
   resources :attendance_sessions
