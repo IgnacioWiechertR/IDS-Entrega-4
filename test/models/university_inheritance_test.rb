@@ -7,7 +7,7 @@ class UniversityInheritanceTest < ActiveSupport::TestCase
     CourseCoordinator => [ :course, -> { CourseCoordinator.new(course: courses(:one), term: terms(:one), user: users(:profesor), assigned_by: users(:administrativo)) } ],
     SectionStaff => [ :section, -> { SectionStaff.new(section: sections(:one), user: users(:profesor), role: "profesor", assigned_by: users(:administrativo)) } ],
     Enrollment => [ :section, -> { Enrollment.new(section: sections(:one), student: users(:alumno)) } ],
-    Evaluation => [ :section, -> { Evaluation.new(section: sections(:one), name: "Control 1", weight: 20) } ],
+    Evaluation => [ :section, -> { Evaluation.new(section: sections(:one), name: "Control 1", weight: 20, due_on: Date.new(2026, 11, 5)) } ],
     Grade => [ :evaluation, -> { Grade.new(evaluation: evaluations(:one), student: users(:alumno), score: 5.0, entered_by: users(:ayudante)) } ],
     AttendanceSession => [ :section, -> { AttendanceSession.new(section: sections(:one), held_on: Date.current, recorded_by: users(:profesor)) } ],
     AttendanceRecord => [ :attendance_session, -> { AttendanceRecord.new(attendance_session: attendance_sessions(:one), student: users(:alumno), status: "presente") } ],

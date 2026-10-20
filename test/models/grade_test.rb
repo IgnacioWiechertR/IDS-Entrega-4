@@ -2,7 +2,7 @@ require "test_helper"
 
 class GradeTest < ActiveSupport::TestCase
   def evaluation
-    @evaluation ||= Evaluation.create!(section: sections(:one), name: "Control 2", weight: 20)
+    @evaluation ||= Evaluation.create!(section: sections(:one), name: "Control 2", weight: 20, due_on: Date.new(2026, 11, 5))
   end
 
   def build_grade(**attributes)

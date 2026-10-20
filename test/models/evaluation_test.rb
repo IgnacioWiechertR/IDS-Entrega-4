@@ -2,15 +2,20 @@ require "test_helper"
 
 class EvaluationTest < ActiveSupport::TestCase
   def build_evaluation(**attributes)
-    Evaluation.new({ section: sections(:one), name: "Control 2", weight: 20 }.merge(attributes))
+    Evaluation.new({ section: sections(:one), name: "Control 2", weight: 20, due_on: Date.new(2026, 11, 5) }.merge(attributes))
   end
 
-  test "nombre y ponderación son obligatorios" do
-    evaluation = build_evaluation(name: "", weight: nil)
+  test "nombre, ponderación y fecha son obligatorios" do
+    evaluation = build_evaluation(name: "", weight: nil, due_on: nil)
 
     assert_not evaluation.valid?
     assert evaluation.errors.added?(:name, :blank)
     assert evaluation.errors.added?(:weight, :blank)
+    assert evaluation.errors.added?(:due_on, :blank)
+  end
+
+  test "la pauta es opcional" do
+    assert build_evaluation(rubric: nil).valid?
   end
 
   test "la ponderación es mayor que 0 y hasta 100" do

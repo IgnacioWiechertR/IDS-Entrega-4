@@ -1,59 +1,35 @@
+# C13: the profesor or the ayudante of a section creates its evaluations.
 class EvaluationsController < ApplicationController
-  load_and_authorize_resource
-  before_action :set_evaluation, only: %i[ show edit update destroy ]
+  before_action :set_section
 
-  # GET /evaluations
   def index
-    @evaluations = Evaluation.all
+    @evaluations = @section.evaluations.order(:due_on, :id)
   end
 
-  # GET /evaluations/1
-  def show
-  end
-
-  # GET /evaluations/new
   def new
-    @evaluation = Evaluation.new
+    @evaluation = @section.evaluations.build
   end
 
-  # GET /evaluations/1/edit
-  def edit
-  end
-
-  # POST /evaluations
   def create
-    @evaluation = Evaluation.new(evaluation_params)
+    @evaluation = @section.evaluations.build(evaluation_params)
 
     if @evaluation.save
-      redirect_to @evaluation, notice: "Evaluation was successfully created."
+      redirect_to section_evaluations_path(@section), notice: "Evaluación creada.", status: :see_other
     else
       render :new, status: :unprocessable_content
     end
   end
 
-  # PATCH/PUT /evaluations/1
-  def update
-    if @evaluation.update(evaluation_params)
-      redirect_to @evaluation, notice: "Evaluation was successfully updated.", status: :see_other
-    else
-      render :edit, status: :unprocessable_content
-    end
-  end
-
-  # DELETE /evaluations/1
-  def destroy
-    @evaluation.destroy!
-    redirect_to evaluations_path, notice: "Evaluation was successfully destroyed.", status: :see_other
-  end
-
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_evaluation
-      @evaluation = Evaluation.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def evaluation_params
-      params.expect(evaluation: [ :section_id, :name, :weight, :due_on, :rubric ])
-    end
+  # The section is scoped by the active university (A3), so one from the other university is a 404.
+  # Only the teaching staff of this section may work with its evaluations.
+  def set_section
+    @section = Section.find(params.expect(:section_id))
+    authorize! :create, Evaluation.new(section: @section)
+  end
+
+  def evaluation_params
+    params.expect(evaluation: [ :name, :weight, :due_on, :rubric ])
+  end
 end

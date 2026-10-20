@@ -9,6 +9,9 @@
 
   <%= render @section %>
 
+  <% if can?(:create, Evaluation.new(section: @section)) %>
+    <%= link_to "Evaluaciones", section_evaluations_path(@section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white inline-block font-medium" %>
+  <% end %>
   <% if can?(:manage, Enrollment.new(section: @section)) %>
     <%= link_to "Gestionar Alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-100 ml-2" %>
   <% end %>

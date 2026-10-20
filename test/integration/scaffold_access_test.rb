@@ -5,9 +5,17 @@ require "test_helper"
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
     /announcements /attendance_records /attendance_sessions /course_coordinators
-    /evaluations /faculties /grades /materials /notifications
+    /faculties /grades /materials /notifications
     /terms /universities /users
   ].freeze
+
+  # Evaluations only exist inside a section (C13): the unscoped scaffold route is gone.
+  test "las evaluaciones no tienen ruta fuera de una sección" do
+    sign_in users(:profesor)
+
+    get "/evaluations"
+    assert_response :not_found
+  end
 
   test "los scaffolds exigen iniciar sesión" do
     seccion = ActsAsTenant.without_tenant { Section.first }

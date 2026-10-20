@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   get "attendance" => "attendance#index", as: :attendance
   resources :sections, only: [] do
     resource :attendance, only: %i[ show edit update ], controller: "attendance"
+    # C13: evaluations always belong to a section.
+    resources :evaluations, only: %i[ index new create ]
   end
 
   resources :notifications
@@ -21,12 +23,10 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
-  resources :evaluations
   resources :materials
   # resources :enrollments
   # resources :section_staffs
   resources :course_coordinators
-  # resources :sections
   resources :courses do
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
