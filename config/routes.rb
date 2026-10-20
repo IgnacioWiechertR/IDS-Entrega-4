@@ -17,12 +17,15 @@ Rails.application.routes.draw do
   resources :grades
   resources :evaluations
   resources :materials
-  resources :enrollments
-  resources :section_staffs
+  # resources :enrollments
+  # resources :section_staffs
   resources :course_coordinators
-  resources :sections
+  # resources :sections
   resources :courses do
-    resources :sections
+    resources :sections do
+       resources :assistant_assignments, only: [ :index, :create, :destroy ]
+       resources :enrollments, only: [ :index, :create, :destroy ]
+    end
   end
   resources :terms
   resources :faculties

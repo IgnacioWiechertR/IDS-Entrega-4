@@ -14,7 +14,7 @@ class SectionStaff < ApplicationRecord
   one_role_per_course :user
 
   validates :role, inclusion: { in: ROLES }
-  validates :user_id, uniqueness: { scope: :section_id }
+  validates :user_id, uniqueness: { scope: :section_id, message: "ya forma parte del equipo de esta sección" }
   validate :account_fits_role
 
   private

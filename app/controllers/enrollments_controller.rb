@@ -1,59 +1,38 @@
 class EnrollmentsController < ApplicationController
-  load_and_authorize_resource
-  before_action :set_enrollment, only: %i[ show edit update destroy ]
+  load_and_authorize_resource :course
+  load_and_authorize_resource :section, through: :course
 
-  # GET /enrollments
+  load_and_authorize_resource :enrollment, through: :section, except: [ :create ]
+
   def index
-    @enrollments = Enrollment.all
+    @enrollments = @section.enrollments.includes(:student)
+
+    @available_students = User.where(role: "alumno", university_id: @section.university_id)
+                              .where.not(id: @enrollments.select(:student_id))
+                              .order(:last_name, :first_name)
   end
 
-  # GET /enrollments/1
-  def show
-  end
-
-  # GET /enrollments/new
-  def new
-    @enrollment = Enrollment.new
-  end
-
-  # GET /enrollments/1/edit
-  def edit
-  end
-
-  # POST /enrollments
   def create
-    @enrollment = Enrollment.new(enrollment_params)
+    authorize! :create, Enrollment.new(section: @section)
 
-    if @enrollment.save
-      redirect_to @enrollment, notice: "Enrollment was successfully created."
-    else
-      render :new, status: :unprocessable_content
+    student_ids = Array(params[:student_ids]).flatten.reject(&:blank?)
+
+    if student_ids.empty?
+      redirect_to course_section_enrollments_path(@course, @section), alert: "Debes seleccionar al menos un alumno para inscribir."
+      return
     end
+
+    student_ids.each do |student_id|
+      @section.enrollments.find_or_create_by!(student_id: student_id) do |enrollment|
+        enrollment.active = true
+      end
+    end
+
+    redirect_to course_section_enrollments_path(@course, @section), notice: "Alumnos inscritos correctamente."
   end
 
-  # PATCH/PUT /enrollments/1
-  def update
-    if @enrollment.update(enrollment_params)
-      redirect_to @enrollment, notice: "Enrollment was successfully updated.", status: :see_other
-    else
-      render :edit, status: :unprocessable_content
-    end
-  end
-
-  # DELETE /enrollments/1
   def destroy
-    @enrollment.destroy!
-    redirect_to enrollments_path, notice: "Enrollment was successfully destroyed.", status: :see_other
+    @enrollment.destroy
+    redirect_to course_section_enrollments_path(@course, @section), notice: "El alumno ha sido removido de la sección.", status: :see_other
   end
-
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_enrollment
-      @enrollment = Enrollment.find(params.expect(:id))
-    end
-
-    # Only allow a list of trusted parameters through.
-    def enrollment_params
-      params.expect(enrollment: [ :section_id, :student_id, :active ])
-    end
 end
