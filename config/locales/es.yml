@@ -31,10 +31,19 @@ es:
         course:
           restrict_dependent_destroy:
             has_many: porque tiene %{record}
+        section:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
     models:
       course:
         one: Curso
         other: Cursos
+      section:
+        one: Sección
+        other: Secciones
+      term:
+        one: Período
+        other: Períodos
       university:
         one: Universidad
         other: Universidades
@@ -66,6 +75,16 @@ es:
         course_coordinators: Coordinadores
         materials: Materiales
         announcements: Avisos
+      section:
+        number: Número
+        term: Período
+        term_id: Período
+        course: Curso
+        section_staffs: profesor o ayudantes asignados
+        enrollments: alumnos inscritos
+        evaluations: evaluaciones
+        attendance_sessions: asistencia registrada
+        announcements: avisos
       university:
         name: Nombre
         slug: Identificador

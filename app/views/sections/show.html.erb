@@ -1,31 +1,36 @@
-<% content_for :title, "Showing section" %>
+<% content_for :title, "#{@course.code} · Sección #{@section.number} · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
-
-  <h1 class="font-bold text-4xl">Showing section</h1>
+<section class="py-8 md:w-2/3">
+  <nav class="text-sm text-slate-600" aria-label="Ruta">
+    <%= link_to "#{@course.code} #{@course.name}", @course, class: "text-indigo-700 hover:underline" %>
+    <span aria-hidden="true">›</span>
+    <span>Sección <%= @section.number %></span>
+  </nav>
+  <h1 class="mt-2 text-2xl font-bold text-slate-900"><%= @course.name %> · Sección <%= @section.number %></h1>
 
   <%= render @section %>
 
-  <% if can?(:create, Evaluation.new(section: @section)) %>
-    <%= link_to "Evaluaciones", section_evaluations_path(@section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white inline-block font-medium" %>
-  <% end %>
-  <% if can?(:manage, Enrollment.new(section: @section)) %>
-    <%= link_to "Gestionar Alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-100 ml-2" %>
-  <% end %>
-  <% if can?(:read_attendance_sheet, @section) %>
-    <%= link_to "Asistencia", section_attendance_path(@section), class: "rounded-md bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-100 ml-2" %>
-  <% end %>
-  <% if can?(:read_gradebook, @section) %>
-    <%= link_to "Notas", section_gradebook_path(@section), class: "rounded-md bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-100 ml-2" %>
-  <% end %>
-  <% if can?(:update, @section) %>
-    <%= link_to "Edit this section", edit_course_section_path(@course, @section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <% end %>
-  <%= link_to "Back to sections", course_sections_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <% if can?(:destroy, @section) %>
-    <%= button_to "Destroy this section", course_section_path(@course, @section), method: :delete, form_class: "sm:inline-block mt-2 sm:mt-0 sm:ml-2", class: "w-full rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-  <% end %>
-</div>
+  <div class="mt-8 flex flex-wrap items-center gap-2 text-sm">
+    <% if can?(:read_attendance_sheet, @section) %>
+      <%= link_to "Asistencia", section_attendance_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% end %>
+    <% if can?(:read_gradebook, @section) %>
+      <%= link_to "Notas", section_gradebook_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% end %>
+    <% if can?(:create, Evaluation.new(section: @section)) %>
+      <%= link_to "Evaluaciones", section_evaluations_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% end %>
+    <% if can?(:manage, Enrollment.new(section: @section)) %>
+      <%= link_to "Gestionar alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <% end %>
+    <% if can?(:update, @section) %>
+      <%= link_to "Editar sección", edit_course_section_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <% end %>
+    <%= link_to "Volver a secciones", course_sections_path(@course), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <% if can?(:destroy, @section) %>
+      <%= button_to "Eliminar sección", course_section_path(@course, @section), method: :delete,
+            form: { data: { turbo_confirm: "¿Eliminar la sección #{@section.number} de #{@course.code} (#{@section.term.name})? Esta acción no se puede deshacer." } },
+            class: "rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 cursor-pointer" %>
+    <% end %>
+  </div>
+</section>
