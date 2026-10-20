@@ -2,11 +2,12 @@ class Section < ApplicationRecord
   acts_as_tenant :university
   belongs_to :course
   belongs_to :term
-  has_many :section_staffs, dependent: :destroy
-  has_many :enrollments, dependent: :destroy
+
+  has_many :section_staffs, dependent: :restrict_with_error
+  has_many :enrollments, dependent: :restrict_with_error
   has_many :evaluations, dependent: :restrict_with_error
   has_many :attendance_sessions, dependent: :restrict_with_error
-  has_many :announcements, dependent: :destroy
+  has_many :announcements, dependent: :restrict_with_error
 
   validates :number, numericality: { only_integer: true, greater_than: 0 }
   validates :number, uniqueness: { scope: %i[course_id term_id] }

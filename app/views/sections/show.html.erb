@@ -1,21 +1,225 @@
-<% content_for :title, "Showing section" %>
+<% content_for :title, "#{@course.code} · Sección #{@section.number} · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+<section class="py-8">
+  <nav class="text-sm text-slate-600" aria-label="Ruta">
+    <%= link_to "#{@course.code} #{@course.name}", (@course_overview ? course_path(@course, term_id: @section.term_id) : courses_path),
+          class: "text-indigo-700 hover:underline" %>
+    <span aria-hidden="true">›</span>
+    <span>Sección <%= @section.number %></span>
+  </nav>
+  <h1 class="mt-2 text-2xl font-bold text-slate-900"><%= @course.name %> · Sección <%= @section.number %></h1>
+  <p class="mt-1 text-sm text-slate-600"><%= term_period(@section.term) %></p>
+
+  <% if @student_view %>
+    <%# A student sees only their own published grades and attendance (C10, B10). %>
+    <% average = @stats.student_average(current_user) %>
+    <dl id="my_stats" class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-lg border border-slate-200 bg-white p-5">
+        <dt class="text-sm text-slate-500">Mi promedio</dt>
+        <dd class="mt-1 text-2xl font-semibold text-slate-900"><%= grade_average(average) %></dd>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-5">
+        <dt class="text-sm text-slate-500">Mi asistencia</dt>
+        <dd class="mt-1 text-2xl font-semibold text-slate-900"><%= attendance_percentage(@stats.student_attendance(current_user)) %></dd>
+      </div>
+    </dl>
+
+    <h2 class="mt-8 text-lg font-semibold text-slate-900">Mis notas</h2>
+    <% if @stats.evaluations.any? %>
+      <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table id="my_section_grades" class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-slate-600">
+            <tr>
+              <th scope="col" class="px-4 py-2 font-semibold">Evaluación</th>
+              <th scope="col" class="px-4 py-2 font-semibold">Ponderación</th>
+              <th scope="col" class="px-4 py-2 text-center font-semibold">Nota</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% @stats.evaluations.each do |evaluation| %>
+              <% grade = @stats.grade(current_user, evaluation) %>
+              <tr>
+                <td class="px-4 py-2 font-medium text-slate-900"><%= evaluation.name %></td>
+                <td class="px-4 py-2 text-slate-700"><%= number_to_percentage(evaluation.weight, precision: 0) %></td>
+                <%# Only published grades are visible to the student; anything else is shown as not graded yet. %>
+                <td class="px-4 py-2 text-center"><%= grade&.publicada? ? grade_score(grade) : "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+        Esta sección aún no tiene evaluaciones.
+      </p>
+    <% end %>
+
+    <div class="mt-4 flex flex-wrap gap-2 text-sm">
+      <% if can?(:read_own_attendance, @section) %>
+        <%= link_to "Detalle de mi asistencia", section_attendance_path(@section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+      <% if can?(:read, :my_grades) %>
+        <%= link_to "Todas mis notas", my_grades_path, class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+    </div>
+  <% else %>
+    <nav id="section_tabs" class="mt-4 flex flex-wrap gap-2" aria-label="Apartados de la sección">
+      <%= overview_tab "Resumen", course_section_path(@course, @section), @tab == "resumen" %>
+      <%= overview_tab "Asistencia", course_section_path(@course, @section, tab: "asistencia"), @tab == "asistencia" %>
+      <% if can?(:read_gradebook, @section) %>
+        <%= overview_tab "Notas", course_section_path(@course, @section, tab: "notas"), @tab == "notas" %>
+      <% end %>
+    </nav>
+
+    <% if @tab == "asistencia" %>
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold text-slate-900">Asistencia por alumno</h2>
+        <%= link_to "Ver detalle por fecha", section_attendance_path(@section), class: "text-sm font-medium text-indigo-700 hover:underline" %>
+      </div>
+      <% if @stats.students.any? %>
+        <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table id="section_attendance" class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th scope="col" class="px-4 py-2 font-semibold">RUT</th>
+                <th scope="col" class="px-4 py-2 font-semibold">Nombre</th>
+                <th scope="col" class="px-4 py-2 text-right font-semibold">Asistencia</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <% @stats.students.each do |student| %>
+                <tr id="<%= dom_id(student, :attendance) %>">
+                  <td class="whitespace-nowrap px-4 py-2 text-slate-700"><%= student.rut %></td>
+                  <td class="px-4 py-2 font-medium text-slate-900"><%= student.name %></td>
+                  <td class="px-4 py-2 text-right text-slate-900"><%= attendance_percentage(@stats.student_attendance(student)) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">Sección sin matrículas activas.</p>
+      <% end %>
+
+    <% elsif @tab == "notas" %>
+      <h2 class="mt-6 text-lg font-semibold text-slate-900">Notas por alumno</h2>
+      <p class="mt-1 text-sm text-slate-600">El promedio considera solo las notas oficiales (publicadas).</p>
+      <% if @stats.evaluations.empty? %>
+        <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">Esta sección aún no tiene evaluaciones.</p>
+      <% elsif @stats.students.empty? %>
+        <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">Sección sin matrículas activas.</p>
+      <% else %>
+        <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table id="section_grades" class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-left text-slate-600">
+              <tr>
+                <th scope="col" class="px-4 py-2 font-semibold">RUT</th>
+                <th scope="col" class="px-4 py-2 font-semibold">Nombre</th>
+                <% @stats.evaluations.each do |evaluation| %>
+                  <th scope="col" class="px-4 py-2 text-center font-semibold">
+                    <%= evaluation.name %> <span class="font-normal text-slate-500">(<%= number_to_percentage(evaluation.weight, precision: 0) %>)</span>
+                  </th>
+                <% end %>
+                <th scope="col" class="px-4 py-2 text-center font-semibold">Promedio</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <% @stats.students.each do |student| %>
+                <tr id="<%= dom_id(student, :grades) %>">
+                  <td class="whitespace-nowrap px-4 py-2 text-slate-700"><%= student.rut %></td>
+                  <td class="whitespace-nowrap px-4 py-2 font-medium text-slate-900"><%= student.name %></td>
+                  <% @stats.evaluations.each do |evaluation| %>
+                    <% grade = @stats.grade(student, evaluation) %>
+                    <td class="px-4 py-2 text-center">
+                      <% if grade %>
+                        <span class="font-semibold"><%= grade_score(grade) %></span>
+                        <span class="ml-1 rounded px-1.5 py-0.5 text-xs <%= gradebook_state_classes(grade) %>"><%= gradebook_state_label(grade) %></span>
+                      <% else %>
+                        <span class="text-slate-400">—</span>
+                      <% end %>
+                    </td>
+                  <% end %>
+                  <td class="px-4 py-2 text-center font-semibold text-slate-900"><%= grade_average(@stats.student_average(student)) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+
+    <% else %>
+      <dl id="section_stats" class="mt-6 grid gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-slate-200 bg-white p-5">
+          <dt class="text-sm text-slate-500">Alumnos</dt>
+          <dd class="mt-1 text-2xl font-semibold text-slate-900"><%= @stats.students.size %></dd>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-5">
+          <dt class="text-sm text-slate-500">Promedio (notas oficiales)</dt>
+          <dd class="mt-1 text-2xl font-semibold text-slate-900"><%= grade_average(@stats.average) %></dd>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-5">
+          <dt class="text-sm text-slate-500">Asistencia</dt>
+          <dd class="mt-1 text-2xl font-semibold text-slate-900"><%= attendance_percentage(@stats.attendance_percentage) %></dd>
+        </div>
+      </dl>
+
+      <h2 class="mt-8 text-lg font-semibold text-slate-900">Información general</h2>
+      <dl id="section_info" class="mt-3 grid gap-4 rounded-lg border border-slate-200 bg-white p-5 sm:grid-cols-2">
+        <div>
+          <dt class="text-sm font-medium text-slate-500">Profesor</dt>
+          <dd class="text-slate-900"><%= section_professor(@section) %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-slate-500">Ayudantes</dt>
+          <dd class="text-slate-900"><%= section_assistants(@section) %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-slate-500">Facultad</dt>
+          <dd class="text-slate-900"><%= @course.faculty.name %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-slate-500">Período</dt>
+          <dd class="text-slate-900"><%= term_period(@section.term) %></dd>
+        </div>
+      </dl>
+
+      <div class="mt-8 flex flex-wrap items-center gap-2 text-sm">
+        <% if can?(:take_attendance, @section) %>
+          <%= link_to "Marcar asistencia de hoy", edit_section_attendance_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+        <% end %>
+        <% if can?(:create, Evaluation.new(section: @section)) %>
+          <%= link_to "Evaluaciones", section_evaluations_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+        <% end %>
+        <% if can?(:manage, Enrollment.new(section: @section)) %>
+          <%= link_to "Gestionar alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+        <% end %>
+        <% if can?(:update, @section) %>
+          <%= link_to "Editar sección", edit_course_section_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+        <% end %>
+        <% if can?(:destroy, @section) %>
+          <%= button_to "Eliminar sección", course_section_path(@course, @section), method: :delete,
+                form: { data: { turbo_confirm: "¿Eliminar la sección #{@section.number} de #{@course.code} (#{@section.term.name})? Esta acción no se puede deshacer." } },
+                class: "rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 cursor-pointer" %>
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 
-  <h1 class="font-bold text-4xl">Showing section</h1>
-
-  <%= render @section %>
-
-  <% if can?(:create, Evaluation.new(section: @section)) %>
-    <%= link_to "Evaluaciones", section_evaluations_path(@section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white inline-block font-medium" %>
+  <h2 class="mt-8 text-lg font-semibold text-slate-900">Material académico</h2>
+  <% if @materials.any? %>
+    <ul id="materials" class="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
+      <% @materials.each do |material| %>
+        <li class="px-4 py-3 text-sm">
+          <% if material.file.attached? %>
+            <%= link_to material.title.presence || material.file.filename.to_s, rails_blob_path(material.file, disposition: "attachment"),
+                  class: "font-medium text-indigo-700 hover:underline" %>
+          <% else %>
+            <span class="font-medium text-slate-900"><%= material.title %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">Este curso aún no tiene material.</p>
   <% end %>
-  <% if can?(:manage, Enrollment.new(section: @section)) %>
-    <%= link_to "Gestionar Alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-100 ml-2" %>
-  <% end %>
-  <%= link_to "Edit this section", edit_course_section_path(@course, @section), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "Back to sections", course_sections_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= button_to "Destroy this section", course_section_path(@course, @section), method: :delete, form_class: "sm:inline-block mt-2 sm:mt-0 sm:ml-2", class: "w-full rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-</div>
+</section>

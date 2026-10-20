@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   # Every action must call authorize! (or load_and_authorize_resource).
   check_authorization unless: :devise_controller?
 
-  helper_method :home_path_for, :current_university
+  helper_method :home_path_for, :current_university, :catalog_view?
 
   rescue_from CanCan::AccessDenied do |exception|
     Rails.logger.warn(
@@ -37,6 +37,12 @@ class ApplicationController < ActionController::Base
       else
         current_user.university
       end
+  end
+
+  # The administrativo and the director see every course of the active university (the catalog) instead of
+  # "Mis cursos". The director only reads it.
+  def catalog_view?
+    user_signed_in? && (current_user.administrativo? || current_user.director?)
   end
 
   def set_active_university

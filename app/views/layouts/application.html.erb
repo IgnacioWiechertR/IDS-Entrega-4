@@ -33,7 +33,7 @@
             <% if can?(:read, :dashboard) %><%= nav_link_to "Dashboard", dashboard_path %><% end %>
             <% if can?(:index, :accounts) %><%= nav_link_to "Cuentas", accounts_path %><% end %>
             <% if can?(:assign_professor, Section) %><%= nav_link_to "Asignar profesores", teacher_assignments_path %><% end %>
-            <% if can?(:index, Course) %><%= nav_link_to(current_user.administrativo? ? "Cursos" : "Mis cursos", courses_path) %><% end %>
+            <% if can?(:index, Course) %><%= nav_link_to(catalog_view? ? "Cursos" : "Mis cursos", courses_path) %><% end %>
             <% if can?(:index, :attendance) %><%= nav_link_to "Asistencia", attendance_path %><% end %>
             <% if can?(:read, :my_grades) %><%= nav_link_to "Mis notas", my_grades_path %><% end %>
             <% if can?(:read, :notifications) %>

@@ -1,17 +1,16 @@
 require "test_helper"
 
 class RoleAccessTest < ActionDispatch::IntegrationTest
-  test "el director entra al dashboard y a cuentas, pero no a mis cursos" do
+  test "el director entra al dashboard, a cuentas y a cursos" do
     sign_in users(:director)
 
     get dashboard_path
     assert_response :success
     get accounts_path
     assert_response :success
-
     get courses_path
-    assert_redirected_to dashboard_path
-    assert_equal "No tienes permiso para ver esa página.", flash[:alert]
+    assert_response :success
+    assert_select "h1", "Cursos"
   end
 
   test "el administrativo entra a cuentas y cursos, pero no al dashboard" do
