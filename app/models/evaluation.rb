@@ -6,7 +6,7 @@ class Evaluation < ApplicationRecord
 
   inherits_university_from :section
 
-  validates :name, presence: true
+  validates :name, :due_on, presence: true
   validates :weight, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 100 }
   validate :section_total_within_100
 

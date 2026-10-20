@@ -5,6 +5,6 @@ class Ability
   def initialize(user)
     return unless user
 
-    [ AccountPolicy, CoursePolicy, ReportPolicy, TeacherAssignmentPolicy, SectionPolicy ].each { |policy| merge policy.new(user) }
+    [ AccountPolicy, CoursePolicy, ReportPolicy, TeacherAssignmentPolicy, SectionPolicy, EvaluationPolicy ].each { |policy| merge policy.new(user) }
   end
 end

@@ -15,7 +15,6 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
-  resources :evaluations
   resources :materials
   resources :enrollments
   resources :section_staffs
