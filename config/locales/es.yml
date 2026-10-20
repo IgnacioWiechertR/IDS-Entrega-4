@@ -1,0 +1,31 @@
+es:
+  roles:
+    director: Director
+    administrativo: Administrativo
+    profesor: Profesor
+    ayudante: Ayudante
+    alumno: Alumno
+
+  authorization:
+    denied: No tienes permiso para ver esa página.
+
+  activerecord:
+    models:
+      university:
+        one: Universidad
+        other: Universidades
+      user:
+        one: Usuario
+        other: Usuarios
+    attributes:
+      university:
+        name: Nombre
+        slug: Identificador
+      user:
+        first_name: Nombre
+        last_name: Apellido
+        rut: RUT
+        email: Correo
+        password: Contraseña
+        role: Rol
+        university: Universidad

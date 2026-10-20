@@ -1,0 +1,11 @@
+one:
+  university: ucv
+  faculty: one
+  code: ICC1001
+  name: Programación
+
+two:
+  university: iusa
+  faculty: two
+  code: ENF1001
+  name: Anatomía

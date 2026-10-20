@@ -1,0 +1,25 @@
+<% content_for :title, "SGA — Sistema de Gestión Académica" %>
+
+<section class="max-w-3xl mx-auto py-12 sm:py-20">
+  <p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Grupo 3 · ICC4204</p>
+  <h1 class="mt-2 text-3xl sm:text-4xl font-bold text-slate-900">Sistema de Gestión Académica</h1>
+  <p class="mt-4 text-lg text-slate-600">
+    Una plataforma común para gestionar cursos, materiales, asistencia, anuncios y notas,
+    con los datos de cada universidad separados.
+  </p>
+
+  <div class="mt-10 grid gap-4 sm:grid-cols-2">
+    <div class="rounded-lg border border-slate-200 bg-white p-5">
+      <h2 class="font-semibold text-slate-900">Universidad Central del Valle</h2>
+      <p class="mt-1 text-sm text-slate-600">Universidad grande, con más de diez facultades.</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-5">
+      <h2 class="font-semibold text-slate-900">Instituto Universitario de Salud Austral</h2>
+      <p class="mt-1 text-sm text-slate-600">Institución técnica especializada en salud.</p>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <%= link_to "Iniciar sesión", new_user_session_path, class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+  </div>
+</section>

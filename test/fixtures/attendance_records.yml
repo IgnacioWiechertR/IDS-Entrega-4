@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  attendance_session: one
+  student: alumno
+  status: MyString
+
+two:
+  attendance_session: two
+  student: alumno_iusa
+  status: MyString

@@ -1,0 +1,53 @@
+<% password = Devise::Encryptor.digest(User, "password123") %>
+director:
+  first_name: Directora
+  last_name: Demo
+  rut: "11111111-1"
+  email: director@sga.test
+  role: director
+  encrypted_password: <%= password %>
+
+administrativo:
+  first_name: Administrativo
+  last_name: UCV
+  rut: "22222222-2"
+  email: admin@ucv.test
+  role: administrativo
+  university: ucv
+  encrypted_password: <%= password %>
+
+profesor:
+  first_name: Profesor
+  last_name: UCV
+  rut: "33333333-3"
+  email: profesor@ucv.test
+  role: profesor
+  university: ucv
+  encrypted_password: <%= password %>
+
+ayudante:
+  first_name: Ayudante
+  last_name: UCV
+  rut: "44444444-4"
+  email: ayudante@ucv.test
+  role: ayudante
+  university: ucv
+  encrypted_password: <%= password %>
+
+alumno:
+  first_name: Alumno
+  last_name: UCV
+  rut: "55555555-5"
+  email: alumno@ucv.test
+  role: alumno
+  university: ucv
+  encrypted_password: <%= password %>
+
+alumno_iusa:
+  first_name: Alumna
+  last_name: IUSA
+  rut: "55555555-5"
+  email: alumno@iusa.test
+  role: alumno
+  university: iusa
+  encrypted_password: <%= password %>

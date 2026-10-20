@@ -1,0 +1,9 @@
+one:
+  section: one
+  student: alumno
+  active: true
+
+two:
+  section: two
+  student: alumno_iusa
+  active: true

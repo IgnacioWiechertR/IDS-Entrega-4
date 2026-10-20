@@ -1,0 +1,25 @@
+<% content_for :title, "Iniciar sesión · SGA" %>
+
+<section class="mx-auto max-w-sm py-12">
+  <h1 class="text-2xl font-bold text-slate-900">Iniciar sesión</h1>
+  <p class="mt-2 text-sm text-slate-600">Ingresa con el correo y la contraseña de tu cuenta.</p>
+
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "mt-6 space-y-4" }) do |f| %>
+    <div>
+      <%= f.label :email, "Correo", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", required: true, class: ApplicationHelper::INPUT_CLASSES %>
+    </div>
+
+    <div>
+      <%= f.label :password, "Contraseña", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.password_field :password, autocomplete: "current-password", required: true, class: ApplicationHelper::INPUT_CLASSES %>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <%= f.check_box :remember_me, class: "h-4 w-4 rounded border-slate-300 text-indigo-600" %>
+      <%= f.label :remember_me, "Recordarme", class: "text-sm text-slate-700" %>
+    </div>
+
+    <%= f.submit "Entrar", class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} w-full" %>
+  <% end %>
+</section>

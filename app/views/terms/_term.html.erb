@@ -1,0 +1,22 @@
+<div id="<%= dom_id term %>" class="w-full sm:w-auto my-5 space-y-5">
+  <div>
+    <strong class="block font-medium mb-1">University:</strong>
+    <%= term.university_id %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Name:</strong>
+    <%= term.name %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Starts on:</strong>
+    <%= term.starts_on %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Ends on:</strong>
+    <%= term.ends_on %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Current:</strong>
+    <%= term.current? ? "Yes" : "No" %>
+  </div>
+</div>

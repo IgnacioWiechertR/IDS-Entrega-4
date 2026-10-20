@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  evaluation: one
+  student: alumno
+  score: 5.5
+  status: MyString
+  feedback: MyText
+  rejection_comment: MyText
+  entered_by: ayudante
+  reviewed_by: profesor
+
+two:
+  evaluation: two
+  student: alumno_iusa
+  score: 6.0
+  status: MyString
+  feedback: MyText
+  rejection_comment: MyText
+  entered_by: ayudante
+  reviewed_by: profesor

@@ -1,0 +1,6 @@
+# Redis for Sidekiq in development: docker compose up -d
+services:
+  redis:
+    image: valkey/valkey:8
+    ports:
+      - "6379:6379"

@@ -1,0 +1,11 @@
+one:
+  section: one
+  user: profesor
+  role: profesor
+  assigned_by: administrativo
+
+two:
+  section: one
+  user: ayudante
+  role: ayudante
+  assigned_by: administrativo

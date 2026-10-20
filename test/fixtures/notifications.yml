@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  recipient: alumno
+  kind: MyString
+  message: MyString
+  read_at: 2026-10-18 22:32:59
+
+two:
+  recipient: profesor
+  kind: MyString
+  message: MyString
+  read_at: 2026-10-18 22:32:59

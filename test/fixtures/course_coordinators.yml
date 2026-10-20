@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  course: one
+  term: one
+  user: profesor
+  assigned_by: administrativo
+
+two:
+  course: two
+  term: two
+  user: profesor
+  assigned_by: administrativo
