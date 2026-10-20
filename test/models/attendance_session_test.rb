@@ -18,4 +18,12 @@ class AttendanceSessionTest < ActiveSupport::TestCase
     assert_not duplicate.valid?
     assert duplicate.errors.added?(:held_on, :taken, value: attendance_sessions(:one).held_on)
   end
+
+  test "la asistencia se registra el día de la clase o después, nunca de una fecha futura" do
+    assert build_session(held_on: Date.current).valid?
+
+    session = build_session(held_on: Date.current + 1)
+    assert_not session.valid?
+    assert session.errors.added?(:held_on, :in_the_future)
+  end
 end

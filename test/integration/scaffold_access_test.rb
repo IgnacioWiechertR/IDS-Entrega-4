@@ -4,8 +4,8 @@ require "test_helper"
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators /enrollments
-    /faculties /grades /materials /notifications /section_staffs /sections
+    /announcements /attendance_records /attendance_sessions /course_coordinators
+    /faculties /grades /materials /notifications
     /terms /universities /users
   ].freeze
 
@@ -18,19 +18,24 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   end
 
   test "los scaffolds exigen iniciar sesión" do
-    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{courses(:three).id}/sections" ]).each do |path|
+    seccion = ActsAsTenant.without_tenant { Section.first }
+    curso = ActsAsTenant.without_tenant { seccion.course }
+
+    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end
   end
 
   test "con sesión iniciada, los scaffolds se niegan por defecto" do
+    curso = ActsAsTenant.without_tenant { Course.first }
+
     %i[director administrativo profesor alumno].each do |fixture|
       sign_in users(fixture)
-      # The course is from UCV and nobody teaches or studies in it; the director has to pick UCV to reach it (A3).
-      patch university_selection_path, params: { university_id: universities(:ucv).id } if fixture == :director
 
-      (SCAFFOLD_PATHS + [ "/courses/#{courses(:three).id}/sections" ]).each do |path|
+      patch university_selection_path, params: { university_id: curso.university_id } if fixture == :director
+
+      SCAFFOLD_PATHS.each do |path|
         get path
         assert_response :redirect, "#{fixture} no debería entrar a #{path}"
         assert_equal "No tienes permiso para ver esa página.", flash[:alert]

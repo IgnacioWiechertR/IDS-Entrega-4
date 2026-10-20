@@ -1,29 +1,62 @@
-<% content_for :title, "Enrollments" %>
-
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
-
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Enrollments</h1>
-    <%= link_to "New enrollment", new_enrollment_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
+<div class="max-w-5xl mx-auto py-8 px-4">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Gestión de Alumnos</h1>
+      <p class="text-slate-500 text-sm mt-1">Sección <%= @section.number %> · <%= @course.name %></p>
+    </div>
+    <%= link_to "Volver a la sección", course_section_path(@course, @section), class: "text-indigo-600 font-medium hover:text-indigo-800 transition-colors" %>
   </div>
 
-  <div id="enrollments" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @enrollments.any? %>
-      <% @enrollments.each do |enrollment| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render enrollment %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", enrollment, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_enrollment_path(enrollment), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", enrollment, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <div class="bg-white p-6 rounded-lg shadow border border-slate-200">
+      <h2 class="text-lg font-semibold mb-4 text-slate-800">Inscribir Nuevos Alumnos</h2>
+      
+      <% if @available_students.any? %>
+        <%= form_with url: course_section_enrollments_path(@course, @section), method: :post do |form| %>
+          
+          <div class="space-y-2 max-h-[400px] overflow-y-auto mb-6 p-2 border border-slate-100 rounded-md bg-slate-50">
+            <% @available_students.each do |student| %>
+              <label class="flex items-start space-x-3 cursor-pointer p-2 hover:bg-white rounded border border-transparent hover:border-slate-200 transition-colors">
+                <%= check_box_tag "student_ids[]", student.id, false, id: "student_#{student.id}", class: "mt-1 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer" %>
+                <div>
+                  <p class="text-sm font-medium text-slate-900"><%= student.last_name %>, <%= student.first_name %></p>
+                  <p class="text-xs text-slate-500">RUT: <%= student.rut %> | <%= student.email %></p>
+                </div>
+              </label>
+            <% end %>
           </div>
+
+          <%= form.submit "Inscribir Alumnos Seleccionados", class: "w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 cursor-pointer transition-colors" %>
+        <% end %>
+      <% else %>
+        <div class="text-center py-10 bg-slate-50 rounded border border-slate-100">
+          <p class="text-sm text-slate-500 italic">No hay alumnos disponibles para inscribir en esta universidad.</p>
         </div>
       <% end %>
-    <% else %>
-      <p class="text-center my-10">No enrollments found.</p>
-    <% end %>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow border border-slate-200">
+      <h2 class="text-lg font-semibold mb-4 text-slate-800">Alumnos Inscritos (<%= @enrollments.count %>)</h2>
+      
+      <% if @enrollments.any? %>
+        <ul class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto pr-2">
+          <% @enrollments.each do |enrollment| %>
+            <li class="py-3 flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-slate-900"><%= enrollment.student.last_name %>, <%= enrollment.student.first_name %></p>
+                <p class="text-xs text-slate-500"><%= enrollment.student.rut %></p>
+              </div>
+              <%= button_to "Remover", course_section_enrollment_path(@course, @section, enrollment), method: :delete, data: { turbo_confirm: "¿Estás seguro de quitar a este alumno de la sección?" }, class: "text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 transition-colors" %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="text-center py-10">
+          <p class="text-sm text-slate-500 italic">Aún no hay alumnos inscritos en esta sección.</p>
+        </div>
+      <% end %>
+    </div>
+
   </div>
 </div>

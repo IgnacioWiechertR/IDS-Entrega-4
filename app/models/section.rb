@@ -12,6 +12,11 @@ class Section < ApplicationRecord
   validates :number, uniqueness: { scope: %i[course_id term_id] }
   validate :course_and_term_in_same_university
 
+  # Students with an active enrollment, by last name: the ones on the attendance list.
+  def active_students
+    User.joins(:enrollments).where(enrollments: { section_id: id, active: true }).order(:last_name, :first_name)
+  end
+
   private
 
   def course_and_term_in_same_university

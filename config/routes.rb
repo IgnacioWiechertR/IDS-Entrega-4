@@ -10,21 +10,28 @@ Rails.application.routes.draw do
   # The director's active university (A3).
   resource :university_selection, only: :update
 
+  # Attendance (B6, B8–B10): the user's sections, and the list and table of each one.
+  get "attendance" => "attendance#index", as: :attendance
+  resources :sections, only: [] do
+    resource :attendance, only: %i[ show edit update ], controller: "attendance"
+    # C13: evaluations always belong to a section.
+    resources :evaluations, only: %i[ index new create ]
+  end
+
   resources :notifications
   resources :announcements
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
   resources :materials
-  resources :enrollments
-  resources :section_staffs
+  # resources :enrollments
+  # resources :section_staffs
   resources :course_coordinators
-  resources :sections do
-    # C13: evaluations always belong to a section.
-    resources :evaluations, only: %i[ index new create ]
-  end
   resources :courses do
-    resources :sections
+    resources :sections do
+       resources :assistant_assignments, only: [ :index, :create, :destroy ]
+       resources :enrollments, only: [ :index, :create, :destroy ]
+    end
   end
   resources :terms
   resources :faculties
