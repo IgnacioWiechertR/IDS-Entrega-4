@@ -1,14 +1,22 @@
 <% content_for :title, "Asistencia de la sección · SGA" %>
 
 <section class="py-8">
-  <p class="text-sm"><%= link_to "← Asistencia", attendance_path, class: "text-indigo-700 hover:underline" %></p>
+  <p class="text-sm">
+    <% if can?(:index, :attendance) %>
+      <%= link_to "← Asistencia", attendance_path, class: "text-indigo-700 hover:underline" %>
+    <% else %>
+      <%= link_to "← Sección", course_section_path(@section.course, @section), class: "text-indigo-700 hover:underline" %>
+    <% end %>
+  </p>
 
   <div class="mt-2 flex flex-wrap items-center justify-between gap-3">
     <div>
       <h1 class="text-2xl font-bold text-slate-900">Asistencia de la sección</h1>
       <p class="mt-1 text-slate-600"><%= section_title(@section) %></p>
     </div>
-    <%= link_to "Marcar asistencia de hoy", edit_section_attendance_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% if can?(:take_attendance, @section) %>
+      <%= link_to "Marcar asistencia de hoy", edit_section_attendance_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <% end %>
   </div>
 
   <% if @calculator.students.empty? %>
@@ -21,7 +29,7 @@
     </p>
   <% else %>
     <p class="mt-6 text-sm text-slate-600">
-      P: presente · A: ausente · —: sin marca. Haz clic en una fecha para corregir sus marcas.
+      P: presente · A: ausente · —: sin marca.<% if can?(:take_attendance, @section) %> Haz clic en una fecha para corregir sus marcas.<% end %>
     </p>
     <div class="mt-2 overflow-x-auto rounded-lg border border-slate-200 bg-white">
       <table id="attendance-table" class="min-w-full text-sm">
@@ -30,8 +38,12 @@
             <th scope="col" class="px-3 py-2 font-semibold">Alumno</th>
             <% @calculator.sessions.each do |session| %>
               <th scope="col" class="px-2 py-2 text-center font-semibold">
-                <%= link_to l(session.held_on, format: "%d/%m"), edit_section_attendance_path(@section, date: session.held_on.iso8601),
-                      class: "text-indigo-700 hover:underline", title: "Corregir el #{l(session.held_on)}" %>
+                <% if can?(:take_attendance, @section) %>
+                  <%= link_to l(session.held_on, format: "%d/%m"), edit_section_attendance_path(@section, date: session.held_on.iso8601),
+                        class: "text-indigo-700 hover:underline", title: "Corregir el #{l(session.held_on)}" %>
+                <% else %>
+                  <%= l(session.held_on, format: "%d/%m") %>
+                <% end %>
               </th>
             <% end %>
             <th scope="col" class="px-3 py-2 text-right font-semibold">Asistencia</th>

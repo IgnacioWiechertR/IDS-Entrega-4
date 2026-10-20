@@ -2,7 +2,11 @@
 
 <section class="py-8">
   <p class="text-sm">
-    <%= link_to "← Evaluaciones de la sección", section_evaluations_path(@section), class: "text-indigo-700 hover:underline" %>
+    <% if can?(:create, Evaluation.new(section: @section)) %>
+      <%= link_to "← Evaluaciones de la sección", section_evaluations_path(@section), class: "text-indigo-700 hover:underline" %>
+    <% else %>
+      <%= link_to "← Sección", course_section_path(@section.course, @section), class: "text-indigo-700 hover:underline" %>
+    <% end %>
   </p>
 
   <p class="mt-2 text-sm font-semibold text-indigo-600">

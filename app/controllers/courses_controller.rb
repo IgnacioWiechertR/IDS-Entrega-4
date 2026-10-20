@@ -3,7 +3,7 @@ class CoursesController < ApplicationController
 
   def index
     @courses = @courses.includes(:faculty).order(:code)
-    @coordinators = current_user.administrativo? ? current_coordinators_for(@courses) : {}
+    @coordinators = catalog_view? ? current_coordinators_for(@courses) : {}
   end
 
   # GET /courses/1

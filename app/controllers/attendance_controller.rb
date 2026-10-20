@@ -10,12 +10,11 @@ class AttendanceController < ApplicationController
     @enrolled_sections = sections_for(:read_own_attendance)
   end
 
-  # B9 for the profesor of the section, B10 for a student enrolled in it.
   def show
     @calculator = AttendanceCalculatorService.new(@section)
 
-    if can?(:take_attendance, @section)
-      authorize! :take_attendance, @section
+    if can?(:read_attendance_sheet, @section)
+      authorize! :read_attendance_sheet, @section
       render :section
     else
       authorize! :read_own_attendance, @section
