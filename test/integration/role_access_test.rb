@@ -14,7 +14,7 @@ class RoleAccessTest < ActionDispatch::IntegrationTest
     assert_equal "No tienes permiso para ver esa página.", flash[:alert]
   end
 
-  test "el administrativo entra a cuentas, pero no al dashboard ni a mis cursos" do
+  test "el administrativo entra a cuentas y cursos, pero no al dashboard" do
     sign_in users(:administrativo)
 
     get accounts_path
@@ -22,8 +22,9 @@ class RoleAccessTest < ActionDispatch::IntegrationTest
 
     get dashboard_path
     assert_redirected_to accounts_path
+
     get courses_path
-    assert_redirected_to accounts_path
+    assert_response :success
   end
 
   test "profesor, ayudante y alumno entran a mis cursos, pero no al dashboard ni a cuentas" do
