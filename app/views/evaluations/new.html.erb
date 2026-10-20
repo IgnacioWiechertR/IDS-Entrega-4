@@ -1,9 +1,13 @@
-<% content_for :title, "New evaluation" %>
+<% content_for :title, "Nueva evaluación · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">New evaluation</h1>
+<section class="mx-auto max-w-xl py-8">
+  <p class="text-sm font-semibold text-indigo-600">
+    <%= @section.course.code %> · Sección <%= @section.number %> · <%= @section.term.name %>
+  </p>
+  <h1 class="text-2xl font-bold text-slate-900">Nueva evaluación</h1>
+  <p id="weight_available" class="mt-2 text-sm text-slate-600">
+    Disponible en la sección: <strong><%= weight_percentage(100 - assigned_weight(@section)) %></strong>
+  </p>
 
   <%= render "form", evaluation: @evaluation %>
-
-  <%= link_to "Back to evaluations", evaluations_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-</div>
+</section>

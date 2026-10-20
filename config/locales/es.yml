@@ -33,7 +33,15 @@ es:
       user:
         one: Usuario
         other: Usuarios
+      evaluation:
+        one: Evaluación
+        other: Evaluaciones
     attributes:
+      evaluation:
+        name: Nombre
+        weight: Ponderación
+        due_on: Fecha
+        rubric: Pauta
       university:
         name: Nombre
         slug: Identificador

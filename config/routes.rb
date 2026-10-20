@@ -19,7 +19,10 @@ Rails.application.routes.draw do
   resources :enrollments
   resources :section_staffs
   resources :course_coordinators
-  resources :sections
+  resources :sections do
+    # C13: evaluations always belong to a section.
+    resources :evaluations, only: %i[ index new create ]
+  end
   resources :courses do
     resources :sections
   end

@@ -1,42 +1,37 @@
-<%= form_with(model: evaluation, class: "contents") do |form| %>
+<%= form_with model: [ @section, evaluation ], class: "mt-6 space-y-4" do |form| %>
   <% if evaluation.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-      <h2><%= pluralize(evaluation.errors.count, "error") %> prohibited this evaluation from being saved:</h2>
-
-      <ul class="list-disc ml-6">
-        <% evaluation.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+      <p class="font-semibold">No se pudo guardar la evaluación:</p>
+      <ul class="mt-1 list-disc pl-5">
+        <% evaluation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
-  <div class="my-5">
-    <%= form.label :section_id %>
-    <%= form.text_field :section_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": evaluation.errors[:section_id].none?, "border-red-400 focus:outline-red-600": evaluation.errors[:section_id].any?}] %>
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-slate-700" %>
+    <%= form.text_field :name, required: true, placeholder: "Control 1", class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :name %>
-    <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": evaluation.errors[:name].none?, "border-red-400 focus:outline-red-600": evaluation.errors[:name].any?}] %>
+  <div>
+    <%= form.label :weight, "Ponderación (%)", class: "block text-sm font-medium text-slate-700" %>
+    <%= form.number_field :weight, required: true, step: 0.01, min: 0.01, max: 100, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :weight %>
-    <%= form.text_field :weight, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": evaluation.errors[:weight].none?, "border-red-400 focus:outline-red-600": evaluation.errors[:weight].any?}] %>
+  <div>
+    <%= form.label :due_on, class: "block text-sm font-medium text-slate-700" %>
+    <%= form.date_field :due_on, required: true, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :due_on %>
-    <%= form.date_field :due_on, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": evaluation.errors[:due_on].none?, "border-red-400 focus:outline-red-600": evaluation.errors[:due_on].any?}] %>
+  <div>
+    <%= form.label :rubric, "Pauta (opcional)", class: "block text-sm font-medium text-slate-700" %>
+    <%= form.text_area :rubric, rows: 4, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :rubric %>
-    <%= form.textarea :rubric, rows: 4, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": evaluation.errors[:rubric].none?, "border-red-400 focus:outline-red-600": evaluation.errors[:rubric].any?}] %>
-  </div>
-
-  <div class="inline">
-    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  <div class="flex items-center gap-4">
+    <%= form.submit "Crear evaluación", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+    <%= link_to "Cancelar", section_evaluations_path(@section), class: "text-sm text-slate-600 hover:underline" %>
   </div>
 <% end %>

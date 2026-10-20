@@ -1,29 +1,50 @@
-<% content_for :title, "Evaluations" %>
+<% content_for :title, "Evaluaciones · SGA" %>
 
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+<section class="py-8">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-sm font-semibold text-indigo-600">
+        <%= @section.course.code %> · Sección <%= @section.number %> · <%= @section.term.name %>
+      </p>
+      <h1 class="text-2xl font-bold text-slate-900">Evaluaciones de <%= @section.course.name %></h1>
+    </div>
+    <%= link_to "Nueva evaluación", new_section_evaluation_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+  </div>
+
+  <p id="weight_total" class="mt-4 text-sm text-slate-600">
+    Ponderación asignada: <strong><%= weight_percentage(assigned_weight(@section)) %> de 100 %</strong>
+  </p>
+
+  <% if @evaluations.any? %>
+    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <table class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-slate-600">
+          <tr>
+            <th class="px-4 py-2 font-semibold">Nombre</th>
+            <th class="px-4 py-2 font-semibold">Ponderación</th>
+            <th class="px-4 py-2 font-semibold">Fecha</th>
+            <th class="px-4 py-2 font-semibold">Pauta</th>
+          </tr>
+        </thead>
+        <tbody id="evaluations" class="divide-y divide-slate-100">
+          <% @evaluations.each do |evaluation| %>
+            <tr id="<%= dom_id evaluation %>">
+              <td class="px-4 py-2 font-medium text-slate-900"><%= evaluation.name %></td>
+              <td class="px-4 py-2"><%= weight_percentage(evaluation.weight) %></td>
+              <td class="px-4 py-2"><%= l(evaluation.due_on) %></td>
+              <td class="px-4 py-2 text-slate-600"><%= evaluation.rubric.present? ? "Sí" : "—" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="mt-4 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      Todavía no hay evaluaciones en esta sección.
+    </p>
   <% end %>
 
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Evaluations</h1>
-    <%= link_to "New evaluation", new_evaluation_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
+  <div class="mt-6">
+    <%= link_to "Volver a la sección", course_section_path(@section.course, @section), class: "text-sm text-indigo-700 hover:underline" %>
   </div>
-
-  <div id="evaluations" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @evaluations.any? %>
-      <% @evaluations.each do |evaluation| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render evaluation %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", evaluation, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_evaluation_path(evaluation), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", evaluation, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <p class="text-center my-10">No evaluations found.</p>
-    <% end %>
-  </div>
-</div>
+</section>
