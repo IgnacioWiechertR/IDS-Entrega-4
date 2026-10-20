@@ -10,6 +10,12 @@ Rails.application.routes.draw do
   # The director's active university (A3).
   resource :university_selection, only: :update
 
+  # Attendance (B6, B8–B10): the user's sections, and the list and table of each one.
+  get "attendance" => "attendance#index", as: :attendance
+  resources :sections, only: [] do
+    resource :attendance, only: %i[ show edit update ], controller: "attendance"
+  end
+
   resources :notifications
   resources :announcements
   resources :attendance_records
