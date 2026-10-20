@@ -63,16 +63,16 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
     @section.update_columns(course_id: @other_section.course_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:course].any?
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
     @section.update_columns(term_id: @other_section.term_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:term].any?
   end
 
   test "una asignación de ayudante puede coexistir con la del profesor" do
