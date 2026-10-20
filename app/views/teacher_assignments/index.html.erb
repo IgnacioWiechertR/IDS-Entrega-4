@@ -1,0 +1,72 @@
+<% content_for :title, "Asignar profesor a sección · SGA" %>
+
+<section class="py-8">
+  <h1 class="text-2xl font-bold text-slate-900">Asignar profesor a sección</h1>
+  <p class="mt-2 text-slate-600">Cada sección puede tener un profesor. Solo se muestran secciones y profesores de tu universidad.</p>
+
+  <% if @assignment.errors.any? %>
+    <div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
+      <p class="font-semibold">No se pudo asignar el profesor.</p>
+      <ul class="mt-2 list-disc pl-5">
+        <% @assignment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @sections.empty? %>
+    <p class="mt-6 rounded-lg border border-slate-200 bg-white p-6">No hay secciones disponibles en tu universidad.</p>
+  <% else %>
+    <% if @professors.empty? %>
+      <p class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-900" role="status">No hay profesores registrados en tu universidad para asignar.</p>
+    <% end %>
+
+    <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200">
+        <caption class="sr-only">Asignación de profesores a las secciones de tu universidad</caption>
+        <thead class="bg-slate-100 text-left text-sm">
+          <tr>
+            <th scope="col" class="px-4 py-3">Asignatura</th>
+            <th scope="col" class="px-4 py-3">Sección</th>
+            <th scope="col" class="px-4 py-3">Período</th>
+            <th scope="col" class="px-4 py-3">Profesor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white text-sm">
+          <% @sections.each do |section| %>
+            <% assignment = section.section_staffs.find { |staff| staff.role == "profesor" } %>
+            <tr id="section_<%= section.id %>">
+              <td class="px-4 py-4"><%= section.course.code %> · <%= section.course.name %></td>
+              <td class="px-4 py-4"><%= section.number %></td>
+              <td class="px-4 py-4"><%= section.term.name %></td>
+              <td class="px-4 py-4">
+                <% if assignment %>
+                  <% if assignment.user.university_id == current_user.university_id %>
+                    <span><%= assignment.user.name %></span>
+                    <span class="ml-2 text-slate-500">Profesor asignado</span>
+                  <% else %>
+                    <span>Asignación pendiente de revisión</span>
+                  <% end %>
+                <% elsif @professors.any? %>
+                  <%= form_with scope: :teacher_assignment, url: teacher_assignments_path, class: "flex flex-wrap items-end gap-3" do |form| %>
+                    <%= form.hidden_field :section_id, value: section.id, id: nil %>
+                    <div>
+                      <%= form.label :user_id, "Profesor para #{section.course.code}, sección #{section.number}", for: "professor_for_section_#{section.id}", class: "block text-sm font-medium text-slate-700" %>
+                      <%= form.collection_select :user_id, @professors, :id, :name,
+                            { prompt: "Selecciona un profesor", selected: (@assignment.user_id if @assignment.section_id == section.id) },
+                            { id: "professor_for_section_#{section.id}", required: true, class: "mt-1 rounded-md border border-slate-300 px-3 py-2" } %>
+                    </div>
+                    <%= form.submit "Asignar profesor", class: "rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500" %>
+                  <% end %>
+                <% else %>
+                  <span class="text-slate-500">Sin profesor asignado</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>
