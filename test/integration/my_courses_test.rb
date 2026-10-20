@@ -39,18 +39,18 @@ class MyCoursesTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Todavía no tienes cursos asignados/
   end
 
-  test "no se puede abrir un curso donde no se participa" do
+  test "no se puede abrir un curso de la propia universidad donde no se participa" do
     sign_in users(:alumno)
 
     get course_path(courses(:one))
     assert_response :success
 
-    get course_path(courses(:two))
+    get course_path(courses(:three))
     assert_redirected_to courses_path
   end
 
   test "una inscripción desactivada no da acceso al curso" do
-    enrollments(:one).update!(active: false)
+    ActsAsTenant.with_tenant(universities(:ucv)) { enrollments(:one).update!(active: false) }
     sign_in users(:alumno)
 
     get courses_path

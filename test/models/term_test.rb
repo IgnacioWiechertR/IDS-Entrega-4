@@ -31,6 +31,8 @@ class TermTest < ActiveSupport::TestCase
     assert_includes other.errors[:current], "ya hay otro período vigente en la universidad"
 
     assert build_term(current: false).valid?
-    assert build_term(current: true, university: universities(:iusa)).valid?
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      assert build_term(current: true, university: universities(:iusa)).valid?
+    end
   end
 end

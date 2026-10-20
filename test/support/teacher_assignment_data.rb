@@ -22,12 +22,15 @@ module TeacherAssignmentData
     )
   end
 
+  # University-scoped records are created inside their own university (A3).
   def create_assignment_section(university, code)
-    faculty = Faculty.create!(university: university, name: "Facultad #{code}")
-    course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
-    term = Term.create!(university: university, name: "Período #{code}",
-      starts_on: Date.new(2026, 3, 1), ends_on: Date.new(2026, 7, 31), current: false)
-    Section.create!(university: university, course: course, term: term, number: 1)
+    ActsAsTenant.with_tenant(university) do
+      faculty = Faculty.create!(university: university, name: "Facultad #{code}")
+      course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
+      term = Term.create!(university: university, name: "Período #{code}",
+        starts_on: Date.new(2026, 3, 1), ends_on: Date.new(2026, 7, 31), current: false)
+      Section.create!(university: university, course: course, term: term, number: 1)
+    end
   end
 
   def professor_assignment(**attributes)

@@ -75,6 +75,8 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
+    acts_as_tenant (2.2.1)
+      rails (>= 6.0)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
@@ -404,6 +406,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  acts_as_tenant (~> 2.2)
   aws-sdk-s3 (~> 1.233)
   bootsnap
   brakeman
