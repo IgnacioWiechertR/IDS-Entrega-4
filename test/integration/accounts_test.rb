@@ -1,5 +1,6 @@
 require "test_helper"
 
+# A5: the list of accounts of the active university.
 # A4: the administrativo creates one account at a time in their university. The system generates a temporary
 # password and shows it only once, on the confirmation page.
 class AccountsTest < ActionDispatch::IntegrationTest
@@ -12,6 +13,24 @@ class AccountsTest < ActionDispatch::IntegrationTest
 
   def create_account(**attributes)
     post accounts_path, params: { account: account_params(**attributes) }
+  end
+
+  test "el administrativo solo ve cuentas de su universidad" do
+    sign_in users(:administrativo)
+
+    get accounts_path
+
+    assert_response :success
+
+    within_ucv = %i[administrativo profesor ayudante alumno]
+
+    within_ucv.each do |account|
+      assert_select "tbody td", text: users(account).email, count: 1
+    end
+
+    %i[profesor_iusa alumno_iusa director].each do |account|
+      assert_select "tbody td", text: users(account).email, count: 0
+    end
   end
 
   test "el administrativo ve el botón para crear una cuenta; el director no" do
