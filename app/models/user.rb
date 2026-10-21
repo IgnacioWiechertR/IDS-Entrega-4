@@ -28,8 +28,10 @@ class User < ApplicationRecord
   has_many :announcements, foreign_key: :author_id, dependent: :destroy
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
 
+  normalizes :rut, with: ->(rut) { Rut.normalize(rut) }
+
   validates :first_name, :last_name, :rut, presence: true
-  validates :rut, uniqueness: { scope: :university_id }
+  validate :rut_has_valid_check_digit, :rut_not_taken_in_university, if: -> { rut.present? }
   validates :university, presence: true, unless: :director?
   validates :university, absence: true, if: :director?
 
@@ -44,5 +46,18 @@ class User < ApplicationRecord
   # An ayudante is also a student: it can be enrolled in other courses (Trello A23).
   def student_account?
     alumno? || ayudante?
+  end
+
+  private
+
+  def rut_has_valid_check_digit
+    errors.add(:rut, :invalid_rut) unless Rut.valid?(rut)
+  end
+
+  # A RUT is unique per university: the same person can have an account in each one (A8). The error names the
+  # existing account so the administrativo can find it instead of creating a second one.
+  def rut_not_taken_in_university
+    existing = User.where(university_id: university_id, rut: rut).where.not(id: id).first
+    errors.add(:rut, :taken_by_account, account: "#{existing.name} (#{existing.email})") if existing
   end
 end

@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   # Landing panel of each role (A1). Their content arrives with D1, A5 and the course cards.
   get "dashboard" => "dashboard#index", as: :dashboard
-  resources :accounts, only: :index
+  resources :accounts, only: %i[index new create]
   resources :teacher_assignments, only: %i[ index create ]
 
   # The director's active university (A3).
