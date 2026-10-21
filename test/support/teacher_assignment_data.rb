@@ -17,7 +17,7 @@ module TeacherAssignmentData
   def create_assignment_user(role, university, identifier)
     @assignment_user_counter = (@assignment_user_counter || 0) + 1
     User.create!(
-      first_name: "Persona", last_name: identifier, rut: "#{90_000_000 + @assignment_user_counter}-0",
+      first_name: "Persona", last_name: identifier, rut: Rut.build(90_000_000 + @assignment_user_counter),
       email: "#{identifier}@a22.test", password: "password123", role: role, university: university
     )
   end

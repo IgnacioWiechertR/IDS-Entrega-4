@@ -5,7 +5,7 @@ class SectionStatsServiceTest < ActiveSupport::TestCase
   setup do
     @section = sections(:one)
     @student = users(:alumno) # enrolled in sections(:one)
-    @classmate = User.create!(first_name: "Compañera", last_name: "Curso", rut: "10000005-5", email: "companera@ucv.test",
+    @classmate = User.create!(first_name: "Compañera", last_name: "Curso", rut: "10000005-9", email: "companera@ucv.test",
       password: "password123", role: "alumno", university: universities(:ucv))
     Enrollment.create!(section: @section, student: @classmate)
   end
