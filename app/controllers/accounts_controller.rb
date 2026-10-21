@@ -35,7 +35,7 @@ class AccountsController < ApplicationController
     @accounts = @accounts.where(role: @role) if @role.present?
     per_page = 10
     @total_accounts = @accounts.count
-    @total_pages = [(@total_accounts.to_f / per_page).ceil, 1].max
+    @total_pages = [ (@total_accounts.to_f / per_page).ceil, 1 ].max
     @page = params[:page].to_s.to_i.clamp(1, @total_pages)
 
     @accounts = @accounts.order(:last_name, :first_name, :id)
