@@ -4,21 +4,36 @@ require "test_helper"
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators /enrollments
-    /evaluations /faculties /grades /materials /notifications /section_staffs /sections
-    /terms /universities /user_roles /users
+    /announcements /attendance_records /attendance_sessions /course_coordinators
+    /faculties /grades /materials
+    /terms /universities /users
   ].freeze
 
+  # Evaluations only exist inside a section (C13): the unscoped scaffold route is gone.
+  test "las evaluaciones no tienen ruta fuera de una sección" do
+    sign_in users(:profesor)
+
+    get "/evaluations"
+    assert_response :not_found
+  end
+
   test "los scaffolds exigen iniciar sesión" do
-    (SCAFFOLD_PATHS + [ "/courses/new" ]).each do |path|
+    seccion = ActsAsTenant.without_tenant { Section.first }
+    curso = ActsAsTenant.without_tenant { seccion.course }
+
+    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end
   end
 
   test "con sesión iniciada, los scaffolds se niegan por defecto" do
+    curso = ActsAsTenant.without_tenant { Course.first }
+
     %i[director administrativo profesor alumno].each do |fixture|
       sign_in users(fixture)
+
+      patch university_selection_path, params: { university_id: curso.university_id } if fixture == :director
 
       SCAFFOLD_PATHS.each do |path|
         get path
@@ -30,6 +45,13 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "user_roles ya no tiene ruta" do
+    sign_in users(:administrativo)
+
+    get "/user_roles"
+    assert_response :not_found
+  end
+
   test "no se puede borrar ni editar a través de un scaffold" do
     sign_in users(:administrativo)
 
@@ -38,9 +60,5 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     end
     patch user_path(users(:alumno)), params: { user: { first_name: "Cambiado" } }
     assert_equal "Alumno", users(:alumno).reload.first_name
-
-    assert_no_difference "Course.count" do
-      post courses_path, params: { course: { code: "X1", name: "Intrusa" } }
-    end
   end
 end

@@ -1,18 +1,14 @@
-<div id="<%= dom_id section %>" class="w-full sm:w-auto my-5 space-y-5">
+<dl id="<%= dom_id section %>" class="mt-6 space-y-4">
   <div>
-    <strong class="block font-medium mb-1">University:</strong>
-    <%= section.university_id %>
+    <dt class="text-sm font-medium text-slate-500">Curso</dt>
+    <dd class="text-slate-900"><%= section.course.code %> · <%= section.course.name %></dd>
   </div>
   <div>
-    <strong class="block font-medium mb-1">Course:</strong>
-    <%= section.course_id %>
+    <dt class="text-sm font-medium text-slate-500">Período</dt>
+    <dd class="text-slate-900"><%= section.term.name %> (<%= l(section.term.starts_on) %> – <%= l(section.term.ends_on) %>)</dd>
   </div>
   <div>
-    <strong class="block font-medium mb-1">Term:</strong>
-    <%= section.term_id %>
+    <dt class="text-sm font-medium text-slate-500">Número</dt>
+    <dd class="text-slate-900"><%= section.number %></dd>
   </div>
-  <div>
-    <strong class="block font-medium mb-1">Number:</strong>
-    <%= section.number %>
-  </div>
-</div>
+</dl>

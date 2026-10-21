@@ -9,3 +9,9 @@ two:
   faculty: two
   code: ENF1001
   name: Anatomía
+
+three:
+  university: ucv
+  faculty: one
+  code: ICC2002
+  name: Bases de Datos

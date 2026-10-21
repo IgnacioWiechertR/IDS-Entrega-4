@@ -9,15 +9,84 @@ es:
   authorization:
     denied: No tienes permiso para ver esa página.
 
+  university_selection:
+    changed: Ahora estás viendo %{name}.
+
   activerecord:
+    errors:
+      messages:
+        acts_as_tenant:
+          tenant_mismatch: debe ser la universidad activa
+          association_invalid: debe pertenecer a la misma universidad
+        must_match_parent: debe ser la misma del registro al que pertenece
+        must_match_university: debe ser de la misma universidad
+        only_one_current: ya hay otro período vigente en la universidad
+        before_start: debe ser posterior a la fecha de inicio
+        exceeds_section_total: supera el 100 % de la sección (queda %{available} % disponible)
+        must_be_profesor: debe ser una cuenta de profesor
+        must_be_student: debe ser una cuenta de alumno o ayudante
+        one_role_per_course: ya tiene un rol en este curso durante el período
+        in_the_future: no puede ser una fecha futura
+        invalid_rut: no es válido, revisa el número y el dígito verificador
+        taken_by_account: ya pertenece a la cuenta de %{account}
+      models:
+        course:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
+        section:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
     models:
+      course:
+        one: Curso
+        other: Cursos
+      section:
+        one: Sección
+        other: Secciones
+      term:
+        one: Período
+        other: Períodos
       university:
         one: Universidad
         other: Universidades
       user:
         one: Usuario
         other: Usuarios
+      evaluation:
+        one: Evaluación
+        other: Evaluaciones
     attributes:
+      attendance_session:
+        held_on: Fecha
+      evaluation:
+        name: Nombre
+        weight: Ponderación
+        due_on: Fecha
+        rubric: Pauta
+      grade:
+        score: Nota
+        feedback: Comentario
+        points: Puntaje
+        student: Alumno
+      course:
+        code: Código
+        name: Nombre
+        faculty: Facultad
+        faculty_id: Facultad
+        sections: Secciones
+        course_coordinators: Coordinadores
+        materials: Materiales
+        announcements: Avisos
+      section:
+        number: Número
+        term: Período
+        term_id: Período
+        course: Curso
+        section_staffs: profesor o ayudantes asignados
+        enrollments: alumnos inscritos
+        evaluations: evaluaciones
+        attendance_sessions: asistencia registrada
+        announcements: avisos
       university:
         name: Nombre
         slug: Identificador

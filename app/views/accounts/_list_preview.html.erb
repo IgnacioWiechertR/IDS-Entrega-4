@@ -1,0 +1,153 @@
+<%
+  cuentas_demo = [
+    {
+      nombre: "Ana Pérez",
+      rut: "12.345.678-5",
+      correo: "ana.perez@example.com",
+      rol: "Alumno"
+    },
+    {
+      nombre: "Diego Soto",
+      rut: "11.111.111-1",
+      correo: "diego.soto@example.com",
+      rol: "Profesor"
+    },
+    {
+      nombre: "Camila Rojas",
+      rut: "22.222.222-2",
+      correo: "camila.rojas@example.com",
+      rol: "Ayudante"
+    }
+  ]
+%>
+
+<section class="mx-auto max-w-6xl px-4 py-8">
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold text-slate-900">
+      Cuentas
+    </h1>
+
+    <p class="mt-2 text-slate-600">
+      Consulta las cuentas de la universidad activa.
+    </p>
+  </header>
+
+  <aside class="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
+    Vista de desarrollo con datos ficticios.
+    La búsqueda, los filtros y la paginación todavía no están conectados.
+  </aside>
+
+  <div class="mb-6">
+    <p class="text-sm text-slate-500">Universidad activa</p>
+    <p class="font-semibold text-slate-900">
+      Universidad de ejemplo
+    </p>
+  </div>
+
+  <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <div class="sm:col-span-2">
+      <label for="account-search"
+             class="mb-2 block text-sm font-medium text-slate-700">
+        Buscar por nombre o RUT
+      </label>
+
+      <input
+        id="account-search"
+        type="search"
+        placeholder="Ej.: Ana Pérez o 12.345.678-5"
+        disabled
+        class="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-slate-500"
+      >
+    </div>
+
+    <div>
+      <label for="account-role"
+             class="mb-2 block text-sm font-medium text-slate-700">
+        Rol
+      </label>
+
+      <select
+        id="account-role"
+        disabled
+        class="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-slate-500"
+      >
+        <option>Todos los roles</option>
+        <option>Administrativo</option>
+        <option>Profesor</option>
+        <option>Ayudante</option>
+        <option>Alumno</option>
+      </select>
+    </div>
+  </div>
+
+  <% if cuentas_demo.any? %>
+    <div class="overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200">
+        <caption class="sr-only">
+          Cuentas de la universidad activa
+        </caption>
+
+        <thead class="bg-slate-50">
+          <tr>
+            <% ["Nombre", "RUT", "Correo", "Rol"].each do |columna| %>
+              <th scope="col"
+                  class="px-4 py-3 text-left text-sm font-semibold text-slate-700">
+                <%= columna %>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <% cuentas_demo.each do |cuenta| %>
+            <tr>
+              <td class="px-4 py-4 text-sm font-medium text-slate-900">
+                <%= cuenta[:nombre] %>
+              </td>
+              <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
+                <%= cuenta[:rut] %>
+              </td>
+              <td class="px-4 py-4 text-sm text-slate-600">
+                <%= cuenta[:correo] %>
+              </td>
+              <td class="px-4 py-4 text-sm text-slate-600">
+                <%= cuenta[:rol] %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm text-slate-600">
+        Mostrando <%= cuentas_demo.size %> cuentas de ejemplo
+      </p>
+
+      <nav aria-label="Paginación de cuentas" class="flex items-center gap-3">
+        <button type="button"
+                disabled
+                class="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-400">
+          Anterior
+        </button>
+
+        <span class="text-sm text-slate-600">Página 1 de 1</span>
+
+        <button type="button"
+                disabled
+                class="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-400">
+          Siguiente
+        </button>
+      </nav>
+    </footer>
+  <% else %>
+    <div class="rounded-lg border border-slate-200 bg-white p-8 text-center">
+      <h2 class="text-lg font-semibold text-slate-900">
+        No se encontraron cuentas
+      </h2>
+      <p class="mt-2 text-slate-600">
+        Prueba con otro nombre, RUT o filtro de rol.
+      </p>
+    </div>
+  <% end %>
+</section>

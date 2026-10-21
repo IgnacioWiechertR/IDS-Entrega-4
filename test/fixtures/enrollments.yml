@@ -1,9 +1,11 @@
 one:
+  university: ucv
   section: one
   student: alumno
   active: true
 
 two:
+  university: iusa
   section: two
   student: alumno_iusa
   active: true

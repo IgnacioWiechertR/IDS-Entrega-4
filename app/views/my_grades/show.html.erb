@@ -1,0 +1,52 @@
+<% content_for :title, "Detalle de la nota · SGA" %>
+<% evaluation = @grade.evaluation %>
+<% section = evaluation.section %>
+
+<section class="mx-auto max-w-2xl py-8">
+  <p class="text-sm"><%= link_to "← Mis notas", my_grades_path, class: "text-indigo-700 hover:underline" %></p>
+
+  <p class="mt-2 text-sm font-semibold text-indigo-600">
+    <%= section.course.code %> · <%= section.course.name %> · Sección <%= section.number %>
+  </p>
+  <h1 class="text-2xl font-bold text-slate-900"><%= evaluation.name %></h1>
+
+  <dl class="mt-6 grid grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-white p-5 text-sm sm:grid-cols-4">
+    <div>
+      <dt class="text-slate-500">Nota</dt>
+      <dd id="grade-score" class="text-2xl font-bold text-slate-900"><%= grade_score(@grade) %></dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Ponderación</dt>
+      <dd class="font-semibold"><%= weight_percentage(evaluation.weight) %></dd>
+    </div>
+    <div>
+      <dt class="text-slate-500">Fecha</dt>
+      <dd class="font-semibold"><%= l(evaluation.due_on) %></dd>
+    </div>
+    <% if @grade.points %>
+      <div>
+        <dt class="text-slate-500">Puntaje</dt>
+        <dd id="grade-points" class="font-semibold"><%= number_with_precision(@grade.points, precision: 2, strip_insignificant_zeros: true) %></dd>
+      </div>
+    <% end %>
+  </dl>
+
+  <% if @grade.feedback.blank? && evaluation.rubric.blank? %>
+    <p id="no-correction" class="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      El profesor no dejó pauta ni comentarios para esta evaluación.
+    </p>
+  <% else %>
+    <% if @grade.feedback.present? %>
+      <div class="mt-6 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 class="font-semibold text-slate-900">Comentario de la corrección</h2>
+        <p id="grade-feedback" class="mt-2 whitespace-pre-line text-slate-700"><%= @grade.feedback %></p>
+      </div>
+    <% end %>
+    <% if evaluation.rubric.present? %>
+      <div class="mt-4 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 class="font-semibold text-slate-900">Pauta</h2>
+        <p id="evaluation-rubric" class="mt-2 whitespace-pre-line text-slate-700"><%= evaluation.rubric %></p>
+      </div>
+    <% end %>
+  <% end %>
+</section>

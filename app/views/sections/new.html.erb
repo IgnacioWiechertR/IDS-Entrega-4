@@ -1,9 +1,9 @@
-<% content_for :title, "New section" %>
+<% content_for :title, "Nueva sección · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">New section</h1>
+<section class="py-8 md:w-2/3">
+  <h1 class="text-2xl font-bold text-slate-900">Nueva sección</h1>
 
   <%= render "form", section: @section %>
 
-  <%= link_to "Back to sections", sections_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-</div>
+  <%= link_to "Volver a secciones", course_sections_path(@course), class: "mt-4 inline-block text-sm font-medium text-slate-600 hover:text-slate-900" %>
+</section>

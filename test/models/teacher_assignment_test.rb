@@ -4,7 +4,11 @@ require_relative "../support/teacher_assignment_data"
 class TeacherAssignmentTest < ActiveSupport::TestCase
   include TeacherAssignmentData
 
-  setup { prepare_teacher_assignment_data }
+  setup do
+    prepare_teacher_assignment_data
+    # The validations read the section's course and term, which are scoped by university (A3).
+    ActsAsTenant.current_tenant = @university
+  end
 
   test "el administrativo asigna un profesor de su universidad" do
     assignment = professor_assignment
@@ -60,19 +64,19 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   end
 
   test "rechaza secciones cuya asignatura pertenece a otra universidad" do
-    @section.update!(course: @other_section.course)
+    @section.update_columns(course_id: @other_section.course_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:course].any?
   end
 
   test "rechaza secciones cuyo período pertenece a otra universidad" do
-    @section.update!(term: @other_section.term)
+    @section.update_columns(term_id: @other_section.term_id)
     assignment = professor_assignment
 
-    assert_not assignment.valid?
-    assert assignment.errors[:section].any?
+    assert_not @section.valid?
+    assert @section.errors[:term].any?
   end
 
   test "una asignación de ayudante puede coexistir con la del profesor" do

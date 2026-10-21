@@ -5,12 +5,16 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  # Every university-scoped query runs against the active university (A3).
+  set_current_tenant_through_filter
+
   before_action :authenticate_user!
+  before_action :set_active_university
 
   # Every action must call authorize! (or load_and_authorize_resource).
   check_authorization unless: :devise_controller?
 
-  helper_method :home_path_for
+  helper_method :home_path_for, :current_university, :catalog_view?
 
   rescue_from CanCan::AccessDenied do |exception|
     Rails.logger.warn(
@@ -21,6 +25,29 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  # Regular users work in their own university. The director has none and picks the active one
+  # with the selector in the top bar (stored in the session); by default, the first one.
+  def current_university
+    return unless user_signed_in?
+
+    @current_university ||=
+      if current_user.director?
+        University.find_by(id: session[:university_id]) || University.order(:id).first
+      else
+        current_user.university
+      end
+  end
+
+  # The administrativo and the director see every course of the active university (the catalog) instead of
+  # "Mis cursos". The director only reads it.
+  def catalog_view?
+    user_signed_in? && (current_user.administrativo? || current_user.director?)
+  end
+
+  def set_active_university
+    set_current_tenant(current_university) if user_signed_in?
+  end
 
   def authorization_subject(subject)
     case subject

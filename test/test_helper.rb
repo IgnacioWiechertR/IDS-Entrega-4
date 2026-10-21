@@ -10,6 +10,11 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # University-scoped models need an active university (A3). Model tests run inside UCV by default and
+    # switch with ActsAsTenant.with_tenant when they need IUSA. Integration tests get it from the signed-in
+    # user, like the app does.
+    setup { ActsAsTenant.current_tenant = universities(:ucv) unless is_a?(ActionDispatch::IntegrationTest) }
+
     # Add more helper methods to be used by all tests here...
   end
 end

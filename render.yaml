@@ -11,7 +11,7 @@ services:
     name: sga-web
     runtime: docker
     plan: free
-    branch: main
+    branch: Develop
     autoDeployTrigger: commit
     healthCheckPath: /up
     envVars:

@@ -17,20 +17,25 @@ module TeacherAssignmentData
   def create_assignment_user(role, university, identifier)
     @assignment_user_counter = (@assignment_user_counter || 0) + 1
     User.create!(
-      first_name: "Persona", last_name: identifier, rut: "#{90_000_000 + @assignment_user_counter}-0",
+      first_name: "Persona", last_name: identifier, rut: Rut.build(90_000_000 + @assignment_user_counter),
       email: "#{identifier}@a22.test", password: "password123", role: role, university: university
     )
   end
 
+  # University-scoped records are created inside their own university (A3).
   def create_assignment_section(university, code)
-    faculty = Faculty.create!(university: university, name: "Facultad #{code}")
-    course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
-    term = Term.create!(university: university, name: "Período #{code}",
-      starts_on: Date.new(2026, 3, 1), ends_on: Date.new(2026, 7, 31), current: false)
-    Section.create!(university: university, course: course, term: term, number: 1)
+    ActsAsTenant.with_tenant(university) do
+      faculty = Faculty.create!(university: university, name: "Facultad #{code}")
+      course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
+      term = Term.create!(university: university, name: "Período #{code}",
+        starts_on: Date.new(2026, 3, 1), ends_on: Date.new(2026, 7, 31), current: false)
+      Section.create!(university: university, course: course, term: term, number: 1)
+    end
   end
 
   def professor_assignment(**attributes)
-    SectionStaff.new({ section: @section, user: @professor, role: "profesor", assigned_by: @admin }.merge(attributes))
+    attributes = { section: @section, user: @professor, role: "profesor", assigned_by: @admin }.merge(attributes)
+    # save!(validate: false) skips the callback that copies the section's university, so set it here.
+    SectionStaff.new(university: attributes[:section].university, **attributes)
   end
 end

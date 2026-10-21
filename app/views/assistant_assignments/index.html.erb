@@ -1,0 +1,70 @@
+<% content_for :title, "Ayudantes · SGA" %>
+
+<div class="mx-auto max-w-5xl px-4 py-8">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <p class="text-sm font-semibold text-indigo-600">
+        <%= @course.code %> · Sección <%= @section.number %> · <%= @section.term.name %>
+      </p>
+      <h1 class="text-2xl font-bold text-slate-900">Ayudantes de la sección</h1>
+    </div>
+    <%= link_to "Volver a la sección", course_section_path(@course, @section), class: "font-medium text-indigo-600 hover:text-indigo-800" %>
+  </div>
+
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow">
+      <h2 class="mb-1 text-lg font-semibold text-slate-800">Asignar ayudantes</h2>
+      <p class="mb-4 text-sm text-slate-500">
+        Cuentas de alumno o ayudante de la universidad que no tienen otro rol en esta asignatura durante el período.
+      </p>
+
+      <% if @available_accounts.any? %>
+        <%= form_with url: course_section_assistant_assignments_path(@course, @section), method: :post do |form| %>
+          <div class="mb-6 max-h-[400px] space-y-2 overflow-y-auto rounded-md border border-slate-100 bg-slate-50 p-2">
+            <% @available_accounts.each do |account| %>
+              <label id="available_user_<%= account.id %>" class="flex cursor-pointer items-start space-x-3 rounded border border-transparent p-2 hover:border-slate-200 hover:bg-white">
+                <%= check_box_tag "user_ids[]", account.id, false, id: "user_#{account.id}", class: "mt-1 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" %>
+                <div>
+                  <p class="text-sm font-medium text-slate-900"><%= account.last_name %>, <%= account.first_name %></p>
+                  <p class="text-xs text-slate-500">RUT: <%= account.rut %> | <%= account.email %> | <%= account.role_name %></p>
+                </div>
+              </label>
+            <% end %>
+          </div>
+
+          <%= form.submit "Asignar seleccionados", class: "w-full cursor-pointer #{ApplicationHelper::PRIMARY_BUTTON_CLASSES}" %>
+        <% end %>
+      <% else %>
+        <div class="rounded border border-slate-100 bg-slate-50 py-10 text-center">
+          <p class="text-sm italic text-slate-500">No hay cuentas disponibles para asignar en esta sección.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow">
+      <h2 class="mb-4 text-lg font-semibold text-slate-800">Ayudantes asignados (<%= @assistants.size %>)</h2>
+
+      <% if @assistants.any? %>
+        <ul class="divide-y divide-slate-100">
+          <% @assistants.each do |staff| %>
+            <li id="assistant_<%= staff.id %>" class="flex items-center justify-between gap-4 py-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900"><%= staff.user.last_name %>, <%= staff.user.first_name %></p>
+                <p class="text-xs text-slate-500">
+                  Asignado por <%= staff.assigned_by.name %> el <%= l(staff.created_at.to_date) %>
+                </p>
+              </div>
+              <%= button_to "Quitar", course_section_assistant_assignment_path(@course, @section, staff), method: :delete,
+                    form: { data: { turbo_confirm: "¿Quitar a #{staff.user.name} como ayudante de la sección?" } },
+                    class: "rounded px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-800" %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="py-10 text-center">
+          <p class="text-sm italic text-slate-500">Aún no hay ayudantes en esta sección.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

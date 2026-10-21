@@ -1,4 +1,4 @@
 class Faculty < ApplicationRecord
-  belongs_to :university
+  acts_as_tenant :university
   has_many :courses, dependent: :destroy
 end
