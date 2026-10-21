@@ -1,0 +1,19 @@
+es:
+  activerecord:
+    models:
+      course_coordinator: Asignación de coordinador
+    attributes:
+      course_coordinator:
+        course: La asignatura
+        course_id: La asignatura
+        term: El período
+        user: El coordinador
+        assigned_by: La persona que asigna
+    errors:
+      models:
+        course_coordinator:
+          attributes:
+            course_id:
+              taken: ya tiene un coordinador en este período
+            assigned_by:
+              must_be_authorized_assigner: debe ser el director o un administrativo de la misma universidad

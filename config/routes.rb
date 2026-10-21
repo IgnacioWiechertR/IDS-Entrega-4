@@ -40,7 +40,7 @@ Rails.application.routes.draw do
   resources :materials
   # resources :enrollments
   # resources :section_staffs
-  resources :course_coordinators
+  resources :course_coordinators, only: %i[ index create ]
   resources :courses do
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
