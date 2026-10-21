@@ -193,6 +193,9 @@
         <% if can?(:manage, Enrollment.new(section: @section)) %>
           <%= link_to "Gestionar alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
         <% end %>
+        <% if can?(:create, SectionStaff.new(section: @section, role: "ayudante")) %>
+          <%= link_to "Gestionar ayudantes", course_section_assistant_assignments_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+        <% end %>
         <% if can?(:update, @section) %>
           <%= link_to "Editar sección", edit_course_section_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
         <% end %>
