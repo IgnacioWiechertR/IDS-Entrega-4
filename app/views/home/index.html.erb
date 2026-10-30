@@ -23,7 +23,3 @@
     <%= link_to "Iniciar sesión", new_user_session_path, class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
   </div>
 </section>
-
-<% if Rails.env.development? %>
-  <%= render "accounts/list_preview" %>
-<% end %>
