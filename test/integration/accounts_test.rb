@@ -164,4 +164,138 @@ class AccountsTest < ActionDispatch::IntegrationTest
       sign_out :user
     end
   end
+
+  test "busca por nombre completo sin distinguir mayusculas ni mezclar universidades" do
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { q: "  pRoFeSoR uCv  " }
+
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:profesor).email
+    assert_select "tbody td", text: users(:profesor_iusa).email, count: 0
+  end
+
+  test "busca el RUT con puntos guion o sin formato dentro de su universidad" do
+    sign_in users(:administrativo)
+
+    %w[33.333.333-3 33333333-3 333333333].each do |query|
+      get accounts_path, params: { q: query }
+
+      assert_response :success
+      assert_select "tbody tr", count: 1
+      assert_select "tbody td", text: users(:profesor).email
+      assert_select "tbody td", text: users(:profesor_iusa).email, count: 0
+    end
+  end
+
+  test "filtra por rol y lo combina con la busqueda" do
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { role: "profesor" }
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:profesor).email
+
+    get accounts_path, params: { q: "UCV", role: "alumno" }
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:alumno).email
+    assert_select "input[name=q][value=UCV]"
+    assert_select "select[name=role] option[selected][value=alumno]"
+  end
+
+  test "explica que no hay coincidencias cuando los filtros no encuentran cuentas" do
+    sign_in users(:administrativo)
+
+    [ { q: "zzzz" }, { role: "director" }, { q: "Profesor", role: "alumno" } ].each do |filters|
+      get accounts_path, params: filters
+
+      assert_response :success
+      assert_select "tbody tr", count: 0
+      assert_select "p", text: "No hay cuentas que coincidan con los filtros seleccionados en esta universidad."
+      assert_select "p", text: "No hay cuentas registradas en esta universidad.", count: 0
+    end
+  end
+
+  test "trata los comodines SQL como texto literal en la busqueda" do
+    sign_in users(:administrativo)
+
+    %w[% _].each do |query|
+      get accounts_path, params: { q: query }
+
+      assert_response :success
+      assert_select "tbody tr", count: 0
+    end
+  end
+
+  test "limpiar elimina la busqueda y el filtro de rol" do
+    sign_in users(:administrativo)
+    get accounts_path, params: { q: "Profesor", role: "alumno" }
+
+    link = css_select("a").find { |element| element.text.strip == "Limpiar" }
+    assert_not_nil link
+    assert_equal accounts_path, link["href"]
+
+    get link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 4
+    assert_select "input[name=q]" do |inputs|
+      assert_equal "", inputs.first["value"].to_s
+    end
+  end
+
+  test "una universidad sin cuentas muestra el mensaje de listado vacio" do
+    university = University.create!(name: "Universidad sin cuentas", slug: "sin-cuentas")
+    sign_in users(:director)
+    patch university_selection_path, params: { university_id: university.id }
+
+    get accounts_path
+
+    assert_response :success
+    assert_select "tbody tr", count: 0
+    assert_select "p", text: "No hay cuentas registradas en esta universidad."
+  end
+
+  test "pagina diez cuentas y conserva los filtros al avanzar y retroceder" do
+    accounts = 11.times.map do |index|
+      User.create!(
+        first_name: "Pagina", last_name: format("Cuenta%02d", index),
+        rut: Rut.build(20000000 + index), email: "pagina#{index}@ucv.test",
+        role: "alumno", university: universities(:ucv), password: "password123"
+      )
+    end
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { q: "Pagina", role: "alumno" }
+
+    assert_response :success
+    assert_select "tbody tr", count: 10
+    accounts.first(10).each { |account| assert_select "tbody td", text: account.email }
+    assert_select "tbody td", text: accounts.last.email, count: 0
+    assert_select "nav[aria-label='Paginación de cuentas'] a", text: "Anterior", count: 0
+
+    next_link = css_select("nav[aria-label='Paginación de cuentas'] a").find { |link| link.text == "Siguiente" }
+    assert_not_nil next_link
+    assert_equal({ "q" => "Pagina", "role" => "alumno", "page" => "2" },
+                 Rack::Utils.parse_query(URI.parse(next_link["href"]).query))
+    get next_link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: accounts.last.email
+    assert_select "nav[aria-label='Paginación de cuentas'] a", text: "Siguiente", count: 0
+
+    previous_link = css_select("nav[aria-label='Paginación de cuentas'] a").find { |link| link.text == "Anterior" }
+    assert_not_nil previous_link
+    assert_equal({ "q" => "Pagina", "role" => "alumno", "page" => "1" },
+                 Rack::Utils.parse_query(URI.parse(previous_link["href"]).query))
+    get previous_link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 10
+    assert_select "tbody td", text: accounts.first.email
+    assert_select "tbody td", text: accounts.last.email, count: 0
+  end
 end

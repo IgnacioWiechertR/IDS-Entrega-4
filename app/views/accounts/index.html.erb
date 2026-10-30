@@ -116,7 +116,11 @@
           No se encontraron cuentas
         </h2>
         <p class="mt-2 text-slate-600">
-          No hay cuentas registradas en esta universidad.
+          <% if @query.present? || @role.present? %>
+            No hay cuentas que coincidan con los filtros seleccionados en esta universidad.
+          <% else %>
+            No hay cuentas registradas en esta universidad.
+          <% end %>
         </p>
       </div>
     <% end %>
