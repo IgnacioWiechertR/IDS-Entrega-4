@@ -45,7 +45,7 @@ gem "csv", "~> 3.3"
 gem "rails-i18n", "~> 8.1"
 
 # S3-compatible storage for Active Storage
-gem "aws-sdk-s3", "~> 1.233", require: false
+gem "aws-sdk-s3", "~> 1.235", require: false
 
 # Authentication [https://github.com/heartcombo/devise]
 gem "devise", "~> 5.0"
