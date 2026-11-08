@@ -10,6 +10,52 @@
       <p class="mt-2 text-green-800">Todas las filas con datos se cargaron correctamente.</p>
     <% end %>
   </div>
+  <% if @result.errors.any? %>
+    <section class="mt-6" aria-labelledby="import-errors-title">
+      <h2 id="import-errors-title"
+          class="text-xl font-semibold text-slate-900">
+        Filas rechazadas
+      </h2>
+
+      <p class="mt-2 text-slate-600">
+        Corrige estas filas y sube un archivo que contenga únicamente
+        las cuentas que no se crearon.
+      </p>
+
+      <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full bg-white text-left">
+          <caption class="sr-only">
+            Filas rechazadas y motivos de rechazo
+          </caption>
+
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th scope="col" class="px-4 py-3">Fila del CSV</th>
+              <th scope="col" class="px-4 py-3">Motivo</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-200">
+            <% @result.errors.each do |error| %>
+              <tr>
+                <td class="px-4 py-3 align-top font-medium">
+                  <%= error.fetch(:line) %>
+                </td>
+
+                <td class="px-4 py-3">
+                  <ul class="list-disc space-y-1 pl-5 text-red-800">
+                    <% error.fetch(:messages).each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
   <% if @result.created.any? %>
     <p class="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
       Guarda estas contraseñas y entrégalas únicamente a sus destinatarios.
