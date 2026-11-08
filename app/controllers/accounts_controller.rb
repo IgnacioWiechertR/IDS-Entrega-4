@@ -1,3 +1,5 @@
+require "csv"
+
 class AccountsController < ApplicationController
   def index
     authorize! :index, :accounts
@@ -64,6 +66,37 @@ class AccountsController < ApplicationController
     else
       render :new, status: :unprocessable_content
     end
+  end
+
+  def import_form
+    authorize! :import, :accounts
+  end
+
+  def import_csv
+    authorize! :import, :accounts
+    no_store
+
+    @result = AccountCsvImporter.new(actor: current_user)
+                               .call(params[:file])
+
+    render :import_result
+  rescue AccountCsvImporter::InvalidFile => error
+    @import_error = error.message
+    render :import_form, status: :unprocessable_content
+  end
+
+  def sample_csv
+    authorize! :import, :accounts
+
+    content = CSV.generate do |csv|
+      csv << %w[nombre rut correo rol]
+      csv << [ "Ana Pérez", "12.345.678-5", "ana.perez@example.com", "alumno" ]
+    end
+
+    send_data content,
+              filename: "ejemplo_cuentas.csv",
+              type: "text/csv; charset=utf-8",
+              disposition: "attachment"
   end
 
   private
