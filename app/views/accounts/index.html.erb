@@ -1,5 +1,12 @@
 <% content_for :title, "Cuentas · SGA" %>
 
+<% if can?(:import, :accounts) %>
+  <div class="my-4">
+    <%= link_to "Importar CSV", import_accounts_path,
+                class: "inline-block rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700" %>
+  </div>
+<% end %>
+
 <section class="py-8">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <h1 class="text-2xl font-bold text-slate-900">Cuentas</h1>

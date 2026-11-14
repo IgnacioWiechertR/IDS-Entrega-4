@@ -8,6 +8,8 @@ class AccountPolicy
     # The accounts panel. The users scaffold stays closed until A4/A5/A6 add their rules.
     can :index, :accounts if user.director? || user.administrativo?
 
+    can :import, :accounts if user.administrativo? && user.university_id.present?
+
     # A custom action instead of :create, so the closed users scaffold does not open with it.
     can :create_account, User, university_id: user.university_id, role: CREATABLE_ROLES if user.administrativo?
 
