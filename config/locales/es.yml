@@ -27,6 +27,8 @@ es:
         must_be_student: debe ser una cuenta de alumno o ayudante
         one_role_per_course: ya tiene un rol en este curso durante el período
         in_the_future: no puede ser una fecha futura
+        invalid_rut: no es válido, revisa el número y el dígito verificador
+        taken_by_account: ya pertenece a la cuenta de %{account}
       models:
         course:
           restrict_dependent_destroy:

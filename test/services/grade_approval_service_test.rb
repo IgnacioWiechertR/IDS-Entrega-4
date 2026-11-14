@@ -21,7 +21,7 @@ class GradeApprovalServiceTest < ActiveSupport::TestCase
 
   test "publica todas las notas pendientes y deja registro de quién las aprobó" do
     first = add_grade(users(:alumno))
-    second = add_grade(new_student("Rojas", "10000001-1"), score: 6.5)
+    second = add_grade(new_student("Rojas", "10000001-6"), score: 6.5)
 
     result = approve
 
@@ -36,8 +36,8 @@ class GradeApprovalServiceTest < ActiveSupport::TestCase
 
   test "no toca las rechazadas ni las ya publicadas" do
     rejected = add_grade(users(:alumno), status: "rechazada", comment: "Revisa la pregunta 2")
-    published = add_grade(new_student("Rojas", "10000001-1"), status: "publicada")
-    pending = add_grade(new_student("Soto", "10000002-2"))
+    published = add_grade(new_student("Rojas", "10000001-6"), status: "publicada")
+    pending = add_grade(new_student("Soto", "10000002-4"))
 
     result = approve
 
@@ -57,7 +57,7 @@ class GradeApprovalServiceTest < ActiveSupport::TestCase
 
   test "si alguna nota está fuera de 1.0–7.0 no publica ninguna" do
     valid = add_grade(users(:alumno))
-    invalid = add_grade(new_student("Rojas", "10000001-1"))
+    invalid = add_grade(new_student("Rojas", "10000001-6"))
     invalid.update_columns(score: 7.5) # data that skipped the validations
 
     result = approve
@@ -71,7 +71,7 @@ class GradeApprovalServiceTest < ActiveSupport::TestCase
   test "publica 100 notas en menos de 3 segundos" do
     now = Time.current
     rows = (1..100).map do |i|
-      { first_name: "Alumno", last_name: "N#{i}", rut: "#{30_000_000 + i}-0", email: "alumno#{i}@carga.test", role: "alumno",
+      { first_name: "Alumno", last_name: "N#{i}", rut: Rut.build(30_000_000 + i), email: "alumno#{i}@carga.test", role: "alumno",
         university_id: universities(:ucv).id, encrypted_password: "", active: true, created_at: now, updated_at: now }
     end
     student_ids = User.insert_all!(rows, returning: :id).rows.flatten

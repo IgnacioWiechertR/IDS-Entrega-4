@@ -5,7 +5,7 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
   setup do
     @evaluation = Evaluation.create!(section: sections(:one), name: "Control 2", weight: 20, due_on: Date.new(2026, 11, 5))
     @first = users(:alumno) # already enrolled in sections(:one)
-    @second = User.create!(first_name: "Segunda", last_name: "Alumna", rut: "10000004-4", email: "segunda@ucv.test",
+    @second = User.create!(first_name: "Segunda", last_name: "Alumna", rut: "10000004-0", email: "segunda@ucv.test",
       password: "password123", role: "alumno", university: universities(:ucv))
     Enrollment.create!(section: sections(:one), student: @second)
   end

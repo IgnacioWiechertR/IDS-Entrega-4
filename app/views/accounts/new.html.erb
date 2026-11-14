@@ -1,0 +1,57 @@
+<% content_for :title, "Crear cuenta · SGA" %>
+
+<section class="mx-auto max-w-xl py-8">
+  <p class="text-sm font-semibold text-indigo-600"><%= current_user.university.name %></p>
+  <h1 class="text-2xl font-bold text-slate-900">Crear cuenta</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    Al guardar, el sistema genera una contraseña temporal que se muestra una sola vez.
+  </p>
+
+  <%# Turbo is off so the confirmation with the temporary password is rendered straight from this POST. %>
+  <%= form_with model: @account, scope: :account, url: accounts_path, data: { turbo: false }, class: "mt-6 space-y-4" do |form| %>
+    <% if @account.errors.any? %>
+      <p class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+        No se pudo crear la cuenta. Revisa los campos marcados.
+      </p>
+    <% end %>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :first_name, class: "block text-sm font-medium text-slate-700" %>
+        <%= form.text_field :first_name, required: true, autocomplete: "off", class: ApplicationHelper::INPUT_CLASSES %>
+        <%= field_errors(form, :first_name) %>
+      </div>
+
+      <div>
+        <%= form.label :last_name, class: "block text-sm font-medium text-slate-700" %>
+        <%= form.text_field :last_name, required: true, autocomplete: "off", class: ApplicationHelper::INPUT_CLASSES %>
+        <%= field_errors(form, :last_name) %>
+      </div>
+    </div>
+
+    <div>
+      <%= form.label :rut, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.text_field :rut, required: true, placeholder: "12.345.678-5", autocomplete: "off",
+                                class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(form, :rut) %>
+    </div>
+
+    <div>
+      <%= form.label :email, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.email_field :email, required: true, autocomplete: "off", class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(form, :email) %>
+    </div>
+
+    <div>
+      <%= form.label :role, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.select :role, AccountPolicy::CREATABLE_ROLES.map { |role| [ t("roles.#{role}"), role ] }, {},
+                      class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(form, :role) %>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <%= form.submit "Crear cuenta", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <%= link_to "Cancelar", accounts_path, class: "text-sm text-slate-600 hover:underline" %>
+    </div>
+  <% end %>
+</section>

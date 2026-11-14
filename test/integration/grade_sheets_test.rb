@@ -15,7 +15,7 @@ class GradeSheetsTest < ActionDispatch::IntegrationTest
   end
 
   def second_student
-    @second_student ||= User.create!(first_name: "Segunda", last_name: "Alumna", rut: "10000004-4", email: "segunda@ucv.test",
+    @second_student ||= User.create!(first_name: "Segunda", last_name: "Alumna", rut: "10000004-0", email: "segunda@ucv.test",
       password: "password123", role: "alumno", university: universities(:ucv)).tap do |student|
       ActsAsTenant.with_tenant(universities(:ucv)) { Enrollment.create!(section: @section, student: student) }
     end

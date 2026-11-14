@@ -1,0 +1,46 @@
+<% content_for :title, "Resultado de importación · SGA" %>
+<section class="mx-auto max-w-5xl py-8">
+  <h1 class="text-3xl font-bold">Resultado de la importación</h1>
+  <p class="mt-2">Universidad: <strong><%= current_user.university.name %></strong>.</p>
+  <div role="status" class="mt-6 rounded-lg border bg-white p-4">
+    <p>Cuentas creadas: <strong><%= @result.created.size %></strong>.</p>
+    <% if @result.errors.any? %>
+      <p class="mt-2 text-amber-800">Filas rechazadas: <strong><%= @result.errors.size %></strong>. Esas filas no crearon cuentas.</p>
+    <% else %>
+      <p class="mt-2 text-green-800">Todas las filas con datos se cargaron correctamente.</p>
+    <% end %>
+  </div>
+  <% if @result.created.any? %>
+    <p class="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+      Guarda estas contraseñas y entrégalas únicamente a sus destinatarios.
+      No se podrán recuperar desde el listado. No recargues esta página para evitar reenviar el archivo.
+    </p>
+    <div class="mt-6 overflow-x-auto rounded-lg border">
+      <table class="min-w-full bg-white text-left">
+        <caption class="sr-only">Cuentas creadas y contraseñas temporales</caption>
+        <thead><tr>
+          <% ["Nombre", "Correo", "Rol", "Contraseña temporal"].each do |heading| %>
+            <th scope="col" class="px-4 py-3"><%= heading %></th>
+          <% end %>
+        </tr></thead>
+        <tbody class="divide-y">
+          <% @result.created.each do |entry| %>
+            <% account = entry.fetch(:account) %>
+            <tr>
+              <td class="px-4 py-3"><%= account.name %></td>
+              <td class="px-4 py-3"><%= account.email %></td>
+              <td class="px-4 py-3"><%= account.role_name %></td>
+              <td class="px-4 py-3"><code class="temporary-password"><%= entry.fetch(:temporary_password) %></code></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="mt-6">No se crearon cuentas. Revisa los datos y que las cuentas no existan previamente.</p>
+  <% end %>
+  <div class="mt-6 flex gap-4">
+    <%= link_to "Volver a cuentas", accounts_path, class: "text-indigo-600 hover:underline" %>
+    <%= link_to "Importar otro archivo", import_accounts_path, class: "text-indigo-600 hover:underline" %>
+  </div>
+</section>

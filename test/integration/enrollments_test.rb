@@ -21,7 +21,7 @@ class EnrollmentsTest < ActionDispatch::IntegrationTest
 
   test "el administrativo inscribe a varios alumnos a la vez" do
     section = free_section
-    students = [ create_student("Rojas", "10000001-1"), create_student("Soto", "10000002-2") ]
+    students = [ create_student("Rojas", "10000001-6"), create_student("Soto", "10000002-4") ]
     sign_in users(:administrativo)
 
     assert_difference -> { Enrollment.where(section: section, active: true).count }, 2 do
@@ -54,7 +54,7 @@ class EnrollmentsTest < ActionDispatch::IntegrationTest
 
   test "un alumno que ya está en otra sección del curso se rechaza con un mensaje, sin inscribir a nadie" do
     section = second_section_of_course_one
-    newcomer = create_student("Nueva", "10000003-3")
+    newcomer = create_student("Nueva", "10000003-2")
     sign_in users(:administrativo)
 
     assert_no_difference -> { Enrollment.count } do
@@ -67,7 +67,7 @@ class EnrollmentsTest < ActionDispatch::IntegrationTest
 
   test "la lista no ofrece a quienes ya tienen un rol en otra sección del curso" do
     section = second_section_of_course_one
-    newcomer = create_student("Nueva", "10000003-3")
+    newcomer = create_student("Nueva", "10000003-2")
     sign_in users(:administrativo)
 
     get course_section_enrollments_path(section.course_id, section)
@@ -87,7 +87,7 @@ class EnrollmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "el profesor y el alumno no inscriben alumnos" do
-    newcomer = create_student("Nueva", "10000003-3")
+    newcomer = create_student("Nueva", "10000003-2")
 
     %i[profesor alumno].each do |fixture|
       sign_in users(fixture)

@@ -6,7 +6,7 @@ class EnrollmentsController < ApplicationController
 
   def index
     @enrollments = @section.enrollments.includes(:student)
-    @available_students = available_students
+    @available_students = @section.student_accounts_without_role_in_course
   end
 
   def create
@@ -51,17 +51,5 @@ class EnrollmentsController < ApplicationController
     end
 
     rejected
-  end
-
-  # Student accounts (an ayudante can study other courses, Trello A23) of the university, without an
-  # active enrollment or a teaching role in any section of this course in this term.
-  def available_students
-    same_course = Section.where(course_id: @section.course_id, term_id: @section.term_id)
-    enrolled = Enrollment.where(section: same_course, active: true).select(:student_id)
-    staff = SectionStaff.where(section: same_course).select(:user_id)
-
-    User.where(role: %w[alumno ayudante], university_id: @section.university_id)
-      .where.not(id: enrolled).where.not(id: staff)
-      .order(:last_name, :first_name)
   end
 end

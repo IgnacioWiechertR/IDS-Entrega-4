@@ -18,6 +18,19 @@ class Section < ApplicationRecord
     User.joins(:enrollments).where(enrollments: { section_id: id, active: true }).order(:last_name, :first_name)
   end
 
+  # Student accounts (an ayudante can study other courses, Trello A23) of the university, without an active
+  # enrollment or a teaching role in any section of this course in this term: the ones that can still be
+  # enrolled (A24) or assigned as ayudantes (A23).
+  def student_accounts_without_role_in_course
+    same_course = Section.where(course_id: course_id, term_id: term_id)
+    enrolled = Enrollment.where(section: same_course, active: true).select(:student_id)
+    staff = SectionStaff.where(section: same_course).select(:user_id)
+
+    User.where(role: %w[alumno ayudante], university_id: university_id)
+      .where.not(id: enrolled).where.not(id: staff)
+      .order(:last_name, :first_name)
+  end
+
   private
 
   def course_and_term_in_same_university

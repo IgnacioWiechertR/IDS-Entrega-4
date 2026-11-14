@@ -20,7 +20,7 @@ class MyGradesTest < ActionDispatch::IntegrationTest
 
   test "solo ve notas publicadas y solo las suyas" do
     # grades(:one) is a pending grade of users(:alumno); a classmate also has a published grade.
-    classmate = User.create!(first_name: "Compañera", last_name: "Curso", rut: "10000005-5", email: "companera@ucv.test",
+    classmate = User.create!(first_name: "Compañera", last_name: "Curso", rut: "10000005-9", email: "companera@ucv.test",
       password: "password123", role: "alumno", university: universities(:ucv))
     ActsAsTenant.with_tenant(universities(:ucv)) { Enrollment.create!(section: sections(:one), student: classmate) }
     other = Grade.create!(evaluation: @evaluation, student: classmate, score: 3.1, status: "publicada", entered_by: users(:ayudante))
