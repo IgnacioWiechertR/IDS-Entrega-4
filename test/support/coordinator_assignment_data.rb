@@ -22,7 +22,7 @@ module CoordinatorAssignmentData
   def coordinator_account(role, university, identifier)
     @coordinator_user_counter = (@coordinator_user_counter || 0) + 1
     User.create!(first_name: "Persona", last_name: identifier,
-      rut: "#{80_000_000 + @coordinator_user_counter}-0", email: "#{identifier}@a15.test",
+      rut: Rut.build(80_000_000 + @coordinator_user_counter), email: "#{identifier}@a15.test",
       password: "password123", role: role, university: university)
   end
 
