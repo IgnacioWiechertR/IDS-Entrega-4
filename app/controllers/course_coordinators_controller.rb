@@ -1,59 +1,64 @@
 class CourseCoordinatorsController < ApplicationController
-  load_and_authorize_resource
-  before_action :set_course_coordinator, only: %i[ show edit update destroy ]
+  before_action :authorize_assignment
 
-  # GET /course_coordinators
   def index
-    @course_coordinators = CourseCoordinator.all
+    @assignment = CourseCoordinator.new
+    load_assignment_options
   end
 
-  # GET /course_coordinators/1
-  def show
-  end
-
-  # GET /course_coordinators/new
-  def new
-    @course_coordinator = CourseCoordinator.new
-  end
-
-  # GET /course_coordinators/1/edit
-  def edit
-  end
-
-  # POST /course_coordinators
   def create
-    @course_coordinator = CourseCoordinator.new(course_coordinator_params)
+    attributes = params.expect(course_coordinator: [ :course_id, :term_id, :user_id ])
+    course = available_courses.find(attributes[:course_id])
+    @term = available_terms.find(attributes[:term_id])
+    professor = available_professors.find(attributes[:user_id])
+    @assignment = CourseCoordinator.new(
+      course: course, term: @term, user: professor,
+      university: current_university, assigned_by: current_user
+    )
+    authorize! :create, @assignment
 
-    if @course_coordinator.save
-      redirect_to @course_coordinator, notice: "Course coordinator was successfully created."
+    if @assignment.save
+      redirect_to course_coordinators_path(term_id: @term.id),
+        notice: "Coordinador asignado correctamente.", status: :see_other
     else
-      render :new, status: :unprocessable_content
+      load_assignment_options
+      render :index, status: :unprocessable_content
     end
-  end
-
-  # PATCH/PUT /course_coordinators/1
-  def update
-    if @course_coordinator.update(course_coordinator_params)
-      redirect_to @course_coordinator, notice: "Course coordinator was successfully updated.", status: :see_other
-    else
-      render :edit, status: :unprocessable_content
-    end
-  end
-
-  # DELETE /course_coordinators/1
-  def destroy
-    @course_coordinator.destroy!
-    redirect_to course_coordinators_path, notice: "Course coordinator was successfully destroyed.", status: :see_other
+  rescue ActiveRecord::RecordNotUnique
+    redirect_to course_coordinators_path(term_id: @term.id),
+      alert: "La asignatura ya tiene un coordinador en este período. Actualiza la página para verlo.",
+      status: :see_other
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_course_coordinator
-      @course_coordinator = CourseCoordinator.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def course_coordinator_params
-      params.expect(course_coordinator: [ :course_id, :term_id, :user_id, :assigned_by_id ])
+  def authorize_assignment
+    authorize! action_name.to_sym, CourseCoordinator
+  end
+
+  def available_courses
+    Course.joins(:faculty).where(university_id: current_university.id,
+      faculties: { university_id: current_university.id })
+  end
+
+  def available_terms
+    Term.where(university_id: current_university.id)
+  end
+
+  def available_professors
+    User.profesor.where(university_id: current_university.id)
+  end
+
+  def load_assignment_options
+    @terms = available_terms.order(current: :desc, starts_on: :desc, id: :desc)
+    @term ||= if params[:term_id].present?
+      @terms.find(params[:term_id])
+    else
+      @terms.find_by(current: true) || @terms.first
     end
+    @courses = available_courses.order(:code, :id)
+    @professors = available_professors.order(:first_name, :last_name, :id)
+    @coordinators = CourseCoordinator.where(university_id: current_university.id,
+      term: @term, course_id: @courses.select(:id)).includes(:user).group_by(&:course_id)
+  end
 end

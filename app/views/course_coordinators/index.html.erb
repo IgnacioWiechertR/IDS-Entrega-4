@@ -1,29 +1,98 @@
-<% content_for :title, "Course coordinators" %>
+<% content_for :title, "Asignar coordinador · SGA" %>
 
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+<section class="py-8">
+  <h1 class="text-2xl font-bold text-slate-900">Asignar coordinador</h1>
+  <p class="mt-2 text-slate-600">Asigna profesores como coordinadores de las asignaturas de <%= current_university.name %>, según el período.</p>
+
+  <% if @assignment.errors.any? %>
+    <div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
+      <p class="font-semibold">No se pudo asignar el coordinador.</p>
+      <ul class="mt-2 list-disc pl-5">
+        <% @assignment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
   <% end %>
 
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Course coordinators</h1>
-    <%= link_to "New course coordinator", new_course_coordinator_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
-  </div>
-
-  <div id="course_coordinators" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @course_coordinators.any? %>
-      <% @course_coordinators.each do |course_coordinator| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render course_coordinator %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", course_coordinator, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_course_coordinator_path(course_coordinator), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", course_coordinator, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <p class="text-center my-10">No course coordinators found.</p>
+  <% if @terms.empty? %>
+    <p class="mt-6 rounded-lg border border-slate-200 bg-white p-6">No hay períodos disponibles en esta universidad.</p>
+  <% else %>
+    <%= form_with url: course_coordinators_path, method: :get, class: "mt-6 flex flex-wrap items-end gap-3" do |form| %>
+      <div>
+        <%= form.label :term_id, "Período", class: "block text-sm font-medium text-slate-700" %>
+        <%= form.collection_select :term_id, @terms, :id, :name, { selected: @term.id },
+              { required: true, class: "mt-1 rounded-md border border-slate-300 px-3 py-2" } %>
+      </div>
+      <%= form.submit "Ver período", class: "rounded-md border border-slate-300 bg-white px-4 py-2 font-semibold" %>
     <% end %>
-  </div>
-</div>
+
+    <% if @courses.empty? %>
+      <p class="mt-6 rounded-lg border border-slate-200 bg-white p-6">No hay asignaturas disponibles en esta universidad.</p>
+    <% else %>
+      <% if @professors.empty? %>
+        <p class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-900" role="status">No hay profesores registrados en esta universidad para asignar.</p>
+      <% end %>
+
+      <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200">
+          <caption class="sr-only">Coordinadores de las asignaturas para <%= @term.name %></caption>
+          <thead class="bg-slate-100 text-left text-sm">
+            <tr>
+              <th scope="col" class="px-4 py-3">Código</th>
+              <th scope="col" class="px-4 py-3">Asignatura</th>
+              <th scope="col" class="px-4 py-3">Coordinadores asignados</th>
+              <th scope="col" class="px-4 py-3">Asignar profesor</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white text-sm">
+            <% @courses.each do |course| %>
+              <% coordinators = @coordinators.fetch(course.id, []) %>
+              <% professors = @professors.reject { |professor| coordinators.any? { |coordinator| coordinator.user_id == professor.id } } %>
+              <tr id="course_<%= course.id %>">
+                <td class="px-4 py-4"><%= course.code %></td>
+                <td class="px-4 py-4"><%= course.name %></td>
+                <td class="px-4 py-4">
+                  <% if coordinators.any? %>
+                    <ul>
+                      <% coordinators.each do |coordinator| %>
+                        <li>
+                          <% if coordinator.user.university_id == current_university.id && coordinator.user.profesor? %>
+                            <%= coordinator.user.name %>
+                          <% else %>
+                            Asignación pendiente de revisión
+                          <% end %>
+                        </li>
+                      <% end %>
+                    </ul>
+                  <% else %>
+                    <span class="text-slate-500">Sin coordinador asignado</span>
+                  <% end %>
+                </td>
+                <td class="px-4 py-4">
+                  <% if professors.any? %>
+                    <%= form_with scope: :course_coordinator, url: course_coordinators_path, class: "flex flex-wrap items-end gap-3" do |form| %>
+                      <%= form.hidden_field :course_id, value: course.id, id: nil %>
+                      <%= form.hidden_field :term_id, value: @term.id, id: nil %>
+                      <div>
+                        <%= form.label :user_id, "Coordinador para #{course.code}", for: "coordinator_for_course_#{course.id}", class: "block font-medium text-slate-700" %>
+                        <%= form.collection_select :user_id, professors, :id, :name,
+                              { prompt: "Selecciona un profesor", selected: (@assignment.user_id if @assignment.course_id == course.id) },
+                              { id: "coordinator_for_course_#{course.id}", required: true, class: "mt-1 rounded-md border border-slate-300 px-3 py-2" } %>
+                      </div>
+                      <%= form.submit "Asignar coordinador", class: "rounded-md bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-500" %>
+                    <% end %>
+                  <% elsif @professors.any? %>
+                    <span class="text-slate-500">No hay otros profesores disponibles.</span>
+                  <% else %>
+                    <span class="text-slate-500">No hay profesores disponibles.</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+</section>

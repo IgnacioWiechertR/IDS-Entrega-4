@@ -4,7 +4,7 @@ require "test_helper"
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators
+    /announcements /attendance_records /attendance_sessions
     /faculties /grades /materials
     /terms /universities /users
   ].freeze
