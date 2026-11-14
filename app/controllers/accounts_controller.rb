@@ -22,13 +22,14 @@ class AccountsController < ApplicationController
       condition = "concat_ws(' ', first_name, last_name) ILIKE :name"
 
       if normalized_rut.present?
-        condition += " OR regexp_replace(rut, '[.[:space:]-]', '', 'g') ILIKE :rut"
+        condition += " OR regexp_replace(rut, :rut_format, '', 'g') ILIKE :rut"
       end
 
       @accounts = @accounts.where(
         condition,
         name: name_pattern,
-        rut: rut_pattern
+        rut: rut_pattern,
+        rut_format: "[.[:space:]-]"
       )
     end
 
