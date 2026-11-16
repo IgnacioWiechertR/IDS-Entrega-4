@@ -13,6 +13,23 @@ class Section < ApplicationRecord
   validates :number, uniqueness: { scope: %i[course_id term_id] }
   validate :course_and_term_in_same_university
 
+  # A22: sections whose course the user coordinates in the section's own term. course_coordinators has no
+  # tenant yet, so both tables are filtered by the user's university here.
+  scope :coordinated_by, ->(user) {
+    coordinators = CourseCoordinator.arel_table
+    where(university_id: user.university_id).where(
+      CourseCoordinator.where(user_id: user.id, university_id: user.university_id)
+        .where(coordinators[:course_id].eq(arel_table[:course_id]))
+        .where(coordinators[:term_id].eq(arel_table[:term_id]))
+        .arel.exists
+    )
+  }
+
+  def coordinated_by?(user)
+    user.university_id == university_id &&
+      CourseCoordinator.exists?(course_id: course_id, term_id: term_id, user_id: user.id, university_id: university_id)
+  end
+
   # Students with an active enrollment, by last name: the ones on the attendance list.
   def active_students
     User.joins(:enrollments).where(enrollments: { section_id: id, active: true }).order(:last_name, :first_name)

@@ -25,13 +25,21 @@ module ProfessorAssignment
       errors.add(:user, "debe pertenecer a la universidad de la sección")
     end
 
-    unless assigned_by.administrativo? && assigned_by.university_id == section.university_id
-      errors.add(:assigned_by, "debe ser un administrativo de la universidad de la sección")
+    unless authorized_assigner?
+      errors.add(:assigned_by, "debe ser un administrativo de la universidad o el coordinador de la asignatura")
     end
 
     unless section.course&.university_id == section.university_id &&
         section.term&.university_id == section.university_id
       errors.add(:section, "debe tener una asignatura y un período de su misma universidad")
     end
+  end
+
+  # Trello A22: the administrativo of the university, or the profesor who coordinates the course in the
+  # section's term.
+  def authorized_assigner?
+    return false unless assigned_by.university_id == section.university_id
+
+    assigned_by.administrativo? || (assigned_by.profesor? && section.coordinated_by?(assigned_by))
   end
 end
