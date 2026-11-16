@@ -49,6 +49,9 @@ Rails.application.routes.draw do
   # resources :section_staffs
   resources :course_coordinators, only: %i[ index create ]
   resources :courses do
+    resources :materials, only: %i[ index show ], controller: "course_materials" do
+      get :preview, on: :member
+    end
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
        resources :enrollments, only: [ :index, :create, :destroy ]

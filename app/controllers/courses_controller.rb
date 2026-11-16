@@ -30,6 +30,7 @@ class CoursesController < ApplicationController
       return
     end
 
+    @materials = @course.materials.with_attached_file.order(created_at: :desc, id: :desc)
     @terms = Term.where(id: @course.sections.select(:term_id)).order(starts_on: :desc).to_a
     @term = @terms.find { |term| term.id.to_s == params[:term_id].to_s } || @terms.find(&:current) || @terms.first
     @sections = @term ? @course.sections.where(term: @term).includes(section_staffs: :user).order(:number).to_a : []
