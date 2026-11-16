@@ -265,10 +265,11 @@ class CourseMaterialsTest < ActionDispatch::IntegrationTest
     end
 
     assert_no_difference "Material.count" do
-      patch material_path(@material), params: { material: { title: "Alterado" } }
-      assert_equal "No tienes permiso para ver esa página.", flash[:alert]
-      delete material_path(@material)
-      assert_equal "No tienes permiso para ver esa página.", flash[:alert]
+      patch "/materials/#{@material.id}", params: { material: { title: "Alterado" } }
+      assert_global_material_route_closed
+      sign_in users(:alumno)
+      delete "/materials/#{@material.id}"
+      assert_global_material_route_closed
     end
     assert_equal "Guía de programación", @material.reload.title
   end
@@ -285,6 +286,16 @@ class CourseMaterialsTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # Other cards remove the scaffold routes; while present, they must deny access.
+  def assert_global_material_route_closed
+    if response.redirect?
+      assert_redirected_to courses_path
+      assert_equal "No tienes permiso para ver esa página.", flash[:alert]
+    else
+      assert_response :not_found
+    end
+  end
 
   def material_read_paths(course: @course, material: @material)
     [ course_materials_path(course), course_material_path(course, material), preview_course_material_path(course, material) ]

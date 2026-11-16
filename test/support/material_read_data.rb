@@ -11,8 +11,9 @@ module MaterialReadData
 
   def read_material(course: @course, title: "Material de prueba", filename: "guia.pdf", content: read_pdf_bytes, created_at: Time.current)
     ActsAsTenant.with_tenant(course.university) do
-      Material.create!(course: course, title: title, created_at: created_at,
-        file: { io: StringIO.new(content), filename: filename })
+      # B2 also tests historical files that do not satisfy B1's current upload rules.
+      Material.new(course: course, title: title, created_at: created_at,
+        file: { io: StringIO.new(content), filename: filename }).tap { |material| material.save!(validate: false) }
     end
   end
 

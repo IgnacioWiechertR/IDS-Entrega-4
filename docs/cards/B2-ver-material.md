@@ -69,10 +69,12 @@ Las pruebas cubren permisos y revocación de acceso, consultas cruzadas entre cu
 
 Las pruebas no necesitan LibreOffice. Se conserva un conjunto de documentos de prueba `.docx`, `.xlsx`, `.pptx` y `.odp` para verificar la presentación de sus datos y la ausencia de lecturas del almacenamiento.
 
+Los datos de pruebas de B2 incluyen archivos históricos que no cumplen las reglas actuales de subida de B1. Se crean sin validación de modelo únicamente en ese helper de pruebas; las rutas reales de subida y reemplazo mantienen sus validaciones. La comprobación del scaffold admite la denegación mientras existan sus rutas y el 404 cuando las demás tarjetas las cierren.
+
 Comprobaciones locales realizadas:
 
-- B2: 33 pruebas y 410 aserciones, sin fallos, errores ni omisiones.
-- Suite completa: 423 pruebas y 2.574 aserciones, sin fallos, errores ni omisiones.
+- B2: 33 pruebas y 416 aserciones, sin fallos, errores ni omisiones.
+- Suite completa: 423 pruebas y 2.580 aserciones, sin fallos, errores ni omisiones.
 - RuboCop: 212 archivos, sin infracciones.
 - Brakeman: 0 errores y 0 advertencias de seguridad.
 - Rutas combinadas en memoria con B1: listado, detalle y vista previa llegan a `CourseMaterialsController`; formulario y subida llegan a `MaterialsController`.

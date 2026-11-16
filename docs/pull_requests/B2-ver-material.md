@@ -22,8 +22,9 @@ La vista previa de documentos de oficina queda pendiente para una tarjeta poster
 
 ## Verificación
 
-- B2: 33 pruebas y 410 aserciones, sin fallos y sin LibreOffice, incluida la comprobación de que los documentos de oficina no descargan contenido desde el almacenamiento.
-- Suite completa: 423 pruebas y 2.574 aserciones, sin fallos, errores ni omisiones.
+- B2: 33 pruebas y 416 aserciones, sin fallos y sin LibreOffice, incluida la comprobación de que los documentos de oficina no descargan contenido desde el almacenamiento.
+- Suite completa: 423 pruebas y 2.580 aserciones, sin fallos, errores ni omisiones.
+- Los datos históricos de prueba y la comprobación del scaffold son compatibles con las validaciones y el cierre de rutas que agregan las otras tarjetas de materiales.
 - RuboCop: 212 archivos, sin infracciones. Brakeman: 0 errores y 0 advertencias de seguridad.
 - Rutas combinadas con B1 comprobadas en memoria: lectura en `CourseMaterialsController`, formulario y subida en `MaterialsController`.
 - Entorno local: Ruby 4.0.0 y PostgreSQL 18. CI debe verificar Ruby 3.4.5, declarado en el proyecto.
