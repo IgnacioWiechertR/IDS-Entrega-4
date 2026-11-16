@@ -105,11 +105,12 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "un rol sin cuentas aparece con 0 y no se mezclan universidades" do
-    User.where(university: universities(:iusa), role: "ayudante").delete_all
+    # A university created here, so the test does not delete fixture accounts that other records point to.
+    empty = University.create!(name: "Universidad sin cuentas", slug: "d7-vacia")
     before_ucv = User.count_by_role(universities(:ucv))
-    build_user(role: "profesor", email: "otro@iusa.test", university: universities(:iusa)).save!
+    build_user(role: "profesor", email: "profesor@d7-vacia.test", university: empty).save!
 
-    assert_equal 0, User.count_by_role(universities(:iusa))["ayudante"]
+    assert_equal({ "administrativo" => 0, "profesor" => 1, "ayudante" => 0, "alumno" => 0 }, User.count_by_role(empty))
     assert_equal before_ucv, User.count_by_role(universities(:ucv))
   end
 end
