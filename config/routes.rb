@@ -63,7 +63,7 @@ Rails.application.routes.draw do
   resources :users
   resources :universities
 
-  #D3: indicadores flujo de notas
+  # D3: indicadores flujo de notas
   namespace :reports do
     resource :grade_statuses, only: :show
   end
