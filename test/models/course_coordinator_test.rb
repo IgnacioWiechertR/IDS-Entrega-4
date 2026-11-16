@@ -27,10 +27,13 @@ class CourseCoordinatorTest < ActiveSupport::TestCase
   end
 
   test "el coordinador es de la misma universidad que el curso" do
-    coordinator = build_coordinator(course: courses(:two), term: next_term(:iusa))
+    # An IUSA course, inside IUSA, with the UCV account of the profesor.
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      coordinator = build_coordinator(course: courses(:two), term: next_term(:iusa), assigned_by: users(:administrativo_iusa))
 
-    assert_not coordinator.valid?
-    assert_includes coordinator.errors[:user], "debe ser de la misma universidad"
+      assert_not coordinator.valid?
+      assert_includes coordinator.errors[:user], "debe ser de la misma universidad"
+    end
   end
 
   test "el período es de la misma universidad que el curso" do

@@ -1,11 +1,12 @@
 # Domain records store the university of the record they belong to (a grade, the one of its
-# evaluation; an enrollment, the one of its section), so every table can be isolated by university.
+# evaluation; an enrollment, the one of its section) and are isolated by it (T7): queries only reach the
+# active university, and without one they raise, like Course or Section (A3).
 module InheritsUniversity
   extend ActiveSupport::Concern
 
   class_methods do
     def inherits_university_from(parent)
-      belongs_to :university
+      acts_as_tenant :university
 
       before_validation { self.university ||= public_send(parent)&.university }
 
