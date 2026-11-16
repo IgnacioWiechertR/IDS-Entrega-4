@@ -23,6 +23,7 @@ class MaterialsController < ApplicationController
   # POST /materials
   def create
     @material = Material.new(material_params)
+    @material.uploaded_by = current_user
 
     if @material.save
       redirect_to @material, notice: "Material was successfully created."

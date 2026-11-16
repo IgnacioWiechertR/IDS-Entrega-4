@@ -222,6 +222,9 @@
           <% else %>
             <span class="font-medium text-slate-900"><%= material.title %></span>
           <% end %>
+          <% if can?(:update, material) %>
+            <%= link_to "Editar", edit_course_material_edit_path(@course, material), class: "ml-3 font-medium text-indigo-700 hover:underline" %>
+          <% end %>
         </li>
       <% end %>
     </ul>

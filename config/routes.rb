@@ -48,7 +48,7 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
-  resources :materials
+  resources :materials, only: :index
   # resources :enrollments
   # resources :section_staffs
   resources :course_coordinators, only: %i[ index create ]
@@ -67,6 +67,11 @@ Rails.application.routes.draw do
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # B3: editing is restricted to the original uploader and stays separate from B1/B2/B5.
+  resources :courses, only: [] do
+    resources :material_edits, only: %i[ index edit update ]
+  end
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

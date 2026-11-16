@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -174,7 +174,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
     t.string "title"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "uploaded_by_id"
     t.index ["course_id"], name: "index_materials_on_course_id"
+    t.index ["uploaded_by_id"], name: "index_materials_on_uploaded_by_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -292,6 +294,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
   add_foreign_key "grades", "users", column: "reviewed_by_id"
   add_foreign_key "grades", "users", column: "student_id"
   add_foreign_key "materials", "courses"
+  add_foreign_key "materials", "users", column: "uploaded_by_id"
   add_foreign_key "notifications", "universities"
   add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "section_staffs", "sections"
