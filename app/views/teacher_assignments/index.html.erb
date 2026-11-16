@@ -2,7 +2,15 @@
 
 <section class="py-8">
   <h1 class="text-2xl font-bold text-slate-900">Asignar profesor a sección</h1>
-  <p class="mt-2 text-slate-600">Cada sección puede tener un profesor. Solo se muestran secciones y profesores de tu universidad.</p>
+  <%# Wording only: which sections are listed is decided by TeacherAssignmentPolicy. %>
+  <p class="mt-2 text-slate-600">
+    Cada sección puede tener un profesor.
+    <% if current_user.administrativo? %>
+      Solo se muestran secciones y profesores de tu universidad.
+    <% else %>
+      Secciones de las asignaturas que coordinas, en el período que coordinas, y profesores de tu universidad.
+    <% end %>
+  </p>
 
   <% if @assignment.errors.any? %>
     <div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
@@ -16,7 +24,7 @@
   <% end %>
 
   <% if @sections.empty? %>
-    <p class="mt-6 rounded-lg border border-slate-200 bg-white p-6">No hay secciones disponibles en tu universidad.</p>
+    <p class="mt-6 rounded-lg border border-slate-200 bg-white p-6">No hay secciones disponibles para asignar.</p>
   <% else %>
     <% if @professors.empty? %>
       <p class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-900" role="status">No hay profesores registrados en tu universidad para asignar.</p>
@@ -45,6 +53,11 @@
                   <% if assignment.user.university_id == current_user.university_id %>
                     <span><%= assignment.user.name %></span>
                     <span class="ml-2 text-slate-500">Profesor asignado</span>
+                    <% if assignment.assigned_by.university_id == current_user.university_id %>
+                      <p class="mt-1 text-xs text-slate-500">
+                        Asignado por <%= assignment.assigned_by.name %> el <%= l(assignment.created_at.to_date) %>
+                      </p>
+                    <% end %>
                   <% else %>
                     <span>Asignación pendiente de revisión</span>
                   <% end %>
