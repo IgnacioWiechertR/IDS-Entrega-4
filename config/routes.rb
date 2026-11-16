@@ -40,7 +40,7 @@ Rails.application.routes.draw do
 
   # C12: the user's inbox (the old scaffold listed every notification).
   resources :notifications, only: :index
-  resources :announcements, only: %i[ new create ]
+  resources :announcements
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
