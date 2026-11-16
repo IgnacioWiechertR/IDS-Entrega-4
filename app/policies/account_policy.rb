@@ -13,7 +13,13 @@ class AccountPolicy
     # A custom action instead of :create, so the closed users scaffold does not open with it.
     can :create_account, User, university_id: user.university_id, role: CREATABLE_ROLES if user.administrativo?
 
-    # Only the director works across universities and picks the active one (A3).
+    # A17: Director y administrativo pueden cambiar el rol de cuentas gestionables en su universidad activa.
+    if user.director?
+      can :change_role, User, role: CREATABLE_ROLES
+    elsif user.administrativo? && user.university_id.present?
+      can :change_role, User, university_id: user.university_id, role: CREATABLE_ROLES
+    end
+
     can :switch, University if user.director?
   end
 end
