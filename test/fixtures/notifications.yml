@@ -1,15 +1,13 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
   university: ucv
   recipient: alumno
-  kind: MyString
-  message: MyString
+  kind: nota_publicada
+  message: Tu nota de Control 1 (ICC1001 · Sección 1) ya está publicada.
   read_at: 2026-10-18 22:32:59
 
 two:
   university: ucv
   recipient: profesor
-  kind: MyString
-  message: MyString
+  kind: notas_en_revision
+  message: 1 nota de Control 1 (ICC1001 · Sección 1) espera tu revisión.
   read_at: 2026-10-18 22:32:59

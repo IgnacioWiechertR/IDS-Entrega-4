@@ -17,4 +17,11 @@ three:
   section: two
   user: profesor_iusa
   role: profesor
-  assigned_by: administrativo
+  assigned_by: administrativo_iusa
+
+four:
+  university: iusa
+  section: two
+  user: ayudante_iusa
+  role: ayudante
+  assigned_by: administrativo_iusa

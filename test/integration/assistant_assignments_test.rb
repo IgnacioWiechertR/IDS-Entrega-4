@@ -176,7 +176,14 @@ class AssistantAssignmentsTest < ActionDispatch::IntegrationTest
   end
 
   test "el profesor no entra a una sección de la otra universidad aunque figure como coordinador" do
-    # course_coordinators(:two) links the UCV account of the profesor with an IUSA course.
+    # An inconsistent row that links the UCV account of the profesor with an IUSA course (the fixtures no
+    # longer have one).
+    # It goes in another term, because course_coordinators(:two) already holds the IUSA course in terms(:two).
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      term = Term.create!(name: "2026-1", starts_on: Date.new(2026, 3, 2), ends_on: Date.new(2026, 7, 10))
+      CourseCoordinator.new(university: universities(:iusa), course: courses(:two), term: term,
+        user: users(:profesor), assigned_by: users(:administrativo_iusa)).save!(validate: false)
+    end
     sign_in users(:profesor)
     get course_section_assistant_assignments_path(courses(:two), sections(:two))
     assert_response :not_found
