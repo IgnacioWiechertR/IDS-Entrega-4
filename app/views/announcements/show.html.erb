@@ -1,15 +1,15 @@
-<% content_for :title, "Showing announcement" %>
+<% content_for :title, "#{@announcement.subject} · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
+<section class="mx-auto max-w-3xl py-8">
+  <p class="text-sm"><%= link_to "← Anuncios", announcements_path, class: "text-indigo-700 hover:underline" %></p>
+  <p class="mt-6 text-sm font-semibold text-indigo-600"><%= @announcement.course.code %> · <%= @announcement.course.name %></p>
+  <h1 class="mt-1 text-2xl font-bold text-slate-900"><%= @announcement.subject %></h1>
 
-  <h1 class="font-bold text-4xl">Showing announcement</h1>
+  <dl class="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
+    <div><dt class="inline font-medium">Destino:</dt> <dd class="inline"><%= @announcement.section ? "Sección #{@announcement.section.number}" : "Toda la asignatura" %></dd></div>
+    <div><dt class="inline font-medium">Autor:</dt> <dd class="inline"><%= @announcement.author.name %></dd></div>
+    <div><dt class="inline font-medium">Publicado:</dt> <dd class="inline"><%= l(@announcement.created_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+  </dl>
 
-  <%= render @announcement %>
-
-  <%= link_to "Edit this announcement", edit_announcement_path(@announcement), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "Back to announcements", announcements_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= button_to "Destroy this announcement", @announcement, method: :delete, form_class: "sm:inline-block mt-2 sm:mt-0 sm:ml-2", class: "w-full rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-</div>
+  <div id="announcement_body" class="mt-6 whitespace-pre-wrap rounded-lg border border-slate-200 bg-white p-6 text-slate-900"><%= @announcement.body %></div>
+</section>
