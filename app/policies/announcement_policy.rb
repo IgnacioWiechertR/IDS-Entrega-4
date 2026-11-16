@@ -2,7 +2,9 @@ class AnnouncementPolicy
   include CanCan::Ability
 
   def initialize(user)
-    if user.profesor? || user.ayudante?
+    # B12: profesores, and student accounts that are ayudantes of some section. An alumno account can be one
+    # (Trello A23); a student who only studies sees announcements in B16.
+    if user.profesor? || (user.student_account? && SectionStaff.exists?(user_id: user.id, university_id: user.university_id))
       can :index, :announcements
       can :read, Announcement do |announcement|
         course = Course.find_by(id: announcement.course_id)

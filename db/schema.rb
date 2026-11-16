@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,9 +50,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.bigint "author_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["author_id"], name: "index_announcements_on_author_id"
     t.index ["course_id"], name: "index_announcements_on_course_id"
     t.index ["section_id"], name: "index_announcements_on_section_id"
+    t.index ["university_id"], name: "index_announcements_on_university_id"
   end
 
   create_table "attendance_records", force: :cascade do |t|
@@ -262,6 +264,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "announcements", "courses"
   add_foreign_key "announcements", "sections"
+  add_foreign_key "announcements", "universities"
   add_foreign_key "announcements", "users", column: "author_id"
   add_foreign_key "attendance_records", "attendance_sessions"
   add_foreign_key "attendance_records", "universities"
