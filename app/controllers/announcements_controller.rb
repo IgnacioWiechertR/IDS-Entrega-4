@@ -34,7 +34,7 @@ class AnnouncementsController < ApplicationController
     authorize! :create, @announcement
 
     if @announcement.save
-      redirect_to(@announcement.section ? course_section_path(@course, @announcement.section) : courses_path,
+      redirect_to(@announcement.section ? course_section_path(@course, @announcement.section) : course_path(@course),
         notice: "El anuncio fue publicado.", status: :see_other)
     else
       @sections = permitted_sections.order(:number)
