@@ -93,4 +93,23 @@ class UserTest < ActiveSupport::TestCase
     assert_not ActiveRecord::Base.connection.table_exists?(:user_roles)
     assert_nil User.reflect_on_association(:user_roles)
   end
+
+  test "cuenta las cuentas de cada rol de una universidad, sin el director" do
+    before = User.count_by_role(universities(:ucv))
+    build_user(role: "ayudante").save!
+
+    counts = User.count_by_role(universities(:ucv))
+    assert_equal %w[administrativo profesor ayudante alumno], counts.keys
+    assert_equal before["ayudante"] + 1, counts["ayudante"]
+    assert_equal User.where(university: universities(:ucv), role: "alumno").count, counts["alumno"]
+  end
+
+  test "un rol sin cuentas aparece con 0 y no se mezclan universidades" do
+    User.where(university: universities(:iusa), role: "ayudante").delete_all
+    before_ucv = User.count_by_role(universities(:ucv))
+    build_user(role: "profesor", email: "otro@iusa.test", university: universities(:iusa)).save!
+
+    assert_equal 0, User.count_by_role(universities(:iusa))["ayudante"]
+    assert_equal before_ucv, User.count_by_role(universities(:ucv))
+  end
 end
