@@ -49,9 +49,6 @@ Rails.application.routes.draw do
   # resources :section_staffs
   resources :course_coordinators, only: %i[ index create ]
   resources :courses do
-    resources :materials, only: %i[ index show ], controller: "course_materials" do
-      get :preview, on: :member
-    end
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
        resources :enrollments, only: [ :index, :create, :destroy ]
@@ -61,6 +58,13 @@ Rails.application.routes.draw do
   resources :faculties
   resources :users
   resources :universities
+
+  # B2: reading stays separate from B1's upload routes and controller.
+  resources :courses, only: [] do
+    resources :materials, only: %i[ index show ], controller: "course_materials" do
+      get :preview, on: :member
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

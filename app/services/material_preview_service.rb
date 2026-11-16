@@ -4,7 +4,6 @@ class MaterialPreviewService
   MAX_FILE_SIZE = 50_000_000
   TEXT_PREVIEW_SIZE = 256_000
   TEXT_EXTENSIONS = %w[txt csv tsv md].freeze
-  OFFICE_EXTENSIONS = %w[doc docx rtf xls xlsx ppt pptx pps ppsx odt ods odp pages numbers key].freeze
 
   def initialize(attachment)
     @attachment = attachment
@@ -13,7 +12,7 @@ class MaterialPreviewService
 
   def available?
     @attachment.attached? && @attachment.byte_size.between?(1, MAX_FILE_SIZE) &&
-      ([ "pdf" ] + TEXT_EXTENSIONS + OFFICE_EXTENSIONS).include?(@extension)
+      ([ "pdf" ] + TEXT_EXTENSIONS).include?(@extension)
   end
 
   def text?
@@ -45,16 +44,10 @@ class MaterialPreviewService
 
     @attachment.blob.open do |source|
       actual = Marcel::MimeType.for(source)
+      raise Unavailable unless actual == "application/pdf"
+
       source.rewind
-      if @extension == "pdf"
-        raise Unavailable unless actual == "application/pdf"
-        source.read
-      else
-        expected = Marcel::MimeType.for(name: "material.#{@extension}")
-        allowed = [ expected, "application/zip", "application/x-ole-storage", "application/x-tika-ooxml", "text/rtf" ]
-        raise Unavailable unless allowed.include?(actual)
-        OfficePreviewService.new.call(source.path, extension: @extension)
-      end
+      source.read
     end
   end
 end

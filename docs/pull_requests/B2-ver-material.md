@@ -10,21 +10,24 @@ Permitir consultar el material académico y obtener una vista previa de su conte
 
 - Listado del material del curso, del más reciente al más antiguo.
 - Detalle con título, archivo, tamaño y fecha de publicación.
-- Visor de PDF y texto; conversión local de documentos de oficina a PDF mediante LibreOffice.
+- Visor de PDF y texto.
+- Los documentos de oficina muestran su detalle y un aviso de vista previa no disponible, sin descargar su contenido desde S3 ni ejecutar conversiones.
 - Cada solicitud de contenido verifica sesión, acceso al curso y universidad activa.
 - Mensajes para material ausente, documentos dañados o formatos no compatibles.
-- Dependencias del conversor incluidas en Docker y CI.
+- Docker y CI sin LibreOffice; se retira el conversor síncrono para evitar el agotamiento de memoria observado durante la revisión del equipo.
 
-La rama nace de Develop y no incluye los commits pendientes de B1. B2 usa un controlador de consulta independiente. Al integrar ambas tarjetas deben conservarse las rutas y el botón de subida de B1 junto a las vistas de B2.
+La rama nace de Develop y no incluye los commits pendientes de B1. Las rutas de consulta usan un controlador y un bloque independientes. La combinación de `routes.rb` y `sections/show.html.erb` con B1 se comprobó sin conflictos. Al integrar B1 también se deben conservar los botones «Subir material» y «Publicar anuncio» del curso, cada uno con su permiso; ese conflicto con Develop ya existe en la cabecera de `courses/show.html.erb`.
 
-La conversión puede presentar diferencias de formato y se realiza en cada apertura. Los documentos protegidos con contraseña o no compatibles muestran un mensaje. B3, B4 y la descarga dedicada del original de B5 conservan su alcance.
+La vista previa de documentos de oficina queda pendiente para una tarjeta posterior con procesamiento en segundo plano, concurrencia limitada y PDF persistido. El equipo debe validar el alcance PDF/texto para esta entrega. B3, B4 y la descarga dedicada del original de B5 conservan su alcance.
 
 ## Verificación
 
-- B2: 37 pruebas y 352 aserciones, sin fallos, incluidas conversiones reales de Word, Excel, PowerPoint y OpenDocument.
-- Suite completa: 427 pruebas y 2.516 aserciones, sin fallos.
-- RuboCop: 214 archivos, sin infracciones. Brakeman: 0 advertencias de seguridad.
-- Entorno local: Ruby 4.0.0, PostgreSQL 18 y LibreOffice 24.2.7.2. CI debe verificar Ruby 3.4.5, declarado en el proyecto. No se ha construido la imagen Docker completa.
+- B2: 33 pruebas y 410 aserciones, sin fallos y sin LibreOffice, incluida la comprobación de que los documentos de oficina no descargan contenido desde el almacenamiento.
+- Suite completa: 423 pruebas y 2.574 aserciones, sin fallos, errores ni omisiones.
+- RuboCop: 212 archivos, sin infracciones. Brakeman: 0 errores y 0 advertencias de seguridad.
+- Rutas combinadas con B1 comprobadas en memoria: lectura en `CourseMaterialsController`, formulario y subida en `MaterialsController`.
+- Entorno local: Ruby 4.0.0 y PostgreSQL 18. CI debe verificar Ruby 3.4.5, declarado en el proyecto.
+- No se pudo construir la imagen actualizada: Docker Desktop no tiene integración con esta distribución WSL. Las pruebas de Docker compartidas por el revisor corresponden a la versión anterior.
 - Detalles y requisitos de ejecución: `docs/cards/B2-ver-material.md`.
 
 ## Tarjeta relacionada
@@ -36,7 +39,7 @@ B2 · Ver material del curso
 ## Checklist
 
 - [x] La rama nace de Develop, no de main
-- [x] Se cumplen los criterios de aceptación confirmados para B2
+- [ ] El equipo valida el alcance de esta entrega: vista previa PDF/texto; documentos de oficina con listado y detalle
 - [x] Verifiqué que la funcionalidad opera correctamente
 - [x] Verifiqué que no rompí otra cosa mediante la suite completa
 - [x] Se respetan los permisos por rol y el aislamiento por university_id

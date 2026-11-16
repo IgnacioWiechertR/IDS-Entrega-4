@@ -21,7 +21,7 @@ class CourseMaterialsController < ApplicationController
       send_data service.pdf, type: "application/pdf", disposition: "inline",
         filename: "#{@material.file.filename.base}.pdf"
     end
-  rescue MaterialPreviewService::Unavailable, OfficePreviewService::Unavailable, ActiveStorage::FileNotFoundError
+  rescue MaterialPreviewService::Unavailable, ActiveStorage::FileNotFoundError
     render :preview_unavailable, layout: false, status: :unprocessable_content
   end
 

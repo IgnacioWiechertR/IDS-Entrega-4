@@ -54,4 +54,20 @@ class MaterialPreviewServiceTest < ActiveSupport::TestCase
     assert_not service.available?
     assert_raises(MaterialPreviewService::Unavailable) { service.pdf }
   end
+
+  test "los documentos de oficina no activan un convertidor ni leen el almacenamiento" do
+    %w[doc docx rtf xls xlsx ppt pptx pps ppsx odt ods odp pages numbers key].each do |extension|
+      material = Material.new(course: @course, title: "Documento de oficina")
+      material.file = { io: StringIO.new("contenido"), filename: "documento.#{extension}" }
+      service = MaterialPreviewService.new(material.file)
+      downloads = []
+      observer = ->(event) { downloads << event }
+
+      ActiveSupport::Notifications.subscribed(observer, /service_(download|streaming_download|download_chunk)\.active_storage/) do
+        assert_not service.available?, extension
+        assert_raises(MaterialPreviewService::Unavailable) { service.pdf }
+      end
+      assert_empty downloads, extension
+    end
+  end
 end

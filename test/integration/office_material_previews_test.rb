@@ -10,22 +10,27 @@ class OfficeMaterialPreviewsTest < ActionDispatch::IntegrationTest
   teardown { clear_material_read_files }
 
   %w[docx xlsx pptx odp].each do |extension|
-    test "el alumno ve contenido #{extension} convertido realmente a PDF" do
+    test "el material #{extension} muestra detalle sin descargarlo ni convertirlo" do
       material = read_material(filename: "material.#{extension}", content: office_document(extension))
       sign_in users(:alumno)
 
       get course_material_path(@course, material)
       assert_response :success
-      assert_select "iframe[src=?]", preview_course_material_path(@course, material)
+      assert_select "#material_details", text: /material\.#{extension}/
+      assert_select "#preview_unavailable", text: /La vista previa no está disponible/
+      assert_select "iframe", count: 0
 
-      assert_no_difference [ "Material.count", "ActiveStorage::Blob.count", "ActiveStorage::Attachment.count" ] do
-        get preview_course_material_path(@course, material)
+      downloads = []
+      observer = ->(event) { downloads << event }
+      ActiveSupport::Notifications.subscribed(observer, /service_(download|streaming_download|download_chunk)\.active_storage/) do
+        assert_no_difference [ "Material.count", "ActiveStorage::Blob.count", "ActiveStorage::Attachment.count" ] do
+          get preview_course_material_path(@course, material)
+        end
       end
 
-      assert_response :success
-      assert_equal "application/pdf", response.media_type
-      assert response.body.start_with?("%PDF-")
-      assert_operator response.body.bytesize, :>, 1_000
+      assert_response :unprocessable_content
+      assert_select "[role=status]", text: /Solo se pueden visualizar archivos PDF y de texto/
+      assert_empty downloads
       assert_includes response.headers["Cache-Control"], "no-store"
       assert_equal "material.#{extension}", material.reload.file.filename.to_s
     end
