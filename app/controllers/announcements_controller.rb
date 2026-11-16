@@ -1,59 +1,44 @@
+# B11: professors publish to a course or one of their sections. Reading and notifications come in later cards.
 class AnnouncementsController < ApplicationController
-  load_and_authorize_resource
-  before_action :set_announcement, only: %i[ show edit update destroy ]
+  before_action :set_course
 
-  # GET /announcements
-  def index
-    @announcements = Announcement.all
-  end
-
-  # GET /announcements/1
-  def show
-  end
-
-  # GET /announcements/new
   def new
-    @announcement = Announcement.new
+    @announcement = @course.announcements.new
+    @announcement.section = permitted_sections.find(params[:section_id]) if params[:section_id].present?
+    authorize! :create, @announcement
+    @sections = permitted_sections.order(:number)
   end
 
-  # GET /announcements/1/edit
-  def edit
-  end
-
-  # POST /announcements
   def create
-    @announcement = Announcement.new(announcement_params)
+    @announcement = @course.announcements.new(announcement_params)
+    @announcement.author = current_user
+    @announcement.section = permitted_sections.find(announcement_params[:section_id]) if announcement_params[:section_id].present?
+    authorize! :create, @announcement
 
     if @announcement.save
-      redirect_to @announcement, notice: "Announcement was successfully created."
+      redirect_to(@announcement.section ? course_section_path(@course, @announcement.section) : courses_path,
+        notice: "El anuncio fue publicado.", status: :see_other)
     else
+      @sections = permitted_sections.order(:number)
       render :new, status: :unprocessable_content
     end
   end
 
-  # PATCH/PUT /announcements/1
-  def update
-    if @announcement.update(announcement_params)
-      redirect_to @announcement, notice: "Announcement was successfully updated.", status: :see_other
-    else
-      render :edit, status: :unprocessable_content
-    end
-  end
-
-  # DELETE /announcements/1
-  def destroy
-    @announcement.destroy!
-    redirect_to announcements_path, notice: "Announcement was successfully destroyed.", status: :see_other
-  end
-
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_announcement
-      @announcement = Announcement.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def announcement_params
-      params.expect(announcement: [ :course_id, :section_id, :subject, :body, :author_id ])
+  def set_course
+    @course = Course.find(params[:course_id] || params.dig(:announcement, :course_id))
+  end
+
+  def announcement_params
+    params.expect(announcement: [ :section_id, :subject, :body ])
+  end
+
+  def permitted_sections
+    if CourseCoordinator.exists?(course_id: @course.id, user_id: current_user.id)
+      @course.sections
+    else
+      @course.sections.joins(:section_staffs).where(section_staffs: { user_id: current_user.id, role: "profesor" })
     end
+  end
 end
