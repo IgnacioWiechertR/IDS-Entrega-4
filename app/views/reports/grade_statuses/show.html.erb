@@ -10,6 +10,13 @@
         </p>
       <% end %>
     </div>
+
+    <% if can?(:read_consolidated, :reports) %>
+      <%= link_to "Reporte consolidado",
+                  reports_consolidated_path(term_id: @selected_term_id),
+                  class: "inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" %>
+    <% end %>
+
   </div>
 
   <% if @university %>

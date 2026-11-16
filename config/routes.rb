@@ -63,9 +63,10 @@ Rails.application.routes.draw do
   resources :users
   resources :universities
 
-  # D3: indicadores flujo de notas
+  # D3/D4: indicadores flujo de notas
   namespace :reports do
     resource :grade_statuses, only: :show
+    resource :consolidated, only: :show
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
