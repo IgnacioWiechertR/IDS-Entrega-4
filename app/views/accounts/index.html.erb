@@ -86,7 +86,26 @@
                   <%= account.email %>
                 </td>
                 <td class="px-4 py-4 text-sm text-slate-600">
-                  <%= account.role_name %>
+                  <% if can?(:change_role, account) %>
+                    <%= form_with model: account,
+                                  scope: :account,
+                                  url: role_account_path(account, q: @query.presence, role: @role.presence, page: @page),
+                                  method: :patch,
+                                  class: "flex items-center gap-2" do |form| %>
+                      <%= form.label :role, "Rol de #{account.name}", class: "sr-only" %>
+                      <%= form.select :role,
+                                      options_for_select(
+                                        AccountPolicy::CREATABLE_ROLES.map { |role| [I18n.t("roles.#{role}"), role] },
+                                        account.role
+                                      ),
+                                      {},
+                                      class: "rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-700" %>
+                      <%= form.submit "Guardar",
+                                      class: "cursor-pointer rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700" %>
+                    <% end %>
+                  <% else %>
+                    <%= account.role_name %>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

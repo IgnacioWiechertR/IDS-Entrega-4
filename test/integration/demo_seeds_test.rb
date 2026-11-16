@@ -79,7 +79,7 @@ class DemoSeedsTest < ActionDispatch::IntegrationTest
       assert_select "a", text: "Demo T8 · Control rechazado", count: 0
 
       student = User.find_by!(email: "alumno@#{slug}.test")
-      unpublished = student.grades.pendiente.first!
+      unpublished = ActsAsTenant.with_tenant(student.university) { student.grades.pendiente.first! }
       get my_grade_path(unpublished)
       assert_response :not_found
 

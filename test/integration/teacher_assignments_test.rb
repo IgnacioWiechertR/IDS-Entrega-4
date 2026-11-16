@@ -4,7 +4,11 @@ require_relative "../support/teacher_assignment_data"
 class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
   include TeacherAssignmentData
 
-  setup { prepare_teacher_assignment_data }
+  setup do
+    prepare_teacher_assignment_data
+    # This test builds its own universities: the code outside requests runs in the local one (T7).
+    ActsAsTenant.test_tenant = @university
+  end
 
   test "exige iniciar sesión para consultar y asignar" do
     get teacher_assignments_path
@@ -138,7 +142,7 @@ class TeacherAssignmentsTest < ActionDispatch::IntegrationTest
     post teacher_assignments_path, params: assignment_params(section: @other_section, user: @other_professor)
 
     assert_redirected_to teacher_assignments_path
-    assignment = SectionStaff.find_by!(section: @other_section, role: "profesor")
+    assignment = ActsAsTenant.with_tenant(@other_university) { SectionStaff.find_by!(section: @other_section, role: "profesor") }
     assert_equal @other_professor, assignment.user
     assert_equal @other_admin, assignment.assigned_by
   end

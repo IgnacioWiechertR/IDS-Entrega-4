@@ -41,7 +41,9 @@ class EvaluationTest < ActiveSupport::TestCase
   test "las evaluaciones de otra sección no cuentan" do
     build_evaluation(weight: 90).save!
 
-    # sections(:two) only has evaluations(:two), worth 9.99.
-    assert build_evaluation(section: sections(:two), weight: 90).valid?
+    # sections(:two) only has evaluations(:two), worth 9.99. It is an IUSA section, so it is checked inside IUSA.
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      assert build_evaluation(section: sections(:two), weight: 90).valid?
+    end
   end
 end

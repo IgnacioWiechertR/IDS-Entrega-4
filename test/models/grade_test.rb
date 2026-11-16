@@ -61,8 +61,12 @@ class GradeTest < ActiveSupport::TestCase
     publicada = build_grade(status: "publicada").tap(&:save!)
 
     assert_includes Grade.preliminares, grades(:one)
-    assert_includes Grade.preliminares, grades(:two)
     assert_not_includes Grade.preliminares, publicada
     assert_equal [ publicada ], Grade.publicadas.to_a
+
+    # grades(:two), rechazada, is from IUSA.
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      assert_includes Grade.preliminares, grades(:two)
+    end
   end
 end

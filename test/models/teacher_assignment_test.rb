@@ -88,7 +88,9 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   test "universidades diferentes pueden tener cada una su profesor asignado" do
     professor_assignment.save!
 
-    assert professor_assignment(section: @other_section, user: @other_professor, assigned_by: @other_admin).save
+    ActsAsTenant.with_tenant(@other_university) do
+      assert professor_assignment(section: @other_section, user: @other_professor, assigned_by: @other_admin).save
+    end
   end
 
   test "el coordinador asigna un profesor en una sección de su asignatura y período" do
