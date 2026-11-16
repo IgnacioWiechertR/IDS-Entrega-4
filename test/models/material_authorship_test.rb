@@ -33,7 +33,7 @@ class MaterialAuthorshipTest < ActiveSupport::TestCase
     assert Ability.new(@professor).can?(:update, @owned)
     assert Ability.new(@peer).cannot?(:update, @owned)
     assert Ability.new(@professor).cannot?(:update, @peer_material)
-    assert Ability.new(@professor).cannot?(:destroy, @owned)
+    assert MaterialEditPolicy.new(@professor).cannot?(:destroy, @owned)
     assert MaterialEditPolicy.new(@professor).cannot?(:create, Material)
   end
 
