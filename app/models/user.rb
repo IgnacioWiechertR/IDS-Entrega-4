@@ -35,6 +35,13 @@ class User < ApplicationRecord
   validates :university, presence: true, unless: :director?
   validates :university, absence: true, if: :director?
 
+  # D7: how many accounts of each role a university has, with every role listed (0 when there is none). The
+  # director has no university, so it is never counted.
+  def self.count_by_role(university)
+    counts = where(university: university).group(:role).count
+    (roles.keys - [ "director" ]).index_with { |role| counts.fetch(role, 0) }
+  end
+
   def name
     [ first_name, last_name ].compact_blank.join(" ")
   end
