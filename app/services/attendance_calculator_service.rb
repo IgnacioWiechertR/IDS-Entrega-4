@@ -19,6 +19,11 @@ class AttendanceCalculatorService
     session && marks[[ student.id, session.id ]]
   end
 
+  # The mark of the student that day if it was corrected after being saved (B7), nil otherwise.
+  def correction(student, session)
+    session && corrections[[ student.id, session.id ]]
+  end
+
   def present_count(student)
     sessions.count { |session| status(student, session) == "presente" }
   end
@@ -36,5 +41,10 @@ class AttendanceCalculatorService
     @marks ||= AttendanceRecord.where(attendance_session_id: sessions.map(&:id))
       .pluck(:student_id, :attendance_session_id, :status)
       .to_h { |student_id, session_id, status| [ [ student_id, session_id ], status ] }
+  end
+
+  def corrections
+    @corrections ||= AttendanceRecord.where(attendance_session_id: sessions.map(&:id)).where.not(corrected_by_id: nil)
+      .includes(:corrected_by).index_by { |record| [ record.student_id, record.attendance_session_id ] }
   end
 end

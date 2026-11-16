@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -62,8 +62,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.bigint "corrected_by_id"
+    t.datetime "corrected_at"
     t.index ["attendance_session_id", "student_id"], name: "index_attendance_records_on_session_and_student", unique: true
     t.index ["attendance_session_id"], name: "index_attendance_records_on_attendance_session_id"
+    t.index ["corrected_by_id"], name: "index_attendance_records_on_corrected_by_id"
     t.index ["student_id"], name: "index_attendance_records_on_student_id"
     t.index ["university_id"], name: "index_attendance_records_on_university_id"
   end
@@ -262,6 +265,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
   add_foreign_key "announcements", "users", column: "author_id"
   add_foreign_key "attendance_records", "attendance_sessions"
   add_foreign_key "attendance_records", "universities"
+  add_foreign_key "attendance_records", "users", column: "corrected_by_id"
   add_foreign_key "attendance_records", "users", column: "student_id"
   add_foreign_key "attendance_sessions", "sections"
   add_foreign_key "attendance_sessions", "universities"
