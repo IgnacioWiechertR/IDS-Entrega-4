@@ -14,6 +14,11 @@ module AttendanceHelper
     STATUS_LABELS.fetch(status, "Sin marca")
   end
 
+  # B7: who corrected a mark and when.
+  def attendance_correction_note(record)
+    "Corregida por #{record.corrected_by.name} el #{l(record.corrected_at.to_date)}"
+  end
+
   def attendance_status_classes(status)
     case status
     when "presente" then "bg-emerald-50 text-emerald-700"

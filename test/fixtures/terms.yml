@@ -1,15 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
+# Neither term is current: tests that need a current term create or mark one themselves.
+# The name differs from the seed terms ("2026-1", "2026-2"), so the seeds test does not reuse them.
 one:
   university: ucv
-  name: MyString
-  starts_on: 2026-10-18
-  ends_on: 2026-10-18
+  name: "Segundo semestre 2026"
+  starts_on: 2026-08-03
+  ends_on: 2026-12-11
   current: false
 
 two:
   university: iusa
-  name: MyString
-  starts_on: 2026-10-18
-  ends_on: 2026-10-18
+  name: "Segundo semestre 2026"
+  starts_on: 2026-08-03
+  ends_on: 2026-12-11
   current: false

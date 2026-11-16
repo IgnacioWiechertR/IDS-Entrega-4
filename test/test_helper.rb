@@ -21,4 +21,11 @@ end
 
 class ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
+
+  # Inside a request the app sets the university of the signed-in user. Outside one (fixtures and data built by
+  # the test) the code runs in UCV by default, like model tests, and switches with ActsAsTenant.with_tenant for
+  # IUSA (T7). ActsAsTenant::TestTenantMiddleware (config/environments/test.rb) clears this default during each
+  # request, so it never leaks into the app.
+  setup { ActsAsTenant.test_tenant = University.find_by(slug: "ucv") }
+  teardown { ActsAsTenant.test_tenant = nil }
 end

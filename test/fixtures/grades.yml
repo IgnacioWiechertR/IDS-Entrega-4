@@ -6,7 +6,7 @@ one:
   student: alumno
   score: 5.5
   status: pendiente
-  feedback: MyText
+  feedback: Buen desarrollo; en el ejercicio 3 faltó justificar el resultado.
   entered_by: ayudante
 
 two:
@@ -15,7 +15,7 @@ two:
   student: alumno_iusa
   score: 6.0
   status: rechazada
-  feedback: MyText
+  feedback: Identifica bien las estructuras, pero confunde dos nervios en la pregunta 2.
   rejection_comment: Revisa la pregunta 2
-  entered_by: ayudante
-  reviewed_by: profesor
+  entered_by: ayudante_iusa
+  reviewed_by: profesor_iusa

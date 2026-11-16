@@ -9,6 +9,9 @@
   </nav>
   <h1 class="mt-2 text-2xl font-bold text-slate-900"><%= @course.name %> · Sección <%= @section.number %></h1>
   <p class="mt-1 text-sm text-slate-600"><%= term_period(@section.term) %></p>
+  <% if can?(:create, Announcement.new(course: @course, section: @section)) %>
+    <%= link_to "Publicar anuncio", new_announcement_path(course_id: @course.id, section_id: @section.id), class: "mt-4 inline-block #{ApplicationHelper::PRIMARY_BUTTON_CLASSES}" %>
+  <% end %>
 
   <% if @student_view %>
     <%# A student sees only their own published grades and attendance (C10, B10). %>
