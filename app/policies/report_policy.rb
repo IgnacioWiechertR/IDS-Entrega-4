@@ -3,5 +3,6 @@ class ReportPolicy
 
   def initialize(user)
     can :read, :dashboard if user.director?
+    can :read_grade_statuses, :reports if user.administrativo? && user.university_id.present?
   end
 end

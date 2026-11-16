@@ -62,6 +62,12 @@ Rails.application.routes.draw do
   resources :faculties
   resources :users
   resources :universities
+
+  #D3: indicadores flujo de notas
+  namespace :reports do
+    resource :grade_statuses, only: :show
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
