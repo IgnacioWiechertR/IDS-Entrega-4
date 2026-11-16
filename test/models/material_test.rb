@@ -50,4 +50,41 @@ class MaterialTest < ActiveSupport::TestCase
     assert_not material.valid?
     assert material.errors[:course].any?
   end
+
+  test "acepta un archivo de exactamente 50 MB" do
+    with_sized_pdf(50_000_000) do |io|
+      material = Material.new(course: @course, title: "Documento grande",
+        file: { io: io, filename: "grande.pdf", content_type: "application/pdf" })
+
+      assert material.valid?, material.errors.full_messages.join(", ")
+    end
+  end
+
+  test "rechaza un byte sobre 50 MB sin guardar material ni adjuntos" do
+    with_sized_pdf(50_000_001) do |io|
+      material = Material.new(course: @course, title: "Documento demasiado grande",
+        file: { io: io, filename: "grande.pdf", content_type: "application/pdf" })
+
+      assert_no_difference [ "Material.count", "ActiveStorage::Blob.count", "ActiveStorage::Attachment.count" ] do
+        assert_not material.save
+      end
+      assert_includes material.errors[:file], "no puede superar 50 MB"
+    end
+  end
+
+  test "rechaza el contenido HTML renombrado como PDF" do
+    material = Material.new(course: @course, title: "Falso documento",
+      file: file_attributes(content: "<html><body>No es PDF</body></html>"))
+
+    assert_not material.valid?
+    assert material.errors[:file].any?
+  end
+
+  test "valida el formato también al reemplazar un archivo existente" do
+    material = Material.create!(course: @course, title: "Guía", file: file_attributes)
+    material.file = file_attributes(content: "contenido no permitido", filename: "programa.exe")
+
+    assert_not material.valid?
+    assert material.errors[:file].any?
+  end
 end

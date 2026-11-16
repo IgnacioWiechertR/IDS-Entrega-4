@@ -1,4 +1,6 @@
 require "stringio"
+require "tempfile"
+require "zip"
 
 module MaterialUploadData
   PDF_BYTES = "%PDF-1.4\nMaterial de prueba B1\n%%EOF\n".freeze
@@ -50,6 +52,40 @@ module MaterialUploadData
 
   def multipart_upload(content: PDF_BYTES, filename: "guia.pdf", content_type: "application/pdf")
     Rack::Test::UploadedFile.new(StringIO.new(content), content_type, original_filename: filename)
+  end
+
+  def document_archive(extension: "docx")
+    main_file = case extension
+    when "docx" then "word/document.xml"
+    when "xlsx" then "xl/workbook.xml"
+    when "pptx", "ppsx" then "ppt/presentation.xml"
+    when "odt", "ods", "odp" then "content.xml"
+    else "Index/Document.iwa"
+    end
+    Zip::OutputStream.write_buffer do |archive|
+      if %w[odt ods odp].include?(extension)
+        entry = Zip::Entry.new("", "mimetype")
+        entry.compression_method = Zip::Entry::STORED
+        archive.put_next_entry(entry)
+        archive.write(Marcel::MimeType.for(name: "documento.#{extension}"))
+      end
+      if %w[docx xlsx pptx ppsx].include?(extension)
+        archive.put_next_entry("[Content_Types].xml")
+        archive.write('<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>')
+      end
+      archive.put_next_entry(main_file)
+      archive.write('<?xml version="1.0"?><document>Material de prueba</document>')
+    end.string
+  end
+
+  def with_sized_pdf(size)
+    Tempfile.create([ "material-b1", ".pdf" ]) do |file|
+      file.binmode
+      file.write(PDF_BYTES)
+      file.truncate(size)
+      file.rewind
+      yield file
+    end
   end
 
   def clear_uploaded_test_files

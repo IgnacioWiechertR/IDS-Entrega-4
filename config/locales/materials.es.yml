@@ -14,3 +14,5 @@ es:
             file:
               blank: debe seleccionarse
               empty: no puede estar vacío
+              too_large: no puede superar %{max} MB
+              unsupported_format: tiene un formato no permitido o su contenido no corresponde a ese formato

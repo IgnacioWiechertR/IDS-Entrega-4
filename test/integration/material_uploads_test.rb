@@ -28,6 +28,9 @@ class MaterialUploadsTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Subir material"
     assert_select "form[action=?][enctype='multipart/form-data']", course_materials_path(@course)
     assert_select "input[type=file][name='material[file]']"
+    assert_select "input[type=file][accept*='.pdf'][accept*='.xlsx'][accept*='.docx'][accept*='.pptx']"
+    assert_select "#material_file_help", text: /Máximo 50 MB/
+    assert_select "#material_file_help", text: /Google Docs, Sheets o Slides/
     assert_select "input[name='material[course_id]']", count: 0
   end
 
@@ -201,6 +204,49 @@ class MaterialUploadsTest < ActionDispatch::IntegrationTest
       post "/materials", params: upload_params
     end
     assert_response :not_found
+  end
+
+  test "el servidor rechaza más de 50 MB aunque el cliente envíe el archivo" do
+    login_for_upload(@professor)
+
+    with_sized_pdf(50_000_001) do |file|
+      upload = Rack::Test::UploadedFile.new(file.path, "application/pdf", true, original_filename: "demasiado-grande.pdf")
+      begin
+        assert_no_difference [ "Material.count", "ActiveStorage::Blob.count", "ActiveStorage::Attachment.count" ] do
+          post course_materials_path(@course), params: { material: { title: "Documento grande", file: upload } }
+        end
+        assert_response :unprocessable_content
+        assert_select "[role=alert]", text: /no puede superar 50 MB/
+      ensure
+        upload.tempfile.close!
+      end
+    end
+  end
+
+  test "rechaza extensiones no permitidas y documentos renombrados sin guardar adjuntos" do
+    login_for_upload(@professor)
+
+    [ multipart_upload(filename: "programa.exe"),
+      multipart_upload(filename: "falso.pdf", content: "<html><body>No es PDF</body></html>") ].each do |upload|
+      assert_no_difference [ "Material.count", "ActiveStorage::Blob.count", "ActiveStorage::Attachment.count" ] do
+        post course_materials_path(@course), params: { material: { title: "Archivo inválido", file: upload } }
+      end
+      assert_response :unprocessable_content
+      assert_select "[role=alert]", text: /formato no permitido/
+    end
+  end
+
+  test "acepta un documento Office exportado por ejemplo desde Google Docs" do
+    login_for_upload(@professor)
+    upload = multipart_upload(filename: "documento.docx", content: document_archive,
+      content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+    post course_materials_path(@course), params: { material: { title: "Documento exportado", file: upload } }
+
+    assert_redirected_to new_course_material_path(@course)
+    material = @course.materials.find_by!(title: "Documento exportado")
+    assert_equal "documento.docx", material.file.filename.to_s
+    assert material.file.attached?
   end
 
   private

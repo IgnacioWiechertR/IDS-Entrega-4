@@ -17,7 +17,12 @@
 
   <div>
     <%= form.label :file, "Archivo", class: "block text-sm font-medium text-slate-700" %>
-    <%= form.file_field :file, required: true, class: "mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2" %>
+    <%= form.file_field :file, required: true, accept: MaterialFileFormat::ACCEPT_ATTRIBUTE,
+          aria: { describedby: "material_file_help" }, class: "mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2" %>
+    <p id="material_file_help" class="mt-2 text-sm text-slate-600">
+      Máximo 50 MB por archivo. PDF, Word, Excel, PowerPoint, texto, OpenDocument y documentos de Pages, Numbers o Keynote.
+      Para Google Docs, Sheets o Slides, descarga una copia en uno de estos formatos y sube ese archivo.
+    </p>
     <% if material.errors.any? %>
       <p class="mt-1 text-sm text-slate-600">Vuelve a seleccionar el archivo antes de enviar.</p>
     <% end %>
