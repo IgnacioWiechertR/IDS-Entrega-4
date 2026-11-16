@@ -4,7 +4,8 @@
 # even when the dashboard shows both side by side. The figures are read once, with a fixed number of queries,
 # so the dashboard stays fast whatever the number of sections.
 #
-# - Period: the current term of the university or, without one, its most recent term.
+# - Period: the current term of the university or, without one, its most recent term. D2 lets the director pick
+#   another term and narrow the summary to a faculty or a course; an id of another university is not found (404).
 # - Final average of a student in a section: weighted average of their published grades, like the section
 #   overview (SectionStatsService#student_average).
 # - Average: mean of those final averages. Approved: final average >= 4.0; failed: below 4.0.
@@ -15,14 +16,23 @@
 class UniversitySummaryService
   PASSING_GRADE = 4.0
 
-  attr_reader :university, :term, :average, :approved_count, :failed_count, :attendance_percentage
+  attr_reader :university, :term, :faculty, :course, :average, :approved_count, :failed_count, :attendance_percentage
 
-  def initialize(university)
+  def initialize(university, term_id: nil, faculty_id: nil, course_id: nil)
     @university = university
-    ActsAsTenant.with_tenant(university) { load_figures }
+    ActsAsTenant.with_tenant(university) do
+      load_filters(term_id, faculty_id, course_id)
+      load_figures
+    end
   end
 
   def term? = term.present?
+
+  # D2: the summary is narrowed to a faculty or a course.
+  def filtered? = faculty.present? || course.present?
+
+  # No active student in the sections of the summary, so there is nothing to show.
+  def empty? = @enrolled_count.zero?
 
   def records_closed? = @records_closed
 
@@ -42,13 +52,28 @@ class UniversitySummaryService
     count * 100.0 / graded_count
   end
 
+  # Ids come from the request: find! keeps them inside the university, so one of another university is a 404.
+  def load_filters(term_id, faculty_id, course_id)
+    @term = term_id.present? ? Term.find(term_id) : Term.current_term || Term.order(starts_on: :desc, id: :desc).first
+    @faculty = Faculty.find(faculty_id) if faculty_id.present?
+    @course = Course.find(course_id) if course_id.present?
+  end
+
   def load_figures
-    @term = Term.current_term || Term.order(starts_on: :desc, id: :desc).first
-    section_ids = term ? Section.where(term: term).pluck(:id) : []
     enrollments = Enrollment.where(section_id: section_ids, active: true).pluck(:section_id, :student_id)
+    @enrolled_count = enrollments.size
 
     load_grades(section_ids, enrollments)
     load_attendance(section_ids, enrollments)
+  end
+
+  def section_ids
+    @section_ids ||= begin
+      sections = term ? Section.where(term: term) : Section.none
+      sections = sections.joins(:course).where(courses: { faculty_id: faculty.id }) if faculty
+      sections = sections.where(course: course) if course
+      sections.pluck(:id)
+    end
   end
 
   def load_grades(section_ids, enrollments)

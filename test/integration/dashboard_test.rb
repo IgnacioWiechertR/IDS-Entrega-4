@@ -91,7 +91,74 @@ class DashboardTest < ActionDispatch::IntegrationTest
   test "el dashboard es de solo lectura" do
     show_dashboard_of(@ucv)
 
-    assert_select "main form", count: 0
+    # The only form is the D2 filter, sent with GET.
+    assert_select "main form", count: 1
+    assert_select "main form#summary-filters[method=get]"
+  end
+
+  test "D2: el director filtra el resumen por asignatura y se recalculan los indicadores" do
+    other_section, other_exam = create_summary_course(@ucv, "D2-UCV")
+    summary_grade(other_exam, summary_student(@ucv, "otra", section: other_section), 7.0)
+    show_dashboard_of(@ucv)
+    assert_select "#university-summary .summary-average", "5,1" # (5.4 + 3.0 + 7.0) / 3
+
+    get dashboard_path(course_id: other_section.course_id)
+
+    assert_response :success
+    assert_select "#university-summary" do
+      assert_select ".summary-scope", text: /Asignatura: D2-UCV/
+      assert_select ".summary-average", "7,0"
+      assert_select "select#course_id option[selected]", text: /D2-UCV/
+    end
+    assert_select "#summary-filters a", text: "Quitar filtros"
+  end
+
+  test "D2: el director filtra por facultad y por período" do
+    show_dashboard_of(@ucv)
+
+    get dashboard_path(term_id: @summary_term.id, faculty_id: @summary_faculty.id)
+
+    assert_response :success
+    assert_select "#university-summary .summary-scope", text: /Facultad: Facultad D1-UCV/
+    assert_select "#university-summary .summary-average", "4,2"
+    assert_select "select#term_id option[selected]", text: "Período D1-UCV"
+  end
+
+  test "D2: si el filtro no tiene datos se muestra un mensaje" do
+    empty_faculty = ActsAsTenant.with_tenant(@ucv) { Faculty.create!(name: "Facultad sin asignaturas") }
+    show_dashboard_of(@ucv)
+
+    get dashboard_path(faculty_id: empty_faculty.id)
+
+    assert_select "#university-summary .summary-empty", text: /No hay datos para los filtros seleccionados/
+    assert_select "#university-summary .summary-average", count: 0
+  end
+
+  test "D2: la comparación entre universidades no usa los filtros" do
+    other_section, other_exam = create_summary_course(@ucv, "D2-UCV")
+    summary_grade(other_exam, summary_student(@ucv, "otra", section: other_section), 7.0)
+    show_dashboard_of(@ucv)
+
+    get dashboard_path(course_id: other_section.course_id)
+
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@ucv, :summary)} .summary-average", "5,1"
+  end
+
+  test "D2: los filtros solo ofrecen datos de la universidad activa" do
+    iusa_course = ActsAsTenant.with_tenant(@iusa) { Course.first }
+    show_dashboard_of(@ucv)
+
+    assert_select "select#course_id option", text: /D1-UCV/
+    assert_select "select#course_id option", text: /#{iusa_course.code}/, count: 0
+  end
+
+  test "D2: un filtro de otra universidad responde 404" do
+    iusa_course = ActsAsTenant.with_tenant(@iusa) { Course.first }
+    show_dashboard_of(@ucv)
+
+    get dashboard_path(course_id: iusa_course.id)
+
+    assert_response :not_found
   end
 
   test "los demás roles no ven el dashboard" do
