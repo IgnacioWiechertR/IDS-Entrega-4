@@ -2,6 +2,17 @@ class AnnouncementPolicy
   include CanCan::Ability
 
   def initialize(user)
+    if user.profesor? || user.ayudante?
+      can :index, :announcements
+      can :read, Announcement do |announcement|
+        course = Course.find_by(id: announcement.course_id)
+        course && (
+          SectionStaff.joins(:section).exists?(user_id: user.id, sections: { course_id: course.id }) ||
+          CourseCoordinator.exists?(course_id: course.id, user_id: user.id)
+        )
+      end
+    end
+
     return unless user.profesor?
 
     can :create, Announcement do |announcement|

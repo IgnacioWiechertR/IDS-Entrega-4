@@ -1,14 +1,18 @@
-# B11: professors publish to a course or one of their sections. Reading and notifications come in later cards.
+# B11: professors publish to a course or one of their sections.
+# B12: professors and assistants read announcements from courses where they participate.
 class AnnouncementsController < ApplicationController
   before_action :set_course, only: %i[ new create ]
-  before_action :set_announcement, only: %i[ show edit update destroy ]
+  before_action :set_announcement, only: %i[ edit update destroy ]
 
   def index
-    authorize! :read, Announcement
-    @announcements = Announcement.all
+    authorize! :index, :announcements
+    @announcements = readable_announcements.includes(:course, :section, :author)
+      .order(created_at: :desc, id: :desc)
   end
 
   def show
+    authorize! :index, :announcements
+    @announcement = readable_announcements.includes(:course, :section, :author).find(params.expect(:id))
     authorize! :read, @announcement
   end
 
@@ -73,5 +77,13 @@ class AnnouncementsController < ApplicationController
     else
       @course.sections.joins(:section_staffs).where(section_staffs: { user_id: current_user.id, role: "profesor" })
     end
+  end
+
+  def readable_announcements
+    staff_courses = SectionStaff.joins(:section).where(user_id: current_user.id).select("sections.course_id")
+    coordinated_courses = CourseCoordinator.where(user_id: current_user.id).select(:course_id)
+    course_ids = Course.where(id: staff_courses).or(Course.where(id: coordinated_courses)).select(:id)
+
+    Announcement.where(course_id: course_ids)
   end
 end
