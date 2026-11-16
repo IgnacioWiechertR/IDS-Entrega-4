@@ -11,3 +11,10 @@ two:
   kind: notas_en_revision
   message: 1 nota de Control 1 (ICC1001 · Sección 1) espera tu revisión.
   read_at: 2026-10-18 22:32:59
+
+three:
+  university: iusa
+  recipient: ayudante_iusa
+  kind: notas_rechazadas
+  message: "El profesor rechazó 1 nota de Prueba de laboratorio 1 (ENF1001 · Sección 1): «Revisa la pregunta 2»"
+  read_at: 2026-10-19 10:15:00

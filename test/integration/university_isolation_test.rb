@@ -58,7 +58,10 @@ class UniversityIsolationTest < ActionDispatch::IntegrationTest
   end
 
   test "sin universidad activa, las consultas fallan en vez de mezclar universidades" do
+    ActsAsTenant.test_tenant = nil # the default university of integration tests (test_helper.rb)
+
     assert_raises(ActsAsTenant::Errors::NoTenantSet) { Course.count }
+    assert_raises(ActsAsTenant::Errors::NoTenantSet) { Grade.count }
 
     ActsAsTenant.with_tenant(universities(:ucv)) do
       assert_equal %w[ICC1001 ICC2002], Course.order(:code).pluck(:code)
