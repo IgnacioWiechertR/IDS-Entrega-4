@@ -29,7 +29,7 @@
     </p>
   <% else %>
     <p class="mt-6 text-sm text-slate-600">
-      P: presente · A: ausente · —: sin marca.<% if can?(:take_attendance, @section) %> Haz clic en una fecha para corregir sus marcas.<% end %>
+      P: presente · A: ausente · —: sin marca · *: marca corregida.<% if can?(:take_attendance, @section) %> Haz clic en una fecha para corregir sus marcas.<% end %>
     </p>
     <div class="mt-2 overflow-x-auto rounded-lg border border-slate-200 bg-white">
       <table id="attendance-table" class="min-w-full text-sm">
@@ -55,10 +55,16 @@
               <th scope="row" class="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-900"><%= student.name %></th>
               <% @calculator.sessions.each do |session| %>
                 <% status = @calculator.status(student, session) %>
+                <% correction = @calculator.correction(student, session) %>
                 <td class="px-2 py-2 text-center">
-                  <span class="inline-block w-7 rounded <%= attendance_status_classes(status) %>" title="<%= attendance_status_label(status) %>">
-                    <%= status ? status.first.upcase : "—" %>
-                  </span>
+                  <% if correction %>
+                    <span class="corrected-mark inline-block w-7 rounded ring-1 ring-amber-400 <%= attendance_status_classes(status) %>"
+                          title="<%= attendance_status_label(status) %>. <%= attendance_correction_note(correction) %>"><%= status.first.upcase %>*</span>
+                  <% else %>
+                    <span class="inline-block w-7 rounded <%= attendance_status_classes(status) %>" title="<%= attendance_status_label(status) %>">
+                      <%= status ? status.first.upcase : "—" %>
+                    </span>
+                  <% end %>
                 </td>
               <% end %>
               <td class="whitespace-nowrap px-3 py-2 text-right font-semibold"><%= attendance_percentage(@calculator.percentage(student)) %></td>

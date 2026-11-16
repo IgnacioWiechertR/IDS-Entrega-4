@@ -9,9 +9,11 @@ class CourseCoordinator < ApplicationRecord
   inherits_university_from :course
   accounts_in_university :user
 
+  # Inherited from T7 and backed by a database index. A15's cardinality is still pending confirmation.
   validates :course_id, uniqueness: { scope: :term_id }
   validate :profesor_account
   validate :term_in_same_university
+  validate :assigned_by_authorized
 
   private
 
@@ -22,5 +24,14 @@ class CourseCoordinator < ApplicationRecord
 
   def term_in_same_university
     errors.add(:term, :must_match_university) if term && term.university_id != university_id
+  end
+
+  def assigned_by_authorized
+    return unless assigned_by
+    return if assigned_by.director?
+
+    unless assigned_by.administrativo? && assigned_by.university_id == university_id
+      errors.add(:assigned_by, :must_be_authorized_assigner)
+    end
   end
 end

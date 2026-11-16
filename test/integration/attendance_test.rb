@@ -43,6 +43,51 @@ class AttendanceTest < ActionDispatch::IntegrationTest
     assert_equal "ausente", attendance_records(:one).reload.status
   end
 
+  test "al corregir una marca se recalcula el porcentaje y queda registrado quién la corrigió" do
+    held_on = attendance_sessions(:one).held_on
+    sign_in users(:profesor)
+
+    get section_attendance_path(@section)
+    assert_select "#attendance-table .corrected-mark", count: 0
+
+    mark({ users(:alumno).id => "ausente" }, held_on: held_on)
+    assert_redirected_to section_attendance_path(@section)
+    follow_redirect!
+
+    assert_select "#attendance-table tbody tr", text: /Alumno UCV.*A\*.*0\s?%/m
+    assert_select "#attendance-table .corrected-mark[title*=?]", "Corregida por #{users(:profesor).name}"
+
+    get edit_section_attendance_path(@section, date: held_on.iso8601)
+    assert_select "#attendance-list .correction-note", text: /Corregida por #{Regexp.escape(users(:profesor).name)}/
+
+    record = attendance_records(:one).reload
+    assert_equal users(:profesor), record.corrected_by
+    assert_not_nil record.corrected_at
+  end
+
+  test "guardar una fecha sin cambiar sus marcas no las deja como corregidas" do
+    sign_in users(:profesor)
+
+    mark({ users(:alumno).id => "presente" }, held_on: attendance_sessions(:one).held_on)
+    follow_redirect!
+
+    assert_select "#attendance-table .corrected-mark", count: 0
+    assert_not attendance_records(:one).reload.corrected?
+  end
+
+  test "el ayudante ve las marcas corregidas pero no puede corregirlas" do
+    held_on = attendance_sessions(:one).held_on
+    in_ucv { attendance_records(:one).mark!("ausente", by: users(:profesor)) }
+    sign_in users(:ayudante)
+
+    get section_attendance_path(@section)
+    assert_select "#attendance-table .corrected-mark"
+    assert_select "#attendance-table thead a", count: 0
+
+    mark({ users(:alumno).id => "presente" }, held_on: held_on)
+    assert_equal "ausente", attendance_records(:one).reload.status
+  end
+
   test "una sección sin matrículas activas no se puede guardar" do
     in_ucv { enrollments(:one).update!(active: false) }
     sign_in users(:profesor)

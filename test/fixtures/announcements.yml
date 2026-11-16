@@ -1,15 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
+  university: ucv
   course: one
   section: one
-  subject: MyString
-  body: MyText
+  subject: Cambio de sala
+  body: La clase del jueves será en la sala B-201.
   author: profesor
 
 two:
+  university: iusa
   course: two
   section: two
-  subject: MyString
-  body: MyText
-  author: profesor
+  subject: Laboratorio
+  body: El laboratorio de la próxima semana se adelanta al lunes.
+  author: profesor_iusa
