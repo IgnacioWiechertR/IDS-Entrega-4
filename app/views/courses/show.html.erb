@@ -9,6 +9,9 @@
       <h1 class="text-2xl font-bold text-slate-900"><%= @course.name %></h1>
     </div>
     <div class="flex flex-wrap items-center gap-2 text-sm">
+      <% if can?(:create, Material.new(course: @course)) %>
+        <%= link_to "Subir material", new_course_material_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <% end %>
       <% if can?(:create, Section.new(course: @course)) %>
         <%= link_to "Nueva sección", new_course_section_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
       <% end %>

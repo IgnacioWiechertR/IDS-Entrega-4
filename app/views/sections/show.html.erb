@@ -209,6 +209,9 @@
   <% end %>
 
   <h2 class="mt-8 text-lg font-semibold text-slate-900">Material académico</h2>
+  <% if can?(:create, Material.new(course: @course)) %>
+    <p class="mt-3"><%= link_to "Subir material", new_course_material_path(@course), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %></p>
+  <% end %>
   <% if @materials.any? %>
     <ul id="materials" class="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
       <% @materials.each do |material| %>
