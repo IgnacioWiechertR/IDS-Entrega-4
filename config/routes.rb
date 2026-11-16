@@ -6,6 +6,10 @@ Rails.application.routes.draw do
   get "dashboard" => "dashboard#index", as: :dashboard
 
   resources :accounts, only: %i[index new create] do
+    member do
+      patch :role, action: :update_role
+    end
+
     collection do
       get :import, action: :import_form
       post :import, action: :import_csv
