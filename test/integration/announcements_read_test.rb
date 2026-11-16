@@ -41,6 +41,7 @@ class AnnouncementsReadTest < ActionDispatch::IntegrationTest
       sign_in users(role)
       get announcement_path(hidden)
       assert_response :not_found
+      sign_in users(role)
       get announcement_path(announcements(:two))
       assert_response :not_found
       sign_out :user
