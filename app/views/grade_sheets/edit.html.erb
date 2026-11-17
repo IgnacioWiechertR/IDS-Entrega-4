@@ -19,7 +19,7 @@
     </div>
   <% end %>
 
-  <%= form_with url: section_evaluation_grade_sheet_path(@section, @evaluation), method: :patch, class: "mt-6" do |form| %>
+  <%= form_with url: section_evaluation_grade_sheet_path(@section, @evaluation), method: :patch, id: "grade_sheet", class: "mt-6" do |form| %>
     <% if @students.empty? %>
       <p id="no-students" class="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
         Sección sin matrículas activas.
@@ -33,6 +33,7 @@
               <th class="px-4 py-2 font-semibold">Nota</th>
               <th class="px-4 py-2 font-semibold">Pauta o comentario (opcional)</th>
               <th class="px-4 py-2 font-semibold">Puntaje (opcional)</th>
+              <th class="px-4 py-2"><span class="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -56,7 +57,7 @@
                 </th>
                 <% if grade&.publicada? %>
                   <td class="px-4 py-2 font-semibold"><%= grade_score(grade) %></td>
-                  <td colspan="2" class="px-4 py-2 text-slate-600"><%= grade_status_label(grade) %></td>
+                  <td colspan="3" class="px-4 py-2 text-slate-600"><%= grade_status_label(grade) %></td>
                 <% else %>
                   <%# New grade, or a preliminary one to edit (C3: pending, C7: rejected), prefilled with its current values. %>
                   <% score = entry.fetch("score") { grade && grade_score(grade) } %>
@@ -74,6 +75,14 @@
                     <%= text_field_tag "entries[#{student.id}][points]", points, inputmode: "decimal",
                           aria: { label: "Puntaje de #{student.name}" }, class: "w-24 #{ApplicationHelper::INPUT_CLASSES}" %>
                   </td>
+                  <td class="px-4 py-2 text-right">
+                    <% if grade %>
+                      <%# C4: submits the delete form of this grade, drawn after the sheet (forms cannot be nested). %>
+                      <%= button_tag "Eliminar", type: "submit", form: "delete_grade_#{grade.id}",
+                            aria: { label: "Eliminar la nota de #{student.name}" },
+                            class: "text-sm font-semibold text-red-700 hover:underline cursor-pointer" %>
+                    <% end %>
+                  </td>
                 <% end %>
               </tr>
             <% end %>
@@ -86,5 +95,15 @@
       <%= form.submit "Subir a revisión", disabled: @students.empty?,
             class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} disabled:cursor-not-allowed disabled:opacity-50" %>
     </div>
+  <% end %>
+
+  <%# C4: one delete form per preliminary grade, outside the sheet; the "Eliminar" buttons above submit them. %>
+  <% @students.each do |student| %>
+    <% grade = @grades[student.id] %>
+    <% next unless grade && !grade.publicada? %>
+    <%= form_with url: section_evaluation_preliminary_grade_path(@section, @evaluation, grade), method: :delete,
+          id: "delete_grade_#{grade.id}", class: "hidden",
+          data: { turbo_confirm: "¿Eliminar la nota de #{student.name} en #{@evaluation.name}? No se puede deshacer." } do %>
+    <% end %>
   <% end %>
 </section>

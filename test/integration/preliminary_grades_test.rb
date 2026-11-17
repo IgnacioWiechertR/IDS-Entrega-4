@@ -14,6 +14,36 @@ class PreliminaryGradesTest < ActionDispatch::IntegrationTest
 
   def sheet_path = edit_section_evaluation_grade_sheet_path(@section, @evaluation)
 
+  # CA1 and CA2: the button lives in each preliminary row of the grade sheet, and points to its own delete form
+  # outside the sheet's form (HTML does not allow nested forms), which asks for confirmation.
+  test "la planilla ofrece Eliminar solo en las notas preliminares, con confirmación" do
+    without_grade = User.create!(first_name: "Sin", last_name: "Nota", rut: "10000004-0", email: "sin.nota@ucv.test",
+      password: "password123", role: "alumno", university: universities(:ucv))
+    Enrollment.create!(section: @section, student: without_grade)
+    form_id = "delete_grade_#{@grade.id}"
+    sign_in users(:ayudante)
+
+    get sheet_path
+
+    assert_select "#student_#{users(:alumno).id} button[form=?]", form_id, text: "Eliminar"
+    assert_select "#student_#{without_grade.id} button", text: "Eliminar", count: 0
+    assert_select "form#grade_sheet form", count: 0
+    assert_select "form##{form_id}[action=?]", section_evaluation_preliminary_grade_path(@section, @evaluation, @grade) do
+      assert_select "input[name=_method][value=delete]"
+    end
+    assert_select "form##{form_id}[data-turbo-confirm*=?]", "¿Eliminar la nota de #{users(:alumno).name}"
+  end
+
+  test "una nota oficial no ofrece Eliminar" do
+    @grade.update_columns(status: "publicada")
+    sign_in users(:ayudante)
+
+    get sheet_path
+
+    assert_select "#student_#{users(:alumno).id} button", text: "Eliminar", count: 0
+    assert_select "form#delete_grade_#{@grade.id}", count: 0
+  end
+
   test "el ayudante elimina una nota pendiente y vuelve a la planilla" do
     sign_in users(:ayudante)
 
