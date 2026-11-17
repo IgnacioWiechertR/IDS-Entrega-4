@@ -65,6 +65,7 @@ Rails.application.routes.draw do
 
   # D3/D4: indicadores flujo de notas
   namespace :reports do
+    resource :data_completeness, only: :show, controller: "data_completeness"
     resource :grade_statuses, only: :show
     resource :consolidated, only: :show
   end

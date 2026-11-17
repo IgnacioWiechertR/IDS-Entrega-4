@@ -38,6 +38,7 @@
             <% if can?(:index, :announcements) %><%= nav_link_to "Anuncios", announcements_path %><% end %>
             <% if can?(:index, :attendance) %><%= nav_link_to "Asistencia", attendance_path %><% end %>
             <% if can?(:read, :my_grades) %><%= nav_link_to "Mis notas", my_grades_path %><% end %>
+            <% if can?(:read_data_completeness, :reports) %><%= nav_link_to "Completitud", reports_data_completeness_path %><% end %>
             <% if can?(:read_grade_statuses, :reports) %><%= nav_link_to "Notas", reports_grade_statuses_path %><% end %>
             <% if can?(:read, :notifications) %>
               <% unread = current_user.notifications.unread.count %>
