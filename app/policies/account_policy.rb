@@ -38,7 +38,8 @@ class AccountPolicy
       can %i[destroy_account reactivate_account], User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
-    cannot %i[destroy_account reactivate_account], User, id: user.id
+    # Nobody manages their own account from the accounts panel: not its data, role or state.
+    cannot %i[update_account change_role destroy_account reactivate_account], User, id: user.id
 
     can :switch, University if user.director?
   end
