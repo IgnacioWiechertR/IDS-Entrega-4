@@ -142,7 +142,18 @@
           <%= link_to "Marcar asistencia de hoy", edit_section_attendance_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
         <% end %>
         <% if can?(:create, Evaluation.new(section: @section)) %>
-          <%= link_to "Evaluaciones", section_evaluations_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+          <%= link_to section_evaluations_path(@section), class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} inline-flex items-center gap-2" do %>
+            <span>Evaluaciones</span>
+            <% if @pending_grade_count.positive? %>
+              <span class="inline-flex items-center gap-1 text-yellow-300" id="pending-grade-notice">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5" aria-hidden="true">
+                  <path d="M12 2a6 6 0 0 0-6 6v4l-2 3v2h16v-2l-2-3V8a6 6 0 0 0-6-6ZM9 19a3 3 0 0 0 6 0H9Z" />
+                </svg>
+                <span>(<%= @pending_grade_count %>)</span>
+                <span class="sr-only"><%= @pending_grade_count == 1 ? "nota pendiente de aprobación" : "notas pendientes de aprobación" %></span>
+              </span>
+            <% end %>
+          <% end %>
         <% end %>
         <% if can?(:manage, Enrollment.new(section: @section)) %>
           <%= link_to "Gestionar alumnos", course_section_enrollments_path(@course, @section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>

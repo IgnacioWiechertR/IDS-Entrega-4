@@ -17,6 +17,11 @@ class SectionsController < ApplicationController
   # attendance list and (if they can read the grades) the grades; a student sees only their own grades and
   # attendance, and the course material. Tabs: ?tab=asistencia, ?tab=notas; an unknown tab is the summary.
   def show
+    @pending_grade_count = if can?(:review_grades, Evaluation.new(section: @section))
+      Grade.pendiente.where(evaluation_id: @section.evaluations.select(:id)).count
+    else
+      0
+    end
     @stats = SectionStatsService.new(@section)
     @student_view = !can?(:read_attendance_sheet, @section)
     tabs = @student_view ? STUDENT_TABS : STAFF_TABS

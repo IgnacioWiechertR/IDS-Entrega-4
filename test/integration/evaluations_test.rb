@@ -144,7 +144,10 @@ class EvaluationsTest < ActionDispatch::IntegrationTest
   test "la sección muestra el acceso a evaluaciones solo al equipo docente" do
     sign_in users(:profesor)
     get course_section_path(courses(:one), section)
-    assert_select "a[href=?]", section_evaluations_path(section), text: "Evaluaciones"
+    assert_select "a[href=?]", section_evaluations_path(section) do
+      assert_select "span", text: "Evaluaciones"
+      assert_select "#pending-grade-notice", text: /\(1\)/
+    end
     sign_out :user
 
     sign_in users(:alumno)
