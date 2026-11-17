@@ -1,0 +1,138 @@
+<% content_for :title, "Reporte consolidado · SGA" %>
+
+<section class="mx-auto max-w-6xl">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Reporte consolidado de notas y asistencia</h1>
+      <% if @university %>
+        <p class="mt-1 text-slate-600">
+          Universidad activa: <strong><%= @university.name %></strong>
+        </p>
+      <% end %>
+    </div>
+
+    <% if @university && @rows.any? %>
+
+        <% if can?(:read_grade_statuses, :reports) %>
+            <%= link_to "← Estado de notas",
+                        reports_grade_statuses_path(term_id: @selected_term_id),
+                        class: "inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+
+
+      <%= link_to "Exportar CSV",
+                  reports_consolidated_path(format: :csv, term_id: @selected_term_id, course_id: @selected_course_id),
+                  class: "inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700" %>
+    <% end %>
+  </div>
+
+  <% if @university %>
+    <%= form_with url: reports_consolidated_path, method: :get, class: "mt-6 flex flex-wrap items-end gap-3" do |form| %>
+      <div>
+        <%= form.label :term_id, "Período", class: "mb-2 block text-sm font-medium text-slate-700" %>
+        <%= form.select :term_id,
+                        options_from_collection_for_select(@terms, :id, :name, @selected_term_id),
+                        { include_blank: "Todos los períodos" },
+                        class: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" %>
+      </div>
+
+      <div>
+        <%= form.label :course_id, "Asignatura", class: "mb-2 block text-sm font-medium text-slate-700" %>
+        <%= form.select :course_id,
+                        options_from_collection_for_select(@courses, :id, :name, @selected_course_id),
+                        { include_blank: "Todas las asignaturas" },
+                        class: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700" %>
+      </div>
+
+      <%= form.submit "Filtrar", class: "cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" %>
+      <% if @selected_term_id.present? || @selected_course_id.present? %>
+        <%= link_to "Limpiar", reports_consolidated_path, class: "rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" %>
+      <% end %>
+    <% end %>
+
+    <% if @rows.any? %>
+      <% if @sections_with_evaluations.any? %>
+        <div id="consolidated-charts" class="mt-6 grid gap-6 md:grid-cols-2">
+          <div class="rounded-lg border border-slate-200 bg-white p-5">
+            <h2 class="text-base font-semibold text-slate-900">Promedio de notas por sección</h2>
+            <div class="mt-4 space-y-3">
+              <% @sections_with_evaluations.each do |row| %>
+                <div>
+                  <div class="flex justify-between text-xs font-medium text-slate-700">
+                    <span><%= row.course.code %> · Sec. <%= row.section.number %></span>
+                    <span><%= format("%.1f", row.average_grade) %> / 7.0</span>
+                  </div>
+                  <div class="mt-1 h-2.5 w-full rounded-full bg-slate-100">
+                    <div class="h-2.5 rounded-full bg-indigo-600" style="width: <%= ((row.average_grade / 7.0) * 100).round %>%"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-slate-200 bg-white p-5">
+            <h2 class="text-base font-semibold text-slate-900">Tasa de aprobación y asistencia</h2>
+            <div class="mt-4 space-y-3">
+              <% @sections_with_evaluations.each do |row| %>
+                <div>
+                  <div class="flex justify-between text-xs font-medium text-slate-700">
+                    <span><%= row.course.code %> · Sec. <%= row.section.number %></span>
+                    <span>Aprob.: <%= format("%.1f", row.pass_rate) %>% · Asist.: <%= row.attendance_rate ? "#{format('%.1f', row.attendance_rate)}%" : "S/D" %></span>
+                  </div>
+                  <div class="mt-1 h-2.5 w-full rounded-full bg-slate-100">
+                    <div class="h-2.5 rounded-full bg-emerald-600" style="width: <%= row.pass_rate.round %>%"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div id="no-evaluations-message" class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          No hay evaluaciones con notas oficiales registradas para las secciones filtradas; los gráficos comparativos se mostrarán cuando existan evaluaciones publicadas.
+        </div>
+      <% end %>
+
+      <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200">
+          <caption class="sr-only">
+            Reporte consolidado de notas y asistencia en <%= @university.name %>
+          </caption>
+          <thead class="bg-slate-50">
+            <tr>
+              <% ConsolidatedReportService::CSV_HEADERS.each do |header| %>
+                <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-slate-700">
+                  <%= header %>
+                </th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <% @rows.each do |row| %>
+              <tr id="consolidated-section-<%= row.section.id %>">
+                <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-900"><%= row.course.code %></td>
+                <td class="px-4 py-4 text-sm text-slate-700"><%= row.course.name %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600"><%= row.section.number %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600"><%= row.term.name %></td>
+                <td class="px-4 py-4 text-sm text-slate-600"><%= row.professor_name %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-900"><%= ConsolidatedReportService.format_decimal(row.average_grade) %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-emerald-700"><%= ConsolidatedReportService.format_percent(row.pass_rate) %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-rose-700"><%= ConsolidatedReportService.format_percent(row.fail_rate) %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600"><%= ConsolidatedReportService.format_decimal(row.max_grade) %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-600"><%= ConsolidatedReportService.format_decimal(row.min_grade) %></td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm text-slate-700"><%= ConsolidatedReportService.format_percent(row.attendance_rate) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="mt-6 rounded-lg border border-slate-200 bg-white p-8 text-center">
+        <h2 class="text-lg font-semibold text-slate-900">No hay secciones para mostrar</h2>
+        <p class="mt-2 text-slate-600">No se encontraron secciones para los filtros seleccionados en esta universidad.</p>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="mt-6 text-slate-600">No hay una universidad activa disponible.</p>
+  <% end %>
+</section>
