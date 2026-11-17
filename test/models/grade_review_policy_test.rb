@@ -36,6 +36,20 @@ class GradeReviewPolicyTest < ActiveSupport::TestCase
     assert_not Ability.new(former_profesor).can?(:edit_rejection_comment, grade)
   end
 
+  # C9: deleting the comment follows the same rule as editing it.
+  test "solo el profesor que rechazó elimina el comentario, mientras la nota siga rechazada" do
+    assert Ability.new(users(:profesor)).can?(:delete_rejection_comment, rejected_grade)
+    assert_not Ability.new(users(:profesor)).can?(:delete_rejection_comment, rejected_grade(status: "pendiente"))
+
+    former_profesor = User.create!(first_name: "Ex", last_name: "Profesor", rut: "10000008-3", email: "ex.profesor@ucv.test",
+      password: "password123", role: "profesor", university: universities(:ucv))
+    assert_not Ability.new(users(:profesor)).can?(:delete_rejection_comment, rejected_grade(reviewer: former_profesor))
+
+    %i[ayudante alumno administrativo].each do |fixture|
+      assert_not Ability.new(users(fixture)).can?(:delete_rejection_comment, rejected_grade), "#{fixture} no debería eliminarlo"
+    end
+  end
+
   test "el ayudante, el alumno y el administrativo no editan el comentario de rechazo" do
     grade = rejected_grade
     %i[ayudante alumno administrativo].each do |fixture|
