@@ -48,11 +48,14 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
-  resources :materials
+  # B1 only enables uploads in the context of a course. B2-B5 keep their own scope.
+  resources :materials, only: :index
+  # The public Active Storage direct-upload endpoint stays closed: see the B5 route below (rails_direct_uploads).
   # resources :enrollments
   # resources :section_staffs
   resources :course_coordinators, only: %i[ index create ]
   resources :courses do
+    resources :materials, only: %i[ new create ]
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
        resources :enrollments, only: [ :index, :create, :destroy ]
