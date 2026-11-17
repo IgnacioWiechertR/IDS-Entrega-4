@@ -35,6 +35,7 @@ es:
         in_the_future: no puede ser una fecha futura
         invalid_rut: no es válido, revisa el número y el dígito verificador
         taken_by_account: ya pertenece a la cuenta de %{account}
+        above_max_points: no puede superar el puntaje máximo (%{max})
         published_grade_cannot_be_deleted: Una nota oficial no se puede eliminar
       models:
         course:
@@ -80,6 +81,7 @@ es:
         weight: Ponderación
         due_on: Fecha
         rubric: Pauta
+        max_points: Puntaje máximo
       grade:
         score: Nota
         feedback: Comentario

@@ -180,6 +180,45 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     assert_nil @evaluation.grades.find_by(student: @second)
   end
 
+  # C14: with a maximum score, a row with a score and no grade gets the grade converted with a 50 % threshold.
+  test "con puntaje máximo, una fila con puntaje y sin nota guarda la nota calculada" do
+    @evaluation.update!(max_points: 60)
+
+    result = enter({ @first.id.to_s => { score: "", points: "44" }, @second.id.to_s => { score: " ", points: "30" } })
+
+    assert result.success?
+    assert_equal 2, result.saved_count
+    assert_equal 5.4, @evaluation.grades.find_by!(student: @first).score
+    assert_equal 44, @evaluation.grades.find_by!(student: @first).points
+    assert_equal 4.0, @evaluation.grades.find_by!(student: @second).score
+  end
+
+  test "si la fila trae nota y puntaje, se guarda la nota escrita" do
+    @evaluation.update!(max_points: 60)
+
+    enter({ @first.id.to_s => { score: "5,0", points: "44" } })
+
+    assert_equal 5.0, @evaluation.grades.find_by!(student: @first).score
+  end
+
+  test "un puntaje mayor que el máximo no guarda ninguna nota del envío" do
+    @evaluation.update!(max_points: 60)
+
+    assert_no_difference -> { Grade.count } do
+      result = enter({ @first.id.to_s => { score: "6,0", points: "50" }, @second.id.to_s => { score: "", points: "61" } })
+
+      assert_not result.success?
+      assert_includes result.errors[@second.id], "Puntaje no puede superar el puntaje máximo (60)"
+    end
+  end
+
+  test "sin puntaje máximo, una fila con puntaje y sin nota se ignora como antes" do
+    result = enter({ @first.id.to_s => { score: "", points: "44" } })
+
+    assert_equal 0, result.saved_count
+    assert_nil @evaluation.grades.find_by(student: @first)
+  end
+
   test "ignora a quien no está inscrito en la sección" do
     result = enter({ users(:profesor).id.to_s => { score: "6.0" } })
 

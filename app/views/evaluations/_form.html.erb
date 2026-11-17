@@ -26,6 +26,12 @@
   </div>
 
   <div>
+    <%= form.label :max_points, "Puntaje máximo (opcional)", class: "block text-sm font-medium text-slate-700" %>
+    <%= form.number_field :max_points, step: 0.01, min: 0.01, class: ApplicationHelper::INPUT_CLASSES %>
+    <p class="mt-1 text-xs text-slate-500">Con puntaje máximo, la nota se puede calcular desde el puntaje (50 % de exigencia).</p>
+  </div>
+
+  <div>
     <%= form.label :rubric, "Pauta (opcional)", class: "block text-sm font-medium text-slate-700" %>
     <%= form.text_area :rubric, rows: 4, class: ApplicationHelper::INPUT_CLASSES %>
   </div>
