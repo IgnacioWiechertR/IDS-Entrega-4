@@ -9,6 +9,11 @@ es:
   authorization:
     denied: No tienes permiso para ver esa página.
 
+  # User#inactive_message: the account was deactivated from the accounts panel.
+  devise:
+    failure:
+      deactivated: Tu cuenta está desactivada. Contacta a la administración de tu universidad.
+
   university_selection:
     changed: Ahora estás viendo %{name}.
 
@@ -109,3 +114,4 @@ es:
         password: Contraseña
         role: Rol
         university: Universidad
+        active: Activa

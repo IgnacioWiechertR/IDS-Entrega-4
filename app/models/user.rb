@@ -29,6 +29,32 @@ class User < ApplicationRecord
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
   has_many :uploaded_materials, class_name: "Material", foreign_key: :uploaded_by_id,
     inverse_of: :uploaded_by, dependent: :restrict_with_error
+  # B7 corrections had no association, so deleting their author failed on the foreign key.
+  has_many :corrected_attendance_records, class_name: "AttendanceRecord", foreign_key: :corrected_by_id,
+    inverse_of: :corrected_by, dependent: :restrict_with_error
+
+  # Records that make an account part of the academic history. The app never destroys accounts (deleting one from
+  # the panel deactivates it), but several associations above cascade on destroy (an ayudante's entered grades, a
+  # profesor's attendance sessions, the assignments an administrativo made). This guard stops any other path, like
+  # the console, from destroying an account with history and its records with it.
+  ACADEMIC_HISTORY = {
+    enrollments: "inscripciones en secciones",
+    grades: "notas como alumno",
+    attendance_records: "asistencia como alumno",
+    section_staffs: "asignaciones como profesor o ayudante",
+    course_coordinators: "coordinaciones de curso",
+    entered_grades: "notas ingresadas",
+    reviewed_grades: "notas revisadas",
+    recorded_attendance_sessions: "asistencia registrada",
+    corrected_attendance_records: "correcciones de asistencia",
+    announcements: "anuncios publicados",
+    uploaded_materials: "material subido",
+    assigned_section_staffs: "asignaciones de profesores o ayudantes que realizó",
+    assigned_course_coordinators: "coordinadores que asignó"
+  }.freeze
+
+  # Prepended so it runs before the dependent: :destroy callbacks of the associations above.
+  before_destroy :ensure_without_academic_history, prepend: true
 
   normalizes :rut, with: ->(rut) { Rut.normalize(rut) }
 
@@ -58,7 +84,39 @@ class User < ApplicationRecord
     alumno? || ayudante?
   end
 
+  # What keeps the account from being deleted, by name ("notas ingresadas", ...). Empty when it can be deleted.
+  # The checks ignore the active university: the records of an account all belong to its own one anyway.
+  def deletion_blockers
+    return [] if new_record?
+
+    ActsAsTenant.without_tenant do
+      ACADEMIC_HISTORY.filter_map { |association, label| label if public_send(association).exists? }
+    end
+  end
+
+  # Accounts created before `active` was set have nil: only an explicit false deactivates.
+  def deactivated?
+    active == false
+  end
+
+  # Devise checks this on sign in and on every request, so a deactivated account is also signed out.
+  def active_for_authentication?
+    super && !deactivated?
+  end
+
+  def inactive_message
+    deactivated? ? :deactivated : super
+  end
+
   private
+
+  def ensure_without_academic_history
+    blockers = deletion_blockers
+    return if blockers.empty?
+
+    errors.add(:base, "No se puede eliminar la cuenta porque tiene #{blockers.to_sentence}.")
+    throw :abort
+  end
 
   def rut_has_valid_check_digit
     errors.add(:rut, :invalid_rut) unless Rut.valid?(rut)

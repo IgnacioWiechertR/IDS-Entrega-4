@@ -1,6 +1,8 @@
 require "csv"
 
 class AccountsController < ApplicationController
+  before_action :set_account, only: %i[edit update destroy reactivate]
+
   def index
     authorize! :index, :accounts
 
@@ -129,10 +131,75 @@ class AccountsController < ApplicationController
     end
   end
 
+  # Personal data of an account. The role changes from the list (A17) and the university never changes.
+  def edit
+    authorize! :update_account, @account
+  end
+
+  def update
+    authorize! :update_account, @account
+
+    if @account.update(edit_account_params)
+      redirect_to after_management_path, notice: "Datos de #{@account.name} actualizados.", status: :see_other
+    else
+      render :edit, status: :unprocessable_content
+    end
+  end
+
+  # Deleting an account deactivates it: the person can no longer sign in (User#active_for_authentication?, also
+  # on the session it had open) and the row stays, so its grades, attendance and assignments keep their author.
+  # It writes the column directly: revoking access must not depend on the rest of the record being valid.
+  def destroy
+    authorize! :destroy_account, @account
+
+    if @account.deactivated?
+      redirect_to accounts_path(**list_filters), notice: "La cuenta de #{@account.name} ya estaba eliminada.",
+                                                 status: :see_other
+      return
+    end
+
+    @account.update_columns(active: false, updated_at: Time.current)
+    redirect_to accounts_path(**list_filters), status: :see_other,
+      notice: "La cuenta de #{@account.name} fue eliminada: ya no puede iniciar sesión. Su historial se conserva."
+  end
+
+  # Undoes a deletion by mistake.
+  def reactivate
+    authorize! :reactivate_account, @account
+
+    @account.update_columns(active: true, updated_at: Time.current)
+    redirect_to accounts_path(**list_filters), notice: "La cuenta de #{@account.name} fue reactivada.",
+                                               status: :see_other
+  end
+
   private
+
+  # Accounts of the active university, so one of the other university is a 404 (A3). The director has no
+  # university and reaches only its own account outside of it.
+  def set_account
+    @account =
+      if current_user.director? && params[:id].to_s == current_user.id.to_s
+        User.find(current_user.id) # a separate copy, so a failed edit does not show in the top bar
+      else
+        User.where(university_id: current_university&.id).find(params.expect(:id))
+      end
+  end
+
+  # The list keeps its search, role filter and page after editing.
+  def list_filters
+    { q: params[:q].presence, role: params[:role].presence, page: params[:page].presence }.compact
+  end
+
+  def after_management_path
+    @account == current_user ? edit_account_path(@account) : accounts_path(**list_filters)
+  end
 
   def account_params
     params.expect(account: [ :first_name, :last_name, :rut, :email, :role ])
+  end
+
+  def edit_account_params
+    params.expect(account: [ :first_name, :last_name, :rut, :email ])
   end
 
   def role_params

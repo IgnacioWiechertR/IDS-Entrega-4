@@ -41,13 +41,14 @@ T8 añade tres evaluaciones de ejemplo por sección: publicada, pendiente y rech
 
 - **Administrativo** (`admin@ucv.test`):
   - **Cuentas**: listar, buscar por nombre o RUT y filtrar por rol; **Crear cuenta** de alumno, ayudante o profesor. El RUT se valida con su dígito verificador, y el sistema muestra una contraseña temporal una sola vez.
+  - **Editar** una cuenta (nombre, apellido, RUT y correo) y **Eliminar** una cuenta de su universidad, con confirmación. Eliminar la desactiva: la persona ya no puede iniciar sesión, pero la cuenta y sus notas siguen en la base de datos. **Reactivar** deshace una eliminación por error.
   - **Cursos**: crear, editar y eliminar asignaturas y secciones.
   - En una sección: **Gestionar alumnos** (inscribir) y **Gestionar ayudantes** (asignar).
   - **Asignar profesores** a secciones.
 - **Profesor** (`profesor@ucv.test`): en su sección, **Marcar asistencia de hoy** y ver la tabla de asistencia; revisar y aprobar notas; ver todas las notas de la sección.
 - **Ayudante** (`ayudante@ucv.test`): crear evaluaciones e ingresar notas; ver la asistencia de su sección (no la marca).
 - **Alumno** (`alumno@ucv.test`): **Mis notas** y **Asistencia** (porcentaje y detalle por clase).
-- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y ve cursos y secciones en solo lectura, con el promedio y la asistencia de cada sección.
+- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y ve cursos y secciones en solo lectura, con el promedio y la asistencia de cada sección. En **Cuentas** edita los datos de las cuentas de la universidad activa, incluidos los administrativos, y los suyos en **Mi cuenta**.
 - **Aislamiento entre universidades**: con `admin@iusa.test` no aparece nada de la UCV, y un enlace a un recurso de la otra universidad responde "no encontrado".
 
 ## Ejecutar en local
