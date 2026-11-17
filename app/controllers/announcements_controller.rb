@@ -1,6 +1,7 @@
 # B11: professors publish to a course or one of their sections.
 # B12: professors and assistants read announcements from courses where they participate.
 # B13: course professors correct the subject and body of an announcement.
+# B16: students read course announcements and those addressed to their own section.
 class AnnouncementsController < ApplicationController
   before_action :set_course, only: %i[ new create ]
   before_action :set_announcement, only: %i[ edit update destroy ]
@@ -90,6 +91,13 @@ class AnnouncementsController < ApplicationController
     coordinated_courses = CourseCoordinator.where(user_id: current_user.id).select(:course_id)
     course_ids = Course.where(id: staff_courses).or(Course.where(id: coordinated_courses)).select(:id)
 
-    Announcement.where(course_id: course_ids)
+    announcements = Announcement.where(course_id: course_ids)
+    return announcements unless current_user.student_account?
+
+    enrolled_sections = Enrollment.where(student_id: current_user.id, active: true).select(:section_id)
+    enrolled_courses = Section.where(id: enrolled_sections).select(:course_id)
+
+    announcements.or(Announcement.where(course_id: enrolled_courses, section_id: nil))
+      .or(Announcement.where(section_id: enrolled_sections))
   end
 end
