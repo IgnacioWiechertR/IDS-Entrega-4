@@ -78,5 +78,28 @@ module Reports
         sign_out :user
       end
     end
+
+    test "la pantalla y el CSV excluyen asistencias de alumnos retirados y conservan el historial" do
+      enrollment = Enrollment.create!(section: @section, student: @ayudante, active: true)
+      session = AttendanceSession.create!(section: @section, held_on: Date.current, recorded_by: @profesor)
+      [ @alumno, @ayudante ].each do |student|
+        AttendanceRecord.create!(attendance_session: session, student: student, status: "presente")
+      end
+      enrollment.update!(active: false)
+      sign_in @admin
+
+      get reports_consolidated_path(term_id: @term.id, course_id: @course.id)
+
+      assert_response :success
+      assert_select "tr#consolidated-section-#{@section.id} td:last-child", text: "100.0%"
+
+      get reports_consolidated_path(format: :csv, term_id: @term.id, course_id: @course.id)
+
+      assert_response :success
+      rows = CSV.parse(response.body, headers: true, col_sep: ";")
+      assert_equal 1, rows.size
+      assert_equal "100.0%", rows.first["% Asistencia"]
+      assert_equal 2, ActsAsTenant.with_tenant(@ucv) { session.attendance_records.count }
+    end
   end
 end
