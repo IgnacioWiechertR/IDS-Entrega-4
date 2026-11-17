@@ -19,6 +19,10 @@ class RejectionCommentsTest < ActionDispatch::IntegrationTest
     patch section_evaluation_rejection_comment_path(section, evaluation, grade), params: { rejection_comment: comment }
   end
 
+  def delete_comment(grade: @grade, evaluation: @evaluation, section: @section)
+    delete section_evaluation_rejection_comment_path(section, evaluation, grade)
+  end
+
   test "el profesor ve cada rechazo con su comentario, quién rechazó y a qué alumnos afecta" do
     sign_in users(:profesor)
     get review_path
@@ -96,6 +100,80 @@ class RejectionCommentsTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
     assert_equal "Revisa la pregunta 2", @grade.reload.rejection_comment
+  end
+
+  # C9: deleting the comment withdraws the rejection; its grades go back to pending review.
+  test "el profesor que rechazó ve Eliminar comentario, con confirmación" do
+    sign_in users(:profesor)
+    get review_path
+
+    assert_select "#rejection_#{@grade.id} form[action=?]", section_evaluation_rejection_comment_path(@section, @evaluation, @grade) do
+      assert_select "input[name=_method][value=delete]"
+      assert_select "button", text: "Eliminar comentario"
+    end
+    assert_select "#rejection_#{@grade.id} form[data-turbo-confirm*=?]", "vuelve a pendiente de revisión"
+  end
+
+  test "al eliminar el comentario las notas vuelven a pendiente y el ayudante deja de verlo" do
+    sign_in users(:profesor)
+
+    delete_comment
+
+    assert_redirected_to review_path
+    assert_equal "Se eliminó el comentario: 1 nota volvió a pendiente de revisión.", flash[:notice]
+    assert @grade.reload.pendiente?
+    assert_nil @grade.rejection_comment
+    follow_redirect!
+    assert_select "#pending-grades #grade_#{@grade.id}"
+    assert_select "#rejections", count: 0
+    sign_out :user
+
+    sign_in users(:ayudante)
+    get edit_section_evaluation_grade_sheet_path(@section, @evaluation)
+    assert_select "#student_#{users(:alumno).id}", text: /Pendiente de revisión/
+    assert_select "#student_#{users(:alumno).id}", text: /Rechazada por el profesor/, count: 0
+    get section_evaluations_path(@section)
+    assert_select "a", text: /por corregir/, count: 0
+  end
+
+  test "un rechazo de otro profesor no se puede eliminar" do
+    former_profesor = User.create!(first_name: "Ex", last_name: "Profesor", rut: "10000008-3", email: "ex.profesor@ucv.test",
+      password: "password123", role: "profesor", university: universities(:ucv))
+    @grade.update_columns(reviewed_by_id: former_profesor.id)
+    sign_in users(:profesor)
+
+    get review_path
+    assert_select "#rejection_#{@grade.id} button", text: "Eliminar comentario", count: 0
+
+    delete_comment
+    assert_response :redirect
+    assert_equal "No tienes permiso para ver esa página.", flash[:alert]
+    assert @grade.reload.rechazada?
+  end
+
+  test "el ayudante, el alumno y el administrativo no eliminan el comentario" do
+    %i[ayudante alumno administrativo].each do |fixture|
+      sign_in users(fixture)
+
+      delete_comment
+
+      assert_response :redirect
+      assert_equal "No tienes permiso para ver esa página.", flash[:alert], "#{fixture} no debería eliminarlo"
+      sign_out :user
+    end
+    assert @grade.reload.rechazada?
+  end
+
+  test "eliminar el comentario de una nota de otra evaluación o de otra universidad responde 404" do
+    other = Evaluation.create!(section: @section, name: "Control 3", weight: 10, due_on: Date.new(2026, 11, 20))
+    sign_in users(:profesor)
+    delete_comment(evaluation: other)
+    assert_response :not_found
+
+    sign_in users(:profesor)
+    delete_comment(grade: grades(:two), evaluation: evaluations(:two), section: sections(:two))
+    assert_response :not_found
+    assert @grade.reload.rechazada?
   end
 
   test "una sección de otra universidad responde 404" do

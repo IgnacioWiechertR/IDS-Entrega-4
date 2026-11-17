@@ -48,7 +48,7 @@
   <% end %>
 
   <% if @rejections.any? %>
-    <%# C8: each rejection waiting for the ayudante, with its comment; the profesor who rejected can edit it. %>
+    <%# C8, C9: each rejection waiting for the ayudante, with its comment; the profesor who rejected can edit or delete it. %>
     <section id="rejections" class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-5" aria-labelledby="rejections-title">
       <h2 id="rejections-title" class="font-semibold text-amber-900">Rechazos en espera de corrección</h2>
       <% @rejections.each do |grades| %>
@@ -67,7 +67,15 @@
               <%= form.submit "Guardar comentario",
                     class: "inline-flex rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" %>
             <% end %>
-          <% else %>
+          <% end %>
+          <% if can?(:delete_rejection_comment, grade) %>
+            <%# C9: a separate form (not nested in the edit form); deleting the comment withdraws the rejection. %>
+            <%= button_to "Eliminar comentario", section_evaluation_rejection_comment_path(@section, @evaluation, grade),
+                  method: :delete, form_class: "mt-2",
+                  form: { data: { turbo_confirm: "¿Eliminar el comentario? #{grades.size == 1 ? 'La nota de este rechazo vuelve' : "Las #{grades.size} notas de este rechazo vuelven"} a pendiente de revisión." } },
+                  class: "text-sm font-semibold text-red-700 hover:underline cursor-pointer" %>
+          <% end %>
+          <% unless can?(:edit_rejection_comment, grade) %>
             <p class="mt-2 text-slate-900">«<%= grade.rejection_comment %>»</p>
           <% end %>
         </div>
