@@ -8,12 +8,25 @@ module UniversitySummaryData
       Term.where(current: true).update_all(current: false)
       faculty = Faculty.create!(university: university, name: "Facultad #{code}")
       course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
+      @summary_faculty = faculty
+      @summary_course = course
       @summary_term = Term.create!(university: university, name: "Período #{code}", current: true,
         starts_on: Date.new(2026, 8, 1), ends_on: Date.new(2026, 12, 15))
       @summary_section = Section.create!(university: university, course: course, term: @summary_term, number: 1)
       @summary_teacher = summary_account("profesor", university, "profesor-#{code}")
       @summary_control = Evaluation.create!(section: @summary_section, name: "Control", weight: 40, due_on: Date.new(2026, 9, 1))
       @summary_exam = Evaluation.create!(section: @summary_section, name: "Examen", weight: 60, due_on: Date.new(2026, 11, 1))
+    end
+  end
+
+  # D2: another course of the same period, in its own faculty unless one is given, with one evaluation (100 %).
+  # Returns its section and its evaluation.
+  def create_summary_course(university, code, faculty: nil, term: @summary_term)
+    ActsAsTenant.with_tenant(university) do
+      faculty ||= Faculty.create!(university: university, name: "Facultad #{code}")
+      course = Course.create!(university: university, faculty: faculty, code: code, name: "Asignatura #{code}")
+      section = Section.create!(university: university, course: course, term: term, number: 1)
+      [ section, Evaluation.create!(section: section, name: "Examen #{code}", weight: 100, due_on: Date.new(2026, 11, 1)) ]
     end
   end
 
