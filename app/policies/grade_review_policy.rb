@@ -9,7 +9,8 @@ class GradeReviewPolicy
 
     # C8 (Trello): only the profesor who rejected the grades edits the comment, while they are still rejected and
     # while they still teach the section.
-    can :edit_rejection_comment, Grade, status: "rechazada", reviewed_by_id: user.id,
+    # C9 (Trello): deleting it follows the same rule ("solo el profesor que escribió el comentario").
+    can %i[edit_rejection_comment delete_rejection_comment], Grade, status: "rechazada", reviewed_by_id: user.id,
       evaluation: { section: { section_staffs: { user_id: user.id, role: "profesor" } } }
   end
 end
