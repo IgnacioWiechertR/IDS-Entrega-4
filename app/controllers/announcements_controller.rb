@@ -55,7 +55,7 @@ class AnnouncementsController < ApplicationController
   def destroy
     authorize! :destroy, @announcement
     @announcement.destroy!
-    redirect_to announcements_path, notice: "Announcement was successfully destroyed.", status: :see_other
+    redirect_to announcements_path, notice: "El anuncio fue eliminado.", status: :see_other
   end
 
   private
