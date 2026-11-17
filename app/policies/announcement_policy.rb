@@ -17,7 +17,7 @@ class AnnouncementPolicy
 
     return unless user.profesor?
 
-    can :create, Announcement do |announcement|
+    can [ :create, :update ], Announcement do |announcement|
       course = announcement.course
       next false unless course && course.university_id == user.university_id
 

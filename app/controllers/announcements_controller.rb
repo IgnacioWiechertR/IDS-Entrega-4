@@ -1,5 +1,6 @@
 # B11: professors publish to a course or one of their sections.
 # B12: professors and assistants read announcements from courses where they participate.
+# B13: course professors correct the subject and body of an announcement.
 class AnnouncementsController < ApplicationController
   before_action :set_course, only: %i[ new create ]
   before_action :set_announcement, only: %i[ edit update destroy ]
@@ -44,8 +45,8 @@ class AnnouncementsController < ApplicationController
 
   def update
     authorize! :update, @announcement
-    if @announcement.update(announcement_params)
-      redirect_to @announcement, notice: "Announcement was successfully updated.", status: :see_other
+    if @announcement.update(announcement_update_params)
+      redirect_to @announcement, notice: "El anuncio fue actualizado.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -69,6 +70,10 @@ class AnnouncementsController < ApplicationController
 
   def announcement_params
     params.expect(announcement: [ :section_id, :subject, :body ])
+  end
+
+  def announcement_update_params
+    params.expect(announcement: [ :subject, :body ])
   end
 
   def permitted_sections

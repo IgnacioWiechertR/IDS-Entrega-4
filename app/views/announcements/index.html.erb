@@ -15,6 +15,9 @@
             <div><dt class="inline font-medium">Destino:</dt> <dd class="inline"><%= announcement.section ? "Sección #{announcement.section.number}" : "Toda la asignatura" %></dd></div>
             <div><dt class="inline font-medium">Autor:</dt> <dd class="inline"><%= announcement.author.name %></dd></div>
             <div><dt class="inline font-medium">Publicado:</dt> <dd class="inline"><%= l(announcement.created_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+            <% if announcement.updated_at > announcement.created_at %>
+              <div><dt class="inline font-medium">Editado:</dt> <dd class="inline"><%= l(announcement.updated_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+            <% end %>
           </dl>
         </article>
       <% end %>

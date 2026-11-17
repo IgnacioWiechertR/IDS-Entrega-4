@@ -1,10 +1,8 @@
-<% content_for :title, "Editing announcement" %>
+<% content_for :title, "Editar anuncio · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">Editing announcement</h1>
-
+<section class="mx-auto max-w-2xl py-8">
+  <p class="text-sm"><%= link_to "← Volver al anuncio", @announcement, class: "text-indigo-700 hover:underline" %></p>
+  <h1 class="mt-2 text-2xl font-bold text-slate-900">Editar anuncio</h1>
+  <p class="mt-1 text-sm text-slate-600"><%= @announcement.course.code %> · <%= @announcement.course.name %></p>
   <%= render "form", announcement: @announcement %>
-
-  <%= link_to "Show this announcement", @announcement, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "Back to announcements", announcements_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-</div>
+</section>
