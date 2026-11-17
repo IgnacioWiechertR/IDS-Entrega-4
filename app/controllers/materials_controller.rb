@@ -12,6 +12,8 @@ class MaterialsController < ApplicationController
   def create
     attributes = params.expect(material: [ :title, :file ])
     @material.title = attributes[:title]
+    # B3: the author is the signed-in user, never a parameter.
+    @material.uploaded_by = current_user
     upload = attributes[:file]
 
     # B1 accepts a fresh multipart upload, never an existing blob's signed ID.

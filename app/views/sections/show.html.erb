@@ -228,6 +228,9 @@
           <% else %>
             <%= link_to material_display_title(material), course_material_path(@course, material), class: "font-medium text-indigo-700 hover:underline" %>
           <% end %>
+          <% if can?(:update, material) %>
+            <%= link_to "Editar", edit_course_material_edit_path(@course, material), class: "ml-3 font-medium text-indigo-700 hover:underline" %>
+          <% end %>
         </li>
       <% end %>
     </ul>

@@ -27,6 +27,8 @@ class User < ApplicationRecord
   has_many :attendance_records, foreign_key: :student_id, dependent: :destroy
   has_many :announcements, foreign_key: :author_id, dependent: :destroy
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
+  has_many :uploaded_materials, class_name: "Material", foreign_key: :uploaded_by_id,
+    inverse_of: :uploaded_by, dependent: :restrict_with_error
 
   normalizes :rut, with: ->(rut) { Rut.normalize(rut) }
 

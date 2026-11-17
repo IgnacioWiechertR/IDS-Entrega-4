@@ -85,6 +85,11 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # B3: editing is restricted to the original uploader and stays separate from B1/B2/B5.
+  resources :courses, only: [] do
+    resources :material_edits, only: %i[ index edit update ]
+  end
+
   # B5: download originals only after checking access to their course.
   resources :courses, only: [] do
     resources :material_downloads, only: :index
