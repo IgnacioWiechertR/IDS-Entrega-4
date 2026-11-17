@@ -35,6 +35,7 @@ class AnnouncementsController < ApplicationController
     authorize! :create, @announcement
 
     if @announcement.save
+      AnnouncementPublishedNotificationJob.perform_later(@announcement.id, @announcement.university_id)
       redirect_to(@announcement.section ? course_section_path(@course, @announcement.section) : course_path(@course),
         notice: "El anuncio fue publicado.", status: :see_other)
     else
