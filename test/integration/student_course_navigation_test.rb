@@ -1,7 +1,7 @@
 require "test_helper"
 
-# C15: inside their section the student has tabs (Resumen · Notas) and never needs to leave the course to see their
-# grades; the general "Mis notas" stays and links to each course.
+# C15 and B18: inside their section the student has tabs (Resumen · Notas · Asistencia) and never needs to leave the
+# course to see their grades or attendance; the general "Mis notas" and "Asistencia" stay and link to each course.
 class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
   setup do
     @course = courses(:one)
@@ -15,26 +15,26 @@ class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
   def section_path(tab: nil) = course_section_path(@course, @section, tab: tab)
 
   # CA1
-  test "el alumno ve las pestañas Resumen y Notas, con la activa marcada" do
+  test "el alumno ve las pestañas Resumen, Notas y Asistencia, con la activa marcada" do
     sign_in users(:alumno)
 
     get section_path
-    assert_select "#student_tabs a", count: 2
+    assert_select "#student_tabs a", count: 3
     assert_select "#student_tabs a[aria-current=page]", text: "Resumen"
     assert_select "#student_tabs a[href=?]", section_path(tab: "notas"), text: "Notas"
+    assert_select "#student_tabs a[href=?]", section_path(tab: "asistencia"), text: "Asistencia"
 
     get section_path(tab: "notas")
     assert_select "#student_tabs a[aria-current=page]", text: "Notas"
     assert_select "#section_tabs", count: 0
   end
 
-  test "una pestaña desconocida o de staff cae en Resumen" do
+  test "una pestaña desconocida cae en Resumen" do
     sign_in users(:alumno)
 
-    get section_path(tab: "asistencia")
+    get section_path(tab: "inventada")
     assert_response :success
     assert_select "#student_tabs a[aria-current=page]", text: "Resumen"
-    assert_select "#section_attendance", count: 0
   end
 
   # CA2
@@ -104,6 +104,80 @@ class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
     get my_grades_path
 
     assert_select "#section_#{@section.id} header a[href=?]", section_path(tab: "notas"), text: /ICC1001.*Programación/
+  end
+
+  # B18 CA1
+  test "Asistencia muestra su porcentaje, cuántas clases asistió y el detalle por clase, solo suyo" do
+    classmate = User.create!(first_name: "Compañera", last_name: "Inscrita", rut: "66666666-6", email: "companera@ucv.test",
+      role: "alumno", university: universities(:ucv), password: "password123")
+    ActsAsTenant.with_tenant(universities(:ucv)) do
+      Enrollment.create!(section: @section, student: classmate)
+      attendance_sessions(:one).attendance_records.create!(student: classmate, status: "ausente")
+    end
+    sign_in users(:alumno)
+    get section_path(tab: "asistencia")
+
+    assert_select "#student_tabs a[aria-current=page]", text: "Asistencia"
+    assert_select "#attendance-percentage", text: /100\s?%/
+    assert_select "p", text: /Asististe a 1 de 1 clases registradas/
+    assert_select "#attendance-detail li", text: /Presente/, count: 1
+    assert_select "#attendance-detail li", text: /Ausente/, count: 0
+    assert_select "#section_attendance", count: 0
+    assert_select "#materials", count: 0
+    assert_no_match(/Compañera/, response.body)
+  end
+
+  test "Asistencia sin clases registradas muestra un mensaje" do
+    ActsAsTenant.with_tenant(universities(:ucv)) { @section.attendance_sessions.destroy_all }
+    sign_in users(:alumno)
+    get section_path(tab: "asistencia")
+
+    assert_select "#no-sessions", text: /Aún no hay clases registradas/
+    assert_select "#attendance-percentage", count: 0
+  end
+
+  # B18 CA2
+  test "Resumen enlaza a la pestaña Asistencia" do
+    sign_in users(:alumno)
+    get section_path
+
+    assert_select "a[href=?]", section_path(tab: "asistencia"), text: "Detalle de mi asistencia"
+    assert_select "a[href=?]", section_attendance_path(@section), count: 0
+  end
+
+  # B18 CA3
+  test "el enlace antiguo al detalle de asistencia lleva al alumno a la pestaña, y el profesor sigue viendo su tabla" do
+    sign_in users(:alumno)
+    get section_attendance_path(@section)
+    assert_redirected_to section_path(tab: "asistencia")
+    sign_out :user
+
+    sign_in users(:profesor)
+    get section_attendance_path(@section)
+    assert_response :success
+    assert_select "#attendance-table"
+  end
+
+  # B18 CA4
+  test "en Asistencia (general) cada asignatura del alumno enlaza a su pestaña" do
+    sign_in users(:alumno)
+    get attendance_path
+
+    assert_select "#my-attendance a[href=?]", section_path(tab: "asistencia"), text: /ICC1001/
+  end
+
+  # B18 CA-AUT
+  test "con la matrícula inactiva el alumno no ve la asistencia de la sección" do
+    ActsAsTenant.with_tenant(universities(:ucv)) { enrollments(:one).update!(active: false) }
+    sign_in users(:alumno)
+
+    get section_attendance_path(@section)
+    assert_response :redirect
+    assert_equal "No tienes permiso para ver esa página.", flash[:alert]
+
+    get section_path(tab: "asistencia")
+    assert_response :redirect
+    assert_equal "No tienes permiso para ver esa página.", flash[:alert]
   end
 
   # CA-AUT

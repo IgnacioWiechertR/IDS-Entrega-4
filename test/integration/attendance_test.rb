@@ -142,7 +142,9 @@ class AttendanceTest < ActionDispatch::IntegrationTest
     get attendance_path
     assert_select "#my-attendance", text: /ICC1001.*100\s?%/m
 
+    # B18: the student's attendance lives in the Asistencia tab of their section.
     get section_attendance_path(@section)
+    follow_redirect!
     assert_response :success
     assert_select "#attendance-percentage", text: /100\s?%/
     assert_select "#attendance-detail li", text: /Presente/, count: 1
@@ -158,6 +160,7 @@ class AttendanceTest < ActionDispatch::IntegrationTest
     assert_select "#my-attendance", text: /Aún sin clases/
 
     get section_attendance_path(@section)
+    follow_redirect!
     assert_select "#no-sessions", text: /Aún no hay clases registradas/
     assert_select "#attendance-percentage", count: 0
   end

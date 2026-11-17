@@ -2,10 +2,13 @@
 <nav id="student_tabs" class="mt-4 flex flex-wrap gap-2" aria-label="Apartados de la sección">
   <%= overview_tab "Resumen", course_section_path(@course, @section), @tab == "resumen" %>
   <%= overview_tab "Notas", course_section_path(@course, @section, tab: "notas"), @tab == "notas" %>
+  <%= overview_tab "Asistencia", course_section_path(@course, @section, tab: "asistencia"), @tab == "asistencia" %>
 </nav>
 
 <% if @tab == "notas" %>
   <%= render "student_grades" %>
+<% elsif @tab == "asistencia" %>
+  <%= render "student_attendance" %>
 <% else %>
   <%= render "student_summary" %>
 <% end %>
