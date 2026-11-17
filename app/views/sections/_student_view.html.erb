@@ -1,0 +1,11 @@
+<%# C15: the student's own tabs inside the course. They see only their own published grades and attendance (C10, B10). %>
+<nav id="student_tabs" class="mt-4 flex flex-wrap gap-2" aria-label="Apartados de la sección">
+  <%= overview_tab "Resumen", course_section_path(@course, @section), @tab == "resumen" %>
+  <%= overview_tab "Notas", course_section_path(@course, @section, tab: "notas"), @tab == "notas" %>
+</nav>
+
+<% if @tab == "notas" %>
+  <%= render "student_grades" %>
+<% else %>
+  <%= render "student_summary" %>
+<% end %>
