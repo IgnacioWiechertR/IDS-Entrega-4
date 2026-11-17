@@ -65,15 +65,32 @@ bin/dev                                       # servidor, Tailwind y Sidekiq
 
 La aplicación queda en http://localhost:3000. Los datos de demostración se pueden volver a cargar sin duplicarse. Las cuentas existentes conservan su contraseña y se respetan las notas y marcas de asistencia editadas. La contraseña indicada solo se asigna a cuentas nuevas.
 
-## Tests
+## Tests y cobertura
+
+Los tests usan Minitest (el framework de Rails) y la cobertura se mide con [SimpleCov](https://github.com/simplecov-ruby/simplecov). Requisitos: los mismos de "Ejecutar en local" (Ruby 3.4.5, `bundle install` y PostgreSQL corriendo). No hace falta Redis: los trabajos en segundo plano usan el adaptador de pruebas.
 
 ```bash
-bin/rails test           # tests de modelos, servicios e integración
-bin/rubocop              # estilo
-bin/brakeman --no-pager  # seguridad
+bin/rails db:test:prepare   # crea o actualiza la base de datos de pruebas (solo la primera vez o tras una migración)
+bin/rails test              # corre todos los tests y genera el reporte de cobertura
+bin/rubocop                 # estilo
+bin/brakeman --no-pager     # seguridad
 ```
 
-La integración continua (GitHub Actions) corre los tres en cada pull request.
+**Cómo obtener la cobertura.** `bin/rails test` mide la cobertura automáticamente. Al terminar imprime el resumen en la terminal y deja el reporte completo en `coverage/index.html`:
+
+```
+Line coverage: 1961 / 2109 (92.98%)
+Branch coverage: 568 / 680 (83.52%)
+```
+
+- Abre `coverage/index.html` en el navegador para ver el porcentaje por archivo y las líneas sin cubrir (en rojo). Los archivos están agrupados en controladores, modelos, servicios, policies, jobs y helpers.
+- Se mide la cobertura de **líneas** y de **ramas** (cada `if`/`else` por separado).
+- El dato es de la suite completa: si corres un solo archivo (`bin/rails test test/models/grade_test.rb`), el reporte refleja solo ese archivo.
+- La carpeta `coverage/` se genera en cada ejecución y no se sube al repositorio.
+
+**Cobertura actual** (17-nov-2026, 756 tests): **92,98 % de líneas** y **83,52 % de ramas**.
+
+La integración continua (GitHub Actions) corre los tests, RuboCop y Brakeman en cada pull request.
 
 ## Stack
 
