@@ -75,6 +75,10 @@
     </div>
   </dl>
 
+  <% if @term %>
+    <%= render "syllabi/card", course: @course, term: @term %>
+  <% end %>
+
   <h2 class="mt-8 text-lg font-semibold text-slate-900">Secciones</h2>
   <% if @sections.any? %>
     <ul id="course_sections" class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

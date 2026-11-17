@@ -6,6 +6,7 @@ class Course < ApplicationRecord
   has_many :course_coordinators, dependent: :restrict_with_error
   has_many :materials, dependent: :restrict_with_error
   has_many :announcements, dependent: :restrict_with_error
+  has_many :syllabi, dependent: :restrict_with_error
 
   validates :code, :name, presence: true
   validates :code, uniqueness: { scope: :university_id }

@@ -1,0 +1,23 @@
+es:
+  activerecord:
+    models:
+      syllabus: Syllabus
+    attributes:
+      syllabus:
+        course: Curso
+        term: Período
+        file: Archivo
+    errors:
+      models:
+        syllabus:
+          attributes:
+            file:
+              blank: debe seleccionarse
+              empty: no puede estar vacío
+              too_large: no puede superar %{max} MB
+              not_a_pdf: debe ser un PDF válido
+              from_device: debe seleccionarse desde tu equipo
+              locked_during_term: no se puede reemplazar porque el período ya comenzó
+            term:
+              taken: ya tiene un syllabus en este curso
+              must_match_university: debe pertenecer a la universidad del curso
