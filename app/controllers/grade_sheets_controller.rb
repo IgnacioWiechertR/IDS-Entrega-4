@@ -1,5 +1,6 @@
 # C1: the ayudante of a section enters the preliminary grades of one of its evaluations, and each profesor of
-# the section is notified to review them.
+# the section is notified to review them. C3 and C7: in the same sheet the ayudante edits pending grades and
+# corrects rejected ones; published grades are read-only.
 class GradeSheetsController < ApplicationController
   before_action :set_evaluation
 
@@ -16,8 +17,9 @@ class GradeSheetsController < ApplicationController
       load_sheet
       render :edit, status: :unprocessable_content
     elsif result.saved_count.zero?
-      redirect_to edit_section_evaluation_grade_sheet_path(@section, @evaluation), alert: "No ingresaste ninguna nota.",
-        status: :see_other
+      # C3: the sheet comes prefilled, so an unchanged grade is not sent again.
+      redirect_to edit_section_evaluation_grade_sheet_path(@section, @evaluation),
+        alert: "No hay notas nuevas ni cambios para enviar.", status: :see_other
     else
       GradeSubmissionNotificationJob.perform_later(@evaluation, result.saved_count)
       redirect_to section_evaluations_path(@section), notice: submitted_message(result.saved_count), status: :see_other
