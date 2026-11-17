@@ -17,7 +17,7 @@ class SectionsController < ApplicationController
     @student_view = !can?(:read_attendance_sheet, @section)
     @tab = %w[asistencia notas].include?(params[:tab]) && !@student_view ? params[:tab] : "resumen"
     @tab = "resumen" if @tab == "notas" && !can?(:read_gradebook, @section)
-    @materials = @course.materials.with_attached_file.order(:title)
+    @materials = @course.materials.with_attached_file.order(created_at: :desc, id: :desc)
     # Profesores, ayudantes and students go from the course straight to their section, so their way back is the list.
     @course_overview = catalog_view? || @course.course_coordinators.exists?(user: current_user)
   end
