@@ -49,8 +49,9 @@ class AccountsController < ApplicationController
   end
 
   # A4: one account at a time, in the university of the administrativo. The role starts as alumno.
+  # The director only creates administrativos, in the university picked with the selector.
   def new
-    @account = User.new(role: "alumno", university: current_user.university)
+    @account = User.new(role: creatable_roles.first, university: account_university)
     authorize! :create_account, @account
   end
 
@@ -58,7 +59,7 @@ class AccountsController < ApplicationController
   # or the session, and the page is not cached, so it cannot be seen again.
   def create
     @account = User.new(account_params)
-    @account.university = current_user.university
+    @account.university = account_university
     @account.active = true
     @account.password = @temporary_password = SecureRandom.alphanumeric(12)
     authorize! :create_account, @account
@@ -140,7 +141,7 @@ class AccountsController < ApplicationController
     authorize! :update_account, @account
 
     if @account.update(edit_account_params)
-      redirect_to after_management_path, notice: "Datos de #{@account.name} actualizados.", status: :see_other
+      redirect_to accounts_path(**list_filters), notice: "Datos de #{@account.name} actualizados.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -174,15 +175,9 @@ class AccountsController < ApplicationController
 
   private
 
-  # Accounts of the active university, so one of the other university is a 404 (A3). The director has no
-  # university and reaches only its own account outside of it.
+  # Accounts of the active university, so one of the other university is a 404 (A3).
   def set_account
-    @account =
-      if current_user.director? && params[:id].to_s == current_user.id.to_s
-        User.find(current_user.id) # a separate copy, so a failed edit does not show in the top bar
-      else
-        User.where(university_id: current_university&.id).find(params.expect(:id))
-      end
+    @account = User.where(university_id: current_university&.id).find(params.expect(:id))
   end
 
   # The list keeps its search, role filter and page after editing.
@@ -190,13 +185,19 @@ class AccountsController < ApplicationController
     { q: params[:q].presence, role: params[:role].presence, page: params[:page].presence }.compact
   end
 
-  def after_management_path
-    @account == current_user ? edit_account_path(@account) : accounts_path(**list_filters)
-  end
-
   def account_params
     params.expect(account: [ :first_name, :last_name, :rut, :email, :role ])
   end
+
+  # Where a new account goes: the administrativo's own university, or the active one for the director.
+  def account_university
+    current_user.director? ? current_university : current_user.university
+  end
+
+  def creatable_roles
+    current_user.director? ? AccountPolicy::DIRECTOR_CREATABLE_ROLES : AccountPolicy::CREATABLE_ROLES
+  end
+  helper_method :creatable_roles
 
   def edit_account_params
     params.expect(account: [ :first_name, :last_name, :rut, :email ])

@@ -1,8 +1,10 @@
 class AccountPolicy
   include CanCan::Ability
 
-  # A4: the administrativo creates these accounts. Administrativos and the director are not created from the app.
+  # A4: the administrativo creates these accounts. The director creates only administrativos; nobody creates a
+  # director from the app.
   CREATABLE_ROLES = %w[alumno ayudante profesor].freeze
+  DIRECTOR_CREATABLE_ROLES = %w[administrativo].freeze
 
   def initialize(user)
     # The accounts panel. The users scaffold stays closed until A4/A5/A6 add their rules.
@@ -13,20 +15,20 @@ class AccountPolicy
     # A custom action instead of :create, so the closed users scaffold does not open with it.
     can :create_account, User, university_id: user.university_id, role: CREATABLE_ROLES if user.administrativo?
 
-    # A17: Director y administrativo pueden cambiar el rol de cuentas gestionables en su universidad activa.
-    if user.director?
-      can :change_role, User, role: CREATABLE_ROLES
-    elsif user.administrativo? && user.university_id.present?
+    # The director sees everything and changes nothing; the only thing it does is create administrativo accounts,
+    # in the university picked with the selector.
+    if user.director? && (university_id = ActsAsTenant.current_tenant&.id)
+      can :create_account, User, university_id: university_id, role: DIRECTOR_CREATABLE_ROLES
+    end
+
+    # A17: el administrativo cambia el rol de las cuentas gestionables de su universidad. El director no: solo lee.
+    if user.administrativo? && user.university_id.present?
       can :change_role, User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
-    # Editing the data of an account. Custom actions, like :create_account, so the users scaffold stays closed.
-    # The director edits the administrativos of the active university and its own data.
-    if user.director?
-      university_id = ActsAsTenant.current_tenant&.id
-      can :update_account, User, university_id: university_id, role: CREATABLE_ROLES + [ "administrativo" ] if university_id
-      can :update_account, User, id: user.id
-    elsif user.administrativo? && user.university_id.present?
+    # The administrativo edits the data of the accounts it can create, in its own university. A custom action,
+    # like :create_account, so the users scaffold stays closed.
+    if user.administrativo? && user.university_id.present?
       can :update_account, User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
@@ -36,7 +38,8 @@ class AccountPolicy
       can %i[destroy_account reactivate_account], User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
-    cannot %i[destroy_account reactivate_account], User, id: user.id
+    # Nobody manages their own account from the accounts panel: not its data, role or state.
+    cannot %i[update_account change_role destroy_account reactivate_account], User, id: user.id
 
     can :switch, University if user.director?
   end

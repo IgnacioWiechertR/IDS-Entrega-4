@@ -1,7 +1,7 @@
 require "test_helper"
 
 # Editing and deleting accounts. The administrativo edits and deletes the alumnos, ayudantes and profesores of its
-# university; the director edits the administrativos of the active university and its own data.
+# university. The director only reads them.
 #
 # Deleting an account (card "Eliminar cuenta"):
 # 1. deactivates it: the person can no longer sign in;
@@ -119,34 +119,27 @@ class AccountManagementTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "el director edita administrativos de la universidad activa" do
+  # The director only reads accounts and creates administrativos (DirectorReadOnlyTest).
+  test "el director no edita cuentas" do
+    account = new_account
     sign_in users(:director)
-    select_university(universities(:iusa))
-
-    patch account_path(users(:administrativo_iusa)), params: { account: { first_name: "Administradora" } }
-    assert_redirected_to accounts_path
-    assert_equal "Administradora", users(:administrativo_iusa).reload.first_name
-
-    # The administrativo of UCV is not in the active university.
-    patch account_path(users(:administrativo)), params: { account: { first_name: "Cambiado" } }
-    assert_response :not_found
-  end
-
-  test "el director edita sus propios datos, pero no su rol" do
-    director = users(:director)
-    sign_in director
+    patch university_selection_path, params: { university_id: universities(:ucv).id }
 
     get accounts_path
-    assert_select "a[href='#{edit_account_path(director)}']", text: "Mi cuenta"
+    assert_select "a", text: "Editar", count: 0
+    assert_select "a", text: "Mi cuenta", count: 0
 
-    get edit_account_path(director)
-    assert_response :success
-    assert_select "#account_danger_zone", count: 0
+    get edit_account_path(account)
+    assert_equal DENIED, flash[:alert]
 
-    patch account_path(director), params: { account: { first_name: "Directora General", role: "alumno" } }
+    patch account_path(account), params: { account: { first_name: "Cambiado" } }
+    assert_equal DENIED, flash[:alert]
+    assert_equal "Josefa", account.reload.first_name
 
-    assert_redirected_to edit_account_path(director)
-    assert_equal [ "Directora General", "director" ], director.reload.slice(:first_name, :role).values
+    # The director has no university, so its own account is not among the accounts of the active one.
+    patch account_path(users(:director)), params: { account: { first_name: "Cambiado" } }
+    assert_response :not_found
+    assert_equal "Directora", users(:director).reload.first_name
   end
 
   # Deleting (card "Eliminar cuenta")

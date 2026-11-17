@@ -109,7 +109,7 @@ class DataCompletenessTest < ActionDispatch::IntegrationTest
   test "requiere sesion y rechaza otros roles" do
     get reports_data_completeness_path
     assert_redirected_to new_user_session_path
-    %i[director profesor ayudante alumno].each do |role|
+    %i[profesor ayudante alumno].each do |role|
       sign_in users(role)
       get reports_data_completeness_path
       assert_response :redirect

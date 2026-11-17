@@ -79,11 +79,12 @@ class AnnouncementsReadTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # The director reads them (DirectorReadOnlyTest).
   test "otros roles no tienen acceso al listado" do
-    %i[administrativo director].each do |role|
+    %i[administrativo].each do |role|
       sign_in users(role)
       get announcements_path
-      expected_path = { administrativo: accounts_path, director: dashboard_path }.fetch(role)
+      expected_path = { administrativo: accounts_path }.fetch(role)
       assert_redirected_to expected_path
       sign_out :user
     end

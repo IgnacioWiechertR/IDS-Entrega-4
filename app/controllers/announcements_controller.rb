@@ -87,6 +87,9 @@ class AnnouncementsController < ApplicationController
   end
 
   def readable_announcements
+    # The director reads them all, in the active university (Announcement is scoped to it, A3).
+    return Announcement.all if current_user.director?
+
     staff_courses = SectionStaff.joins(:section).where(user_id: current_user.id).select("sections.course_id")
     coordinated_courses = CourseCoordinator.where(user_id: current_user.id).select(:course_id)
     course_ids = Course.where(id: staff_courses).or(Course.where(id: coordinated_courses)).select(:id)
