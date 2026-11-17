@@ -5,7 +5,14 @@
   <% if current_university %>
     <p id="active-university" class="mt-1 text-sm text-slate-500">Universidad activa: <%= current_university.name %></p>
   <% end %>
-  <p class="mt-4 text-slate-600">Aquí verás el resumen del período de cada universidad y la comparación entre ambas.</p>
+  <p class="mt-1 text-sm text-slate-500">Resumen de solo lectura. Cambia de universidad con el selector de la barra superior.</p>
+
+  <% if @summary %>
+    <div id="university-summary" class="mt-6 rounded-lg border border-slate-200 bg-white p-5">
+      <h2 class="text-lg font-semibold text-slate-900">Resumen del período</h2>
+      <div class="mt-2"><%= render "summary", summary: @summary %></div>
+    </div>
+  <% end %>
 
   <%# D7: read only. Each count links to the accounts of that role in the same university. %>
   <section id="users-by-role" class="mt-8" aria-labelledby="users-by-role-title">
@@ -23,4 +30,17 @@
     </dl>
     <p class="mt-2 text-sm text-slate-500">Total: <%= @role_counts.values.sum %> cuentas.</p>
   </section>
+
+  <% if @summaries.size > 1 %>
+    <h2 class="mt-8 text-lg font-semibold text-slate-900">Comparación entre universidades</h2>
+    <p class="mt-1 text-sm text-slate-500">Cada universidad se calcula por separado, con sus propios datos.</p>
+    <div id="universities-comparison" class="mt-3 grid gap-4 md:grid-cols-2">
+      <% @summaries.each do |summary| %>
+        <div id="<%= dom_id(summary.university, :summary) %>" class="rounded-lg border border-slate-200 bg-white p-5">
+          <h3 class="font-semibold text-slate-900"><%= summary.university.name %></h3>
+          <div class="mt-2"><%= render "summary", summary: summary %></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </section>
