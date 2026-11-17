@@ -30,6 +30,6 @@ class EvaluationsController < ApplicationController
   end
 
   def evaluation_params
-    params.expect(evaluation: [ :name, :weight, :due_on, :rubric ])
+    params.expect(evaluation: [ :name, :weight, :due_on, :rubric, :max_points ])
   end
 end

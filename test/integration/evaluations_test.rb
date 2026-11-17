@@ -32,6 +32,28 @@ class EvaluationsTest < ActionDispatch::IntegrationTest
     assert_select "#weight_total", text: /29,99 % de 100 %/
   end
 
+  # C14: the evaluation can have a maximum score, to convert scores to grades.
+  test "el formulario permite indicar un puntaje máximo opcional" do
+    sign_in users(:profesor)
+    get new_section_evaluation_path(section)
+    assert_select "input[name=?]", "evaluation[max_points]"
+
+    post section_evaluations_path(section), params: evaluation_params(name: "Control con puntaje", max_points: "60")
+
+    assert_redirected_to section_evaluations_path(section)
+    assert_equal 60, section.evaluations.find_by!(name: "Control con puntaje").max_points
+  end
+
+  test "un puntaje máximo de 0 no se acepta" do
+    sign_in users(:profesor)
+
+    assert_no_difference -> { Evaluation.count } do
+      post section_evaluations_path(section), params: evaluation_params(max_points: "0")
+    end
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", text: /Puntaje máximo debe ser mayor que 0/
+  end
+
   test "el ayudante de la sección también crea evaluaciones" do
     sign_in users(:ayudante)
 

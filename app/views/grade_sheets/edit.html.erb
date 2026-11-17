@@ -12,6 +12,13 @@
   <p class="mt-1 text-sm text-slate-600">
     Ponderación <%= weight_percentage(@evaluation.weight) %> · Notas de 1,0 a 7,0. Quedan pendientes hasta que el profesor las revise.
   </p>
+  <% if @evaluation.max_points %>
+    <%# C14: the grade can be calculated from the score. %>
+    <p id="max-points-hint" class="mt-1 text-sm text-slate-600">
+      Puntaje máximo <%= number_with_precision(@evaluation.max_points, precision: 2, strip_insignificant_zeros: true) %>.
+      Si dejas la nota vacía, se calcula desde el puntaje (50 % de exigencia).
+    </p>
+  <% end %>
 
   <% if @errors.any? %>
     <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">

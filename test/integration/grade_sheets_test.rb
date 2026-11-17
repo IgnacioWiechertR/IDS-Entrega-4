@@ -166,6 +166,26 @@ class GradeSheetsTest < ActionDispatch::IntegrationTest
     assert_select "input[type=submit][value=?][disabled]", "Subir a revisión"
   end
 
+  # C14: with a maximum score, the sheet says so and the grade can be calculated from the score.
+  test "con puntaje máximo la planilla lo indica y calcula la nota desde el puntaje" do
+    @evaluation.update!(max_points: 60)
+    sign_in users(:ayudante)
+
+    get sheet_path
+    assert_select "#max-points-hint", text: /Puntaje máximo 60.*se calcula desde el puntaje \(50 % de exigencia\)/m
+
+    submit(@student.id => { score: "", points: "44" })
+    assert_redirected_to section_evaluations_path(@section)
+    assert_equal 5.4, @evaluation.grades.find_by!(student: @student).score
+  end
+
+  test "sin puntaje máximo la planilla no muestra el aviso" do
+    sign_in users(:ayudante)
+    get sheet_path
+
+    assert_select "#max-points-hint", count: 0
+  end
+
   test "el profesor, el alumno y el administrativo no ingresan notas" do
     %i[profesor alumno administrativo].each do |fixture|
       sign_in users(fixture)
