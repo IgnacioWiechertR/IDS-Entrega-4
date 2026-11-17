@@ -140,7 +140,7 @@ class AccountsController < ApplicationController
     authorize! :update_account, @account
 
     if @account.update(edit_account_params)
-      redirect_to after_management_path, notice: "Datos de #{@account.name} actualizados.", status: :see_other
+      redirect_to accounts_path(**list_filters), notice: "Datos de #{@account.name} actualizados.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -174,24 +174,14 @@ class AccountsController < ApplicationController
 
   private
 
-  # Accounts of the active university, so one of the other university is a 404 (A3). The director has no
-  # university and reaches only its own account outside of it.
+  # Accounts of the active university, so one of the other university is a 404 (A3).
   def set_account
-    @account =
-      if current_user.director? && params[:id].to_s == current_user.id.to_s
-        User.find(current_user.id) # a separate copy, so a failed edit does not show in the top bar
-      else
-        User.where(university_id: current_university&.id).find(params.expect(:id))
-      end
+    @account = User.where(university_id: current_university&.id).find(params.expect(:id))
   end
 
   # The list keeps its search, role filter and page after editing.
   def list_filters
     { q: params[:q].presence, role: params[:role].presence, page: params[:page].presence }.compact
-  end
-
-  def after_management_path
-    @account == current_user ? edit_account_path(@account) : accounts_path(**list_filters)
   end
 
   def account_params

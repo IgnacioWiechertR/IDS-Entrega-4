@@ -1,7 +1,12 @@
 require "test_helper"
 
 # Editing and deleting accounts. The administrativo edits and deletes the alumnos, ayudantes and profesores of its
-# university; the director edits the administrativos of the active university and its own data.
+# university.
+#
+# Editing an account (card "Editar cuenta"):
+# 1. name, RUT and email, with the same validations as when creating it;
+# 2. a RUT that already exists in the same university is rejected;
+# 3. only accounts of the administrativo's own university; one of the other university is a 404.
 #
 # Deleting an account (card "Eliminar cuenta"):
 # 1. deactivates it: the person can no longer sign in;
@@ -119,34 +124,52 @@ class AccountManagementTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "el director edita administrativos de la universidad activa" do
-    sign_in users(:director)
-    select_university(universities(:iusa))
+  # Criterion 3: the form of an account of the other university is also a 404, not only saving it.
+  test "abrir el formulario de una cuenta de la otra universidad responde 404" do
+    sign_in users(:administrativo)
 
-    patch account_path(users(:administrativo_iusa)), params: { account: { first_name: "Administradora" } }
-    assert_redirected_to accounts_path
-    assert_equal "Administradora", users(:administrativo_iusa).reload.first_name
+    get edit_account_path(users(:alumno_iusa))
+    assert_response :not_found
 
-    # The administrativo of UCV is not in the active university.
-    patch account_path(users(:administrativo)), params: { account: { first_name: "Cambiado" } }
+    sign_out :user
+    sign_in users(:administrativo_iusa)
+
+    get edit_account_path(users(:alumno))
     assert_response :not_found
   end
 
-  test "el director edita sus propios datos, pero no su rol" do
-    director = users(:director)
-    sign_in director
+  # Criterion 2: the RUT check skips the account itself, so saving without changing the RUT works.
+  test "guardar sin cambiar el RUT no choca con la misma cuenta" do
+    account = new_account
+    sign_in users(:administrativo)
+
+    patch account_path(account), params: { account: { first_name: "Josefina", rut: "12.345.678-5" } }
+
+    assert_redirected_to accounts_path
+    assert_equal [ "Josefina", "12345678-5" ], account.reload.slice(:first_name, :rut).values
+  end
+
+  # The card is for the administrativo: the director does not edit accounts, nor its own.
+  test "el director no edita cuentas" do
+    account = new_account
+    sign_in users(:director)
+    patch university_selection_path, params: { university_id: universities(:ucv).id }
 
     get accounts_path
-    assert_select "a[href='#{edit_account_path(director)}']", text: "Mi cuenta"
+    assert_select "a", text: "Editar", count: 0
+    assert_select "a", text: "Mi cuenta", count: 0
 
-    get edit_account_path(director)
-    assert_response :success
-    assert_select "#account_danger_zone", count: 0
+    get edit_account_path(account)
+    assert_equal DENIED, flash[:alert]
 
-    patch account_path(director), params: { account: { first_name: "Directora General", role: "alumno" } }
+    patch account_path(account), params: { account: { first_name: "Cambiado" } }
+    assert_equal DENIED, flash[:alert]
+    assert_equal "Josefa", account.reload.first_name
 
-    assert_redirected_to edit_account_path(director)
-    assert_equal [ "Directora General", "director" ], director.reload.slice(:first_name, :role).values
+    # The director has no university, so its own account is not among the accounts of the active one.
+    patch account_path(users(:director)), params: { account: { first_name: "Cambiado" } }
+    assert_response :not_found
+    assert_equal "Directora", users(:director).reload.first_name
   end
 
   # Deleting (card "Eliminar cuenta")

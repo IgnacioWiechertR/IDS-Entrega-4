@@ -48,7 +48,7 @@ T8 añade tres evaluaciones de ejemplo por sección: publicada, pendiente y rech
 - **Profesor** (`profesor@ucv.test`): en su sección, **Marcar asistencia de hoy** y ver la tabla de asistencia; revisar y aprobar notas; ver todas las notas de la sección.
 - **Ayudante** (`ayudante@ucv.test`): crear evaluaciones e ingresar notas; ver la asistencia de su sección (no la marca).
 - **Alumno** (`alumno@ucv.test`): **Mis notas** y **Asistencia** (porcentaje y detalle por clase).
-- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y ve cursos y secciones en solo lectura, con el promedio y la asistencia de cada sección. En **Cuentas** edita los datos de las cuentas de la universidad activa, incluidos los administrativos, y los suyos en **Mi cuenta**.
+- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y ve cursos y secciones en solo lectura, con el promedio y la asistencia de cada sección.
 - **Aislamiento entre universidades**: con `admin@iusa.test` no aparece nada de la UCV, y un enlace a un recurso de la otra universidad responde "no encontrado".
 
 ## Ejecutar en local

@@ -20,13 +20,9 @@ class AccountPolicy
       can :change_role, User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
-    # Editing the data of an account. Custom actions, like :create_account, so the users scaffold stays closed.
-    # The director edits the administrativos of the active university and its own data.
-    if user.director?
-      university_id = ActsAsTenant.current_tenant&.id
-      can :update_account, User, university_id: university_id, role: CREATABLE_ROLES + [ "administrativo" ] if university_id
-      can :update_account, User, id: user.id
-    elsif user.administrativo? && user.university_id.present?
+    # The administrativo edits the data of the accounts it can create, in its own university. A custom action,
+    # like :create_account, so the users scaffold stays closed.
+    if user.administrativo? && user.university_id.present?
       can :update_account, User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
