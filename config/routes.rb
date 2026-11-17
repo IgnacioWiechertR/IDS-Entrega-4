@@ -86,6 +86,11 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # B4: only the uploader can confirm and delete a material within its course.
+  resources :courses, only: [] do
+    resources :material_deletions, only: %i[ index show destroy ]
+  end
+
   # B3: editing is restricted to the original uploader and stays separate from B1/B2/B5.
   resources :courses, only: [] do
     resources :material_edits, only: %i[ index edit update ]

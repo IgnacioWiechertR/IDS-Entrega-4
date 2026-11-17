@@ -3,6 +3,7 @@ class Material < ApplicationRecord
 
   belongs_to :course
   belongs_to :uploaded_by, class_name: "User", optional: true, inverse_of: :uploaded_materials
+  # B4: Active Storage purges the detached blob asynchronously after the destroy commits.
   has_one_attached :file, service: ->(material) { MaterialStorageService.for(material.course) }
 
   attr_readonly :course_id, :uploaded_by_id

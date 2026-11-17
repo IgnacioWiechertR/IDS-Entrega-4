@@ -231,6 +231,9 @@
           <% if can?(:update, material) %>
             <%= link_to "Editar", edit_course_material_edit_path(@course, material), class: "ml-3 font-medium text-indigo-700 hover:underline" %>
           <% end %>
+          <% if can?(:destroy, material) %>
+            <%= link_to "Eliminar", course_material_deletion_path(@course, material), class: "ml-3 font-medium text-red-700 hover:underline" %>
+          <% end %>
         </li>
       <% end %>
     </ul>
