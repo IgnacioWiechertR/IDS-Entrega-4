@@ -1,8 +1,9 @@
 class Term < ApplicationRecord
   acts_as_tenant :university
-  # A term with sections or coordinators is part of the academic history: it is not deleted with them.
+  # A term with sections, coordinators or a syllabus is part of the academic history: it is not deleted with them.
   has_many :sections, dependent: :restrict_with_error
   has_many :course_coordinators, dependent: :restrict_with_error
+  has_many :syllabi, dependent: :restrict_with_error
 
   validates :name, :starts_on, :ends_on, presence: true
   validates :name, uniqueness: { scope: :university_id, case_sensitive: false }
@@ -27,6 +28,11 @@ class Term < ApplicationRecord
       raise ActiveRecord::Rollback unless saved
     end
     saved
+  end
+
+  # The term already began (it is in progress or over), by its dates.
+  def started?(today = Date.current)
+    starts_on <= today
   end
 
   private

@@ -14,6 +14,8 @@
     <%= link_to "Publicar anuncio", new_announcement_path(course_id: @course.id, section_id: @section.id), class: "mt-4 inline-block #{ApplicationHelper::PRIMARY_BUTTON_CLASSES}" %>
   <% end %>
 
+  <%= render "syllabi/card", course: @course, term: @section.term %>
+
   <% if @student_view %>
     <%= render "student_view" %>
   <% else %>

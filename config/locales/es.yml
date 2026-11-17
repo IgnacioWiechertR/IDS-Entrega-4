@@ -105,6 +105,7 @@ es:
         course_coordinators: Coordinadores
         materials: Materiales
         announcements: Avisos
+        syllabi: syllabus
       section:
         number: Número
         term: Período
@@ -125,6 +126,7 @@ es:
         current: Vigente
         sections: secciones
         course_coordinators: coordinadores asignados
+        syllabi: syllabus
       faculty:
         name: Nombre
         courses: cursos

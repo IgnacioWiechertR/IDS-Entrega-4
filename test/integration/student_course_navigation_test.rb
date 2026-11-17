@@ -1,8 +1,9 @@
 require "test_helper"
 
-# C15 and B18: inside their section the student has tabs (Resumen · Notas · Asistencia) and never needs to leave the
-# course to see their grades or attendance; the general "Mis notas" and "Asistencia" stay and link to each course.
+# C15, B18 and B19: inside their section the student has tabs (Resumen · Notas · Asistencia · Anuncios) and never
+# needs to leave the course; the general "Mis notas", "Asistencia" and "Anuncios" stay.
 class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
+  include ActionView::RecordIdentifier
   setup do
     @course = courses(:one)
     @section = sections(:one)
@@ -15,14 +16,15 @@ class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
   def section_path(tab: nil) = course_section_path(@course, @section, tab: tab)
 
   # CA1
-  test "el alumno ve las pestañas Resumen, Notas y Asistencia, con la activa marcada" do
+  test "el alumno ve las pestañas Resumen, Notas, Asistencia y Anuncios, con la activa marcada" do
     sign_in users(:alumno)
 
     get section_path
-    assert_select "#student_tabs a", count: 3
+    assert_select "#student_tabs a", count: 4
     assert_select "#student_tabs a[aria-current=page]", text: "Resumen"
     assert_select "#student_tabs a[href=?]", section_path(tab: "notas"), text: "Notas"
     assert_select "#student_tabs a[href=?]", section_path(tab: "asistencia"), text: "Asistencia"
+    assert_select "#student_tabs a[href=?]", section_path(tab: "anuncios"), text: "Anuncios"
 
     get section_path(tab: "notas")
     assert_select "#student_tabs a[aria-current=page]", text: "Notas"
@@ -180,6 +182,58 @@ class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
     assert_equal "No tienes permiso para ver esa página.", flash[:alert]
   end
 
+  # B19 CA1 and CA-AUT
+  test "Anuncios muestra los de la asignatura y los de su sección, del más reciente al más antiguo, y no los de otra sección" do
+    other_section = Section.create!(course: @course, term: terms(:one), number: 2)
+    course_notice = announcement_for(subject: "Para todo ICC1001", created_at: 2.days.ago)
+    own_notice = announcement_for(section: @section, subject: "Para la sección 1", created_at: 1.day.ago)
+    other_notice = announcement_for(section: other_section, subject: "Solo sección 2")
+    sign_in users(:alumno)
+    get section_path(tab: "anuncios")
+
+    assert_select "#student_tabs a[aria-current=page]", text: "Anuncios"
+    # announcements(:one) is a section 1 announcement, created when the fixtures load (the newest one).
+    ids = css_select("#section_announcements article").map { |article| article["id"] }
+    assert_equal [ announcements(:one), own_notice, course_notice ].map { |notice| dom_id(notice) }, ids
+    assert_select "##{dom_id(other_notice)}", count: 0
+    assert_no_match(/Solo sección 2/, response.body)
+
+    assert_select "##{dom_id(course_notice)} a[href=?]", announcement_path(course_notice), text: "Para todo ICC1001"
+    assert_select "##{dom_id(course_notice)}", text: /Toda la asignatura.*#{users(:profesor).name}/m
+    assert_select "##{dom_id(own_notice)}", text: /Sección 1.*#{users(:profesor).name}.*#{I18n.l(own_notice.created_at, format: "%d/%m/%Y")}/m
+    assert_select "#materials", count: 0
+  end
+
+  test "Anuncios sin anuncios muestra un mensaje" do
+    Announcement.delete_all
+    sign_in users(:alumno)
+    get section_path(tab: "anuncios")
+
+    assert_select "#no_section_announcements", text: /Aún no hay anuncios en este curso/
+    assert_select "#section_announcements", count: 0
+  end
+
+  # B19 CA2
+  test "el detalle de un anuncio, abierto por el alumno, vuelve a la pestaña Anuncios de su sección" do
+    course_notice = announcement_for(subject: "Para todo ICC1001")
+    sign_in users(:alumno)
+
+    [ announcements(:one), course_notice ].each do |notice|
+      get announcement_path(notice)
+      assert_response :success
+      assert_select "a[href=?]", section_path(tab: "anuncios"), text: "← ICC1001 Programación · Sección 1"
+      assert_select "a[href=?]", announcements_path, text: "Todos los anuncios"
+    end
+  end
+
+  test "el profesor sigue volviendo desde el detalle de un anuncio a Anuncios" do
+    sign_in users(:profesor)
+    get announcement_path(announcements(:one))
+
+    assert_select "a[href=?]", announcements_path, text: "← Anuncios"
+    assert_select "a[href=?]", section_path(tab: "anuncios"), count: 0
+  end
+
   # CA-AUT
   test "la vista del profesor no cambia: sin pestañas de alumno y con sus propias pestañas" do
     sign_in users(:profesor)
@@ -190,5 +244,12 @@ class StudentCourseNavigationTest < ActionDispatch::IntegrationTest
     assert_select "#section_tabs a[aria-current=page]", text: "Notas"
     assert_select "#section_grades"
     assert_select "#materials"
+  end
+
+  private
+
+  def announcement_for(subject:, section: nil, created_at: Time.current)
+    Announcement.create!(course: @course, section: section, author: users(:profesor), subject: subject,
+                         body: "Mensaje del anuncio", created_at: created_at, updated_at: created_at)
   end
 end

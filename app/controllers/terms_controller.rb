@@ -35,14 +35,14 @@ class TermsController < ApplicationController
     end
   end
 
-  # DELETE /terms/1: only a term without sections or coordinators.
+  # DELETE /terms/1: only a term without sections, coordinators or syllabi.
   def destroy
     if @term.destroy
       redirect_to terms_path, notice: "El período #{@term.name} fue eliminado.", status: :see_other
     else
       redirect_to terms_path, status: :see_other,
         alert: "No se puede eliminar el período #{@term.name} #{@term.errors.full_messages.to_sentence}. " \
-               "Para mantener la trazabilidad, solo se eliminan períodos sin secciones ni coordinadores."
+               "Para mantener la trazabilidad, solo se eliminan períodos sin secciones, coordinadores ni syllabus."
     end
   end
 

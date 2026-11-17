@@ -79,6 +79,15 @@ Rails.application.routes.draw do
     end
   end
 
+  # Syllabus of the course in one term (?term_id=): view it in the page, download it, and upload or replace it
+  # (Entregas 2 y 3).
+  resources :courses, only: [] do
+    resource :syllabus, only: %i[ show new create ] do
+      get :preview
+      get :download
+    end
+  end
+
   # D3/D4: indicadores flujo de notas
   namespace :reports do
     resource :data_completeness, only: :show, controller: "data_completeness"

@@ -16,6 +16,7 @@ class AnnouncementsController < ApplicationController
     authorize! :index, :announcements
     @announcement = readable_announcements.includes(:course, :section, :author).find(params.expect(:id))
     authorize! :read, @announcement
+    @student_section = student_section_for(@announcement)
   end
 
   def new
@@ -84,6 +85,15 @@ class AnnouncementsController < ApplicationController
     else
       @course.sections.joins(:section_staffs).where(section_staffs: { user_id: current_user.id, role: "profesor" })
     end
+  end
+
+  # B19: the section where the user is an active student of the announcement's course (its own section, for a
+  # section announcement), so the detail goes back to its Anuncios tab. Nil for staff and the director.
+  def student_section_for(announcement)
+    sections = Section.where(course_id: announcement.course_id)
+      .where(id: Enrollment.where(student_id: current_user.id, active: true).select(:section_id))
+    sections = sections.where(id: announcement.section_id) if announcement.section_id
+    sections.joins(:term).order("terms.starts_on DESC").includes(:course).first
   end
 
   def readable_announcements
