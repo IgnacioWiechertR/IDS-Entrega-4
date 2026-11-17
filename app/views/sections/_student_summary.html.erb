@@ -11,6 +11,6 @@
 
 <% if can?(:read_own_attendance, @section) %>
   <div class="mt-4 flex flex-wrap gap-2 text-sm">
-    <%= link_to "Detalle de mi asistencia", section_attendance_path(@section), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
+    <%= link_to "Detalle de mi asistencia", course_section_path(@course, @section, tab: "asistencia"), class: "rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50" %>
   </div>
 <% end %>
