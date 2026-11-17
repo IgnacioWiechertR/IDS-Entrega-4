@@ -54,40 +54,33 @@ class CoordinatorAssignmentsTest < ActionDispatch::IntegrationTest
     assert_select "tr#course_#{@course.id} li", text: @professor.name
   end
 
-  test "el director asigna en la universidad activa y puede cambiar a la otra" do
+  test "el director ve los coordinadores de la universidad activa y puede cambiar a la otra, sin asignar" do
+    CourseCoordinator.create!(course: @course, term: @term, user: @professor, assigned_by: @admin)
     sign_in @director
     select_university(@university)
+
     get course_coordinators_path
     assert_response :success
-    assert_select "nav a[href=?]", course_coordinators_path, count: 1
-
-    post course_coordinators_path, params: assignment_params
-    assert_redirected_to course_coordinators_path(term_id: @term.id)
-    assert_equal @director, CourseCoordinator.find_by!(course: @course, term: @term).assigned_by
+    assert_select "h1", "Coordinadores"
+    assert_select "nav a[href=?]", course_coordinators_path, text: "Coordinadores"
+    assert_select "tr#course_#{@course.id} li", text: @professor.name
+    assert_select "form[action=?][method=post]", course_coordinators_path, count: 0
 
     select_university(@other_university)
     get course_coordinators_path
     assert_response :success
     assert_select "tr#course_#{@other_course.id}", count: 1
     assert_select "tr#course_#{@course.id}", count: 0
-
-    post course_coordinators_path,
-      params: assignment_params(course: @other_course, term: @other_term, user: @other_professor)
-    assert_redirected_to course_coordinators_path(term_id: @other_term.id)
-    assignment = ActsAsTenant.with_tenant(@other_university) { CourseCoordinator.find_by!(course: @other_course, term: @other_term) }
-    assert_equal @director, assignment.assigned_by
-    assert_equal @other_university, assignment.university
   end
 
-  test "el director no cruza universidades mediante IDs sin cambiar la universidad activa" do
+  test "el director no asigna coordinadores aunque envíe el formulario" do
     sign_in @director
     select_university(@university)
 
     assert_no_difference "CourseCoordinator.count" do
-      post course_coordinators_path,
-        params: assignment_params(course: @other_course, term: @other_term, user: @other_professor)
+      post course_coordinators_path, params: assignment_params
     end
-    assert_response :not_found
+    assert_equal "No tienes permiso para ver esa página.", flash[:alert]
   end
 
   test "se ignoran la universidad y el autor enviados desde el formulario" do

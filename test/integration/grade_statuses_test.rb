@@ -29,7 +29,7 @@ module Reports
     end
 
     test "los demás roles no pueden acceder a estado de notas" do
-      %i[director profesor ayudante alumno].each do |fixture|
+      %i[profesor ayudante alumno].each do |fixture|
         sign_in users(fixture)
         get reports_grade_statuses_path
         assert_response :redirect

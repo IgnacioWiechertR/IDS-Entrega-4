@@ -14,10 +14,15 @@ class EvaluationPolicyTest < ActiveSupport::TestCase
   end
 
   test "un alumno inscrito y el administrativo no crean ni ven evaluaciones" do
-    %i[alumno administrativo director].each do |fixture|
+    %i[alumno administrativo].each do |fixture|
       assert_not ability_for(fixture).can?(:create, new_evaluation), "#{fixture} no debería poder crear"
       assert_not ability_for(fixture).can?(:read, evaluations(:one)), "#{fixture} no debería poder ver"
     end
+  end
+
+  test "el director ve las evaluaciones, pero no las crea" do
+    assert ability_for(:director).can?(:read, evaluations(:one))
+    assert_not ability_for(:director).can?(:create, new_evaluation)
   end
 
   test "el equipo docente de otra sección no crea evaluaciones en esta" do

@@ -1,14 +1,11 @@
 <% content_for :title, "Editar cuenta · SGA" %>
 <% filters = { q: params[:q].presence, role: params[:role].presence, page: params[:page].presence }.compact %>
-<% own_account = @account.id == current_user.id %>
 
 <section class="mx-auto max-w-xl py-8">
-  <% unless own_account %>
-    <%= link_to "← Volver a cuentas", accounts_path(**filters), class: "text-sm text-indigo-600 hover:underline" %>
-  <% end %>
+  <%= link_to "← Volver a cuentas", accounts_path(**filters), class: "text-sm text-indigo-600 hover:underline" %>
 
-  <p class="mt-4 text-sm font-semibold text-indigo-600"><%= @account.university&.name || "Todas las universidades" %></p>
-  <h1 class="text-2xl font-bold text-slate-900"><%= own_account ? "Mi cuenta" : "Editar cuenta" %></h1>
+  <p class="mt-4 text-sm font-semibold text-indigo-600"><%= @account.university.name %></p>
+  <h1 class="text-2xl font-bold text-slate-900">Editar cuenta</h1>
 
   <dl id="account_summary" class="mt-4 grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
     <dt class="text-slate-500">Rol</dt>
@@ -57,9 +54,7 @@
 
     <div class="flex items-center gap-4">
       <%= form.submit "Guardar cambios", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
-      <% unless own_account %>
-        <%= link_to "Cancelar", accounts_path(**filters), class: "text-sm text-slate-600 hover:underline" %>
-      <% end %>
+      <%= link_to "Cancelar", accounts_path(**filters), class: "text-sm text-slate-600 hover:underline" %>
     </div>
   <% end %>
 

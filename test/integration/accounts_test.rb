@@ -33,14 +33,13 @@ class AccountsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "el administrativo ve el botón para crear una cuenta; el director no" do
-    sign_in users(:administrativo)
-    get accounts_path
-    assert_select "a[href='#{new_account_path}']", text: "Crear cuenta"
-
-    sign_in users(:director)
-    get accounts_path
-    assert_select "a[href='#{new_account_path}']", count: 0
+  test "el administrativo y el director ven el botón para crear una cuenta" do
+    %i[administrativo director].each do |fixture|
+      sign_in users(fixture)
+      get accounts_path
+      assert_select "a[href='#{new_account_path}']", text: "Crear cuenta"
+      sign_out :user
+    end
   end
 
   test "el formulario ofrece alumno, ayudante y profesor, con alumno por defecto" do
@@ -149,8 +148,9 @@ class AccountsTest < ActionDispatch::IntegrationTest
     assert_select "#account_email_error"
   end
 
+  # The director creates only administrativos: DirectorReadOnlyTest covers it.
   test "los demás roles no crean cuentas" do
-    %i[director profesor ayudante alumno].each do |fixture|
+    %i[profesor ayudante alumno].each do |fixture|
       sign_in users(fixture)
 
       get new_account_path
@@ -300,7 +300,7 @@ class AccountsTest < ActionDispatch::IntegrationTest
   end
 
   # A16 / A17: role assignment and validation against incompatible section/course assignments.
-  test "el administrativo y el director pueden cambiar el rol de una cuenta sin asignaciones" do
+  test "el administrativo cambia el rol de una cuenta sin asignaciones; el director no" do
     account = User.create!(
       first_name: "Lucas", last_name: "Méndez", rut: "10000010-5",
       email: "lucas.mendez@ucv.test", role: "alumno", university: universities(:ucv), password: "password123"
@@ -319,8 +319,8 @@ class AccountsTest < ActionDispatch::IntegrationTest
 
     patch role_account_path(account), params: { account: { role: "profesor" } }
 
-    assert_redirected_to accounts_path
-    assert_equal "profesor", account.reload.role
+    assert_equal DENIED, flash[:alert]
+    assert_equal "ayudante", account.reload.role
   end
 
   test "rechaza cambiar el rol de un profesor con secciones o coordinaciones activas" do

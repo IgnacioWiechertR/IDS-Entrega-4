@@ -1,8 +1,15 @@
-<% content_for :title, "Asignar coordinador · SGA" %>
+<% assigning = can?(:create, CourseCoordinator) %>
+<% content_for :title, "#{assigning ? "Asignar coordinador" : "Coordinadores"} · SGA" %>
 
 <section class="py-8">
-  <h1 class="text-2xl font-bold text-slate-900">Asignar coordinador</h1>
-  <p class="mt-2 text-slate-600">Asigna profesores como coordinadores de las asignaturas de <%= current_university.name %>, según el período.</p>
+  <%# The director only reads this page: without :create there is no column to assign. %>
+  <% if assigning %>
+    <h1 class="text-2xl font-bold text-slate-900">Asignar coordinador</h1>
+    <p class="mt-2 text-slate-600">Asigna profesores como coordinadores de las asignaturas de <%= current_university.name %>, según el período.</p>
+  <% else %>
+    <h1 class="text-2xl font-bold text-slate-900">Coordinadores</h1>
+    <p class="mt-2 text-slate-600">Coordinadores de las asignaturas de <%= current_university.name %>, según el período.</p>
+  <% end %>
 
   <% if @assignment.errors.any? %>
     <div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
@@ -42,7 +49,9 @@
               <th scope="col" class="px-4 py-3">Código</th>
               <th scope="col" class="px-4 py-3">Asignatura</th>
               <th scope="col" class="px-4 py-3">Coordinadores asignados</th>
-              <th scope="col" class="px-4 py-3">Asignar profesor</th>
+              <% if assigning %>
+                <th scope="col" class="px-4 py-3">Asignar profesor</th>
+              <% end %>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 bg-white text-sm">
@@ -69,6 +78,7 @@
                     <span class="text-slate-500">Sin coordinador asignado</span>
                   <% end %>
                 </td>
+                <% if assigning %>
                 <td class="px-4 py-4">
                   <% if professors.any? %>
                     <%= form_with scope: :course_coordinator, url: course_coordinators_path, class: "flex flex-wrap items-end gap-3" do |form| %>
@@ -88,6 +98,7 @@
                     <span class="text-slate-500">No hay profesores disponibles.</span>
                   <% end %>
                 </td>
+                <% end %>
               </tr>
             <% end %>
           </tbody>

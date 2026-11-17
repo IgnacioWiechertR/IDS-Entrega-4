@@ -2,6 +2,13 @@ class AnnouncementPolicy
   include CanCan::Ability
 
   def initialize(user)
+    # The director reads every announcement of the active university (Announcement is scoped to it, A3) and
+    # publishes, edits or deletes none.
+    if user.director?
+      can :index, :announcements
+      can :read, Announcement
+    end
+
     # B12: course staff can read; B16: enrolled students see their course and own-section announcements.
     staff = user.profesor? || (user.student_account? && SectionStaff.exists?(user_id: user.id, university_id: user.university_id))
     enrolled_student = user.student_account? && Enrollment.exists?(student_id: user.id, active: true, university_id: user.university_id)

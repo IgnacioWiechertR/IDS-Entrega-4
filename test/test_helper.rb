@@ -5,8 +5,8 @@ ENV["RAILS_ENV"] ||= "test"
 require "simplecov"
 SimpleCov.start "rails" do
   enable_coverage :branch
-  add_group "Policies", "app/policies"
-  add_group "Services", "app/services"
+  group "Policies", "app/policies"
+  group "Services", "app/services"
 end
 
 require_relative "../config/environment"

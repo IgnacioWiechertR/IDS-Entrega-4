@@ -64,7 +64,7 @@ module Reports
     end
 
     test "los demás roles no pueden acceder ni exportar el reporte consolidado" do
-      %i[director profesor ayudante alumno].each do |fixture|
+      %i[profesor ayudante alumno].each do |fixture|
         sign_in users(fixture)
 
         get reports_consolidated_path
