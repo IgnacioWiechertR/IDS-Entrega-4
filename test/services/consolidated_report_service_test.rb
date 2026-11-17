@@ -106,4 +106,116 @@ class ConsolidatedReportServiceTest < ActiveSupport::TestCase
     assert_equal ConsolidatedReportService::CSV_HEADERS.join(";"), lines.first
     assert_match(/\AD4TEST1;Bases de Datos;1;2027-2;#{Regexp.escape(@profesor.name)};Sin datos;/, lines.second)
   end
+
+  test "excluye las asistencias históricas de matrículas inactivas y coincide con sección y dashboard" do
+    session = attendance_session(0)
+    [ @student_a, @student_b, @student_inactive ].each { |student| mark_present(session, student) }
+
+    assert_consistent_attendance 100.0
+    assert_equal 3, session.attendance_records.count, "El reporte conserva las marcas históricas"
+  end
+
+  test "excluye las marcas de un alumno cuya matrícula fue eliminada" do
+    session = attendance_session(0)
+    mark_present(session, @student_a)
+    mark_present(session, @student_b)
+    @section.enrollments.find_by!(student: @student_a).destroy!
+
+    assert_consistent_attendance 100.0
+    assert session.attendance_records.exists?(student: @student_a)
+  end
+
+  test "una matrícula activa en otra sección no hace contar las marcas de la sección anterior" do
+    old_session = attendance_session(0)
+    mark_present(old_session, @student_a)
+    AttendanceRecord.create!(attendance_session: old_session, student: @student_b, status: "ausente")
+    @section.enrollments.find_by!(student: @student_a).update!(active: false)
+
+    other_section = Section.create!(university: @ucv, course: @course, term: @term, number: 2)
+    Enrollment.create!(section: other_section, student: @student_a, active: true)
+    mark_present(attendance_session(0, section: other_section), @student_a)
+
+    rows = ConsolidatedReportService.call(university: @ucv, term_id: @term.id, course_id: @course.id).index_by { |row| row.section.id }
+
+    assert_in_delta 0.0, rows.fetch(@section.id).attendance_rate
+    assert_in_delta 100.0, rows.fetch(other_section.id).attendance_rate
+    assert_in_delta 0.0, SectionStatsService.new(@section).attendance_percentage
+    assert_in_delta 100.0, SectionStatsService.new(other_section).attendance_percentage
+    summary = UniversitySummaryService.new(@ucv, term_id: @term.id, course_id: @course.id)
+    assert_in_delta 50.0, summary.attendance_percentage
+  end
+
+  test "cuenta las marcas faltantes como ausencias y redondea varias clases a un decimal" do
+    sessions = (0..2).map { |offset| attendance_session(offset) }
+    sessions.each do |session|
+      mark_present(session, @student_a)
+      mark_present(session, @student_inactive)
+    end
+    mark_present(sessions.first, @student_b)
+
+    row = assert_consistent_attendance 66.7
+    assert_equal "66.7%", CSV.parse(ConsolidatedReportService.to_csv([ row ]), col_sep: ";").second.last
+  end
+
+  test "sin clases registradas la asistencia queda sin datos" do
+    row = assert_consistent_attendance nil
+
+    assert_equal "Sin datos", ConsolidatedReportService.format_percent(row.attendance_rate)
+  end
+
+  test "sin alumnos activos no muestra cero ni usa las marcas históricas" do
+    session = attendance_session(0)
+    mark_present(session, @student_a)
+    @section.enrollments.each { |enrollment| enrollment.update!(active: false) }
+
+    assert_consistent_attendance nil
+    assert_equal 1, session.attendance_records.count
+  end
+
+  test "una clase sin marcas de los alumnos activos tiene cero por ciento de asistencia" do
+    mark_present(attendance_session(0), @student_inactive)
+
+    assert_consistent_attendance 0.0
+  end
+
+  test "calcula la asistencia dentro de IUSA sin incluir secciones de UCV" do
+    mark_present(attendance_session(0), @student_a)
+
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      attendance_records(:two).update!(status: "presente")
+      section = sections(:two)
+      rows = ConsolidatedReportService.call(university: universities(:iusa))
+
+      assert_equal [ section.id ], rows.map { |row| row.section.id }
+      assert_in_delta 100.0, rows.first.attendance_rate
+      assert_in_delta SectionStatsService.new(section).attendance_percentage, rows.first.attendance_rate
+    end
+  end
+
+  private
+
+  def attendance_session(offset, section: @section)
+    AttendanceSession.create!(section: section, held_on: Date.current - offset, recorded_by: @profesor)
+  end
+
+  def mark_present(session, student)
+    AttendanceRecord.create!(attendance_session: session, student: student, status: "presente")
+  end
+
+  def assert_consistent_attendance(expected)
+    row = ConsolidatedReportService.call(university: @ucv, term_id: @term.id, course_id: @course.id).sole
+    stats = SectionStatsService.new(@section)
+    summary = UniversitySummaryService.new(@ucv, term_id: @term.id, course_id: @course.id)
+
+    [ row.attendance_rate, stats.attendance_percentage, summary.attendance_percentage ].each do |percentage|
+      if expected.nil?
+        assert_nil percentage
+      else
+        assert_in_delta expected, percentage, 0.05
+        assert_operator percentage, :>=, 0
+        assert_operator percentage, :<=, 100
+      end
+    end
+    row
+  end
 end

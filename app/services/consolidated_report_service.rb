@@ -87,8 +87,11 @@ class ConsolidatedReportService
                              .group_by(&:first)
 
     sessions_count = AttendanceSession.where(section_id: section_ids).group(:section_id).count
-    attended_count = AttendanceRecord.joins(:attendance_session)
-                                     .where(attendance_sessions: { section_id: section_ids }, status: %w[presente justificado])
+    # Use the same active students as the denominator. Matching both section and student excludes
+    # historical marks after withdrawal or transfer without deleting any attendance records.
+    attended_count = AttendanceRecord.presente.joins(attendance_session: { section: :enrollments })
+                                     .where(attendance_sessions: { section_id: section_ids }, enrollments: { active: true })
+                                     .where(Enrollment.arel_table[:student_id].eq(AttendanceRecord.arel_table[:student_id]))
                                      .group("attendance_sessions.section_id")
                                      .count
 
