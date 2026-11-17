@@ -217,8 +217,9 @@
       <% @materials.each do |material| %>
         <li class="px-4 py-3 text-sm">
           <% if material.file.attached? %>
-            <%= link_to material.title.presence || material.file.filename.to_s, rails_blob_path(material.file, disposition: "attachment"),
+            <%= link_to material.title.presence || material.file.filename.to_s, course_material_download_path(@course, material), data: { turbo: false }, download: true,
                   class: "font-medium text-indigo-700 hover:underline" %>
+            <span class="ml-3"><%= material_download_link(@course, material) %></span>
           <% else %>
             <span class="font-medium text-slate-900"><%= material.title %></span>
           <% end %>

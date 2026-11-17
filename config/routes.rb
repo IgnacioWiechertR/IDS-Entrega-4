@@ -68,6 +68,17 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # B5: download originals only after checking access to their course.
+  resources :courses, only: [] do
+    resources :material_downloads, only: :index
+    resources :materials, only: [] do
+      resource :download, only: :show, controller: "material_downloads"
+    end
+  end
+  # Keep the conventional direct-upload endpoint closed and its helper available
+  # for B1. Multipart uploads continue through B1's authorized course endpoint.
+  post "#{ActiveStorage.routes_prefix}/direct_uploads", to: "materials#index", as: :rails_direct_uploads
+
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

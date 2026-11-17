@@ -38,5 +38,9 @@ module Sga
     config.i18n.default_locale = :es
 
     config.active_job.queue_adapter = :sidekiq
+
+    # B5: signed blob, representation and disk URLs bypass course authorization.
+    # Attachments are served only through the application's protected endpoints.
+    config.active_storage.draw_routes = false
   end
 end
