@@ -9,14 +9,19 @@ class SectionsController < ApplicationController
     @sections = @sections.eager_load(:term).order("terms.starts_on DESC", :number)
   end
 
+  STAFF_TABS = %w[asistencia notas].freeze
+  # C15: the student's own tabs inside the course (B18 adds asistencia, B19 anuncios).
+  STUDENT_TABS = %w[notas].freeze
+
   # The section overview. Its staff, the coordinator, the administrativo and the director see the summary, the
   # attendance list and (if they can read the grades) the grades; a student sees only their own grades and
-  # attendance, and the course material. Tabs: ?tab=asistencia, ?tab=notas.
+  # attendance, and the course material. Tabs: ?tab=asistencia, ?tab=notas; an unknown tab is the summary.
   def show
     @stats = SectionStatsService.new(@section)
     @student_view = !can?(:read_attendance_sheet, @section)
-    @tab = %w[asistencia notas].include?(params[:tab]) && !@student_view ? params[:tab] : "resumen"
-    @tab = "resumen" if @tab == "notas" && !can?(:read_gradebook, @section)
+    tabs = @student_view ? STUDENT_TABS : STAFF_TABS
+    @tab = tabs.include?(params[:tab]) ? params[:tab] : "resumen"
+    @tab = "resumen" if !@student_view && @tab == "notas" && !can?(:read_gradebook, @section)
     @materials = @course.materials.with_attached_file.order(created_at: :desc, id: :desc)
     # Profesores, ayudantes and students go from the course straight to their section, so their way back is the list.
     @course_overview = catalog_view? || @course.course_coordinators.exists?(user: current_user)

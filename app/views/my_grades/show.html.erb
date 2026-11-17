@@ -3,7 +3,16 @@
 <% section = evaluation.section %>
 
 <section class="mx-auto max-w-2xl py-8">
-  <p class="text-sm"><%= link_to "← Mis notas", my_grades_path, class: "text-indigo-700 hover:underline" %></p>
+  <%# C15: back to the Notas tab of the course; with an inactive enrollment the section is no longer readable. %>
+  <p class="flex flex-wrap gap-x-4 text-sm">
+    <% if can?(:read, section) %>
+      <%= link_to "← #{section.course.code} #{section.course.name} · Sección #{section.number}",
+            course_section_path(section.course, section, tab: "notas"), class: "text-indigo-700 hover:underline" %>
+      <%= link_to "Ver todas mis notas", my_grades_path, class: "text-indigo-700 hover:underline" %>
+    <% else %>
+      <%= link_to "← Mis notas", my_grades_path, class: "text-indigo-700 hover:underline" %>
+    <% end %>
+  </p>
 
   <p class="mt-2 text-sm font-semibold text-indigo-600">
     <%= section.course.code %> · <%= section.course.name %> · Sección <%= section.number %>
