@@ -63,6 +63,13 @@ Rails.application.routes.draw do
   resources :users
   resources :universities
 
+  # B2: reading stays separate from B1's upload routes and controller.
+  resources :courses, only: [] do
+    resources :materials, only: %i[ index show ], controller: "course_materials" do
+      get :preview, on: :member
+    end
+  end
+
   # D3/D4: indicadores flujo de notas
   namespace :reports do
     resource :grade_statuses, only: :show
