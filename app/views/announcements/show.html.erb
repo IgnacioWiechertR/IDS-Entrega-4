@@ -1,7 +1,16 @@
 <% content_for :title, "#{@announcement.subject} · SGA" %>
 
 <section class="mx-auto max-w-3xl py-8">
-  <p class="text-sm"><%= link_to "← Anuncios", announcements_path, class: "text-indigo-700 hover:underline" %></p>
+  <%# B19: a student goes back to the Anuncios tab of their section in this course. %>
+  <p class="flex flex-wrap gap-x-4 text-sm">
+    <% if (section = @student_section) %>
+      <%= link_to "← #{section.course.code} #{section.course.name} · Sección #{section.number}",
+            course_section_path(section.course, section, tab: "anuncios"), class: "text-indigo-700 hover:underline" %>
+      <%= link_to "Todos los anuncios", announcements_path, class: "text-indigo-700 hover:underline" %>
+    <% else %>
+      <%= link_to "← Anuncios", announcements_path, class: "text-indigo-700 hover:underline" %>
+    <% end %>
+  </p>
   <p class="mt-6 text-sm font-semibold text-indigo-600"><%= @announcement.course.code %> · <%= @announcement.course.name %></p>
   <h1 class="mt-1 text-2xl font-bold text-slate-900"><%= @announcement.subject %></h1>
   <% if can?(:update, @announcement) %>

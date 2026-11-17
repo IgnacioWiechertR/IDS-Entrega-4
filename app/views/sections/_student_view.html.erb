@@ -3,12 +3,15 @@
   <%= overview_tab "Resumen", course_section_path(@course, @section), @tab == "resumen" %>
   <%= overview_tab "Notas", course_section_path(@course, @section, tab: "notas"), @tab == "notas" %>
   <%= overview_tab "Asistencia", course_section_path(@course, @section, tab: "asistencia"), @tab == "asistencia" %>
+  <%= overview_tab "Anuncios", course_section_path(@course, @section, tab: "anuncios"), @tab == "anuncios" %>
 </nav>
 
 <% if @tab == "notas" %>
   <%= render "student_grades" %>
 <% elsif @tab == "asistencia" %>
   <%= render "student_attendance" %>
+<% elsif @tab == "anuncios" %>
+  <%= render "student_announcements" %>
 <% else %>
   <%= render "student_summary" %>
 <% end %>
