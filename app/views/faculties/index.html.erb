@@ -1,29 +1,49 @@
-<% content_for :title, "Faculties" %>
+<% content_for :title, "Facultades · SGA" %>
 
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
-
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Faculties</h1>
-    <%= link_to "New faculty", new_faculty_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
-  </div>
-
-  <div id="faculties" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @faculties.any? %>
-      <% @faculties.each do |faculty| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render faculty %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", faculty, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_faculty_path(faculty), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", faculty, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <p class="text-center my-10">No faculties found.</p>
+<section class="py-8">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Facultades</h1>
+      <p class="mt-1 text-sm text-slate-600">Facultades de <%= current_university.name %>. Cada curso pertenece a una facultad.</p>
+    </div>
+    <% if can?(:create, Faculty) %>
+      <%= link_to "Nueva facultad", new_faculty_path, class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
     <% end %>
   </div>
-</div>
+
+  <% if @faculties.any? %>
+    <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <table id="faculties" class="min-w-full divide-y divide-slate-200 text-sm">
+        <thead class="bg-slate-50 text-left text-slate-600">
+          <tr>
+            <th scope="col" class="px-4 py-2 font-semibold">Nombre</th>
+            <th scope="col" class="px-4 py-2 font-semibold">Cursos</th>
+            <th scope="col" class="px-4 py-2"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% @faculties.each do |faculty| %>
+            <tr id="<%= dom_id faculty %>">
+              <td class="px-4 py-2 font-medium text-slate-900"><%= faculty.name %></td>
+              <td class="px-4 py-2 text-slate-700"><%= @course_counts.fetch(faculty.id, 0) %></td>
+              <td class="whitespace-nowrap px-4 py-2 text-right">
+                <% if can?(:update, faculty) %>
+                  <%= link_to "Editar", edit_faculty_path(faculty), class: "font-medium text-indigo-700 hover:underline" %>
+                <% end %>
+                <% if can?(:destroy, faculty) %>
+                  <%= button_to "Eliminar", faculty, method: :delete, form_class: "ml-3 inline",
+                        form: { data: { turbo_confirm: "¿Eliminar la facultad #{faculty.name}?" } },
+                        class: "cursor-pointer font-medium text-red-700 hover:underline" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p id="faculties_empty" class="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+      Todavía no hay facultades. <% if can?(:create, Faculty) %>Crea la primera para poder crear cursos.<% end %>
+    </p>
+  <% end %>
+</section>

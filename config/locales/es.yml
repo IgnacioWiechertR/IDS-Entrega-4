@@ -47,7 +47,13 @@ es:
         term:
           restrict_dependent_destroy:
             has_many: porque tiene %{record}
+        faculty:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
     models:
+      faculty:
+        one: Facultad
+        other: Facultades
       course:
         one: Curso
         other: Cursos
@@ -119,6 +125,9 @@ es:
         current: Vigente
         sections: secciones
         course_coordinators: coordinadores asignados
+      faculty:
+        name: Nombre
+        courses: cursos
       user:
         first_name: Nombre
         last_name: Apellido

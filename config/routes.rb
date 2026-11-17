@@ -68,7 +68,7 @@ Rails.application.routes.draw do
     end
   end
   resources :terms, except: :show
-  resources :faculties
+  resources :faculties, except: :show
   resources :users
   resources :universities
 

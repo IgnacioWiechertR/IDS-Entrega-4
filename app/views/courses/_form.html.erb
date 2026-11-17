@@ -25,6 +25,12 @@
     <%# Faculty is scoped to the active university (A3): only its faculties are listed. %>
     <%= form.collection_select :faculty_id, Faculty.order(:name), :id, :name,
           { prompt: "Selecciona una facultad" }, required: true, class: ApplicationHelper::INPUT_CLASSES %>
+    <% unless Faculty.exists? %>
+      <p id="no_faculties" class="mt-1 text-sm text-amber-700">
+        Todavía no hay facultades.
+        <% if can?(:create, Faculty) %><%= link_to "Crea una primero", new_faculty_path, class: "font-medium underline" %>.<% end %>
+      </p>
+    <% end %>
   </div>
 
   <%= form.submit course.new_record? ? "Crear curso" : "Guardar cambios", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
