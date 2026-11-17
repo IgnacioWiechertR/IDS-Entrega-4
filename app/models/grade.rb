@@ -21,4 +21,16 @@ class Grade < ApplicationRecord
   validates :points, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :rejection_comment, presence: true, if: :rechazada?
   validates :student_id, uniqueness: { scope: :evaluation_id }
+
+  # C4: only preliminary grades can be deleted; an official one is never changed from the application.
+  before_destroy :keep_published_grade
+
+  private
+
+  def keep_published_grade
+    return unless publicada?
+
+    errors.add(:base, :published_grade_cannot_be_deleted)
+    throw :abort
+  end
 end

@@ -33,7 +33,8 @@ class MyGradesTest < ActionDispatch::IntegrationTest
   end
 
   test "sin notas publicadas se muestra un mensaje" do
-    @published.destroy!
+    # An official grade cannot be deleted (C4), so the student is left without official grades this way.
+    @published.update_columns(status: "pendiente")
     sign_in users(:alumno)
     get my_grades_path
 

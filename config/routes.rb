@@ -32,6 +32,8 @@ Rails.application.routes.draw do
     resources :evaluations, only: %i[ index new create ] do
       # C1: the ayudante enters the preliminary grades of the evaluation.
       resource :grade_sheet, only: %i[ edit update ]
+      # C4: the ayudante deletes a preliminary grade entered by mistake.
+      resources :preliminary_grades, only: :destroy
       # C2, C5, C6: the profesor reviews the pending grades and approves or rejects them.
       resource :grade_review, only: :show do
         post :approve
