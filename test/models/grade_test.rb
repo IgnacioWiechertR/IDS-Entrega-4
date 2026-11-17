@@ -9,6 +9,19 @@ class GradeTest < ActiveSupport::TestCase
     Grade.new({ evaluation: evaluation, student: users(:alumno), score: 5.0, entered_by: users(:ayudante) }.merge(attributes))
   end
 
+  # C4: an official grade is never deleted from the application (DOMAIN §3).
+  test "una nota publicada no se puede eliminar, una preliminar sí" do
+    published = build_grade(status: "publicada").tap(&:save!)
+
+    assert_not published.destroy
+    assert published.errors.added?(:base, :published_grade_cannot_be_deleted)
+    assert Grade.exists?(published.id)
+
+    pending = build_grade(student: users(:ayudante)).tap(&:save!)
+    assert pending.destroy
+    assert_not Grade.exists?(pending.id)
+  end
+
   test "una nota nueva queda pendiente" do
     assert_equal "pendiente", Grade.new.status
     assert build_grade.valid?
