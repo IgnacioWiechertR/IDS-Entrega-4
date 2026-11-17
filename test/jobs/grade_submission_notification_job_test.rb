@@ -16,10 +16,13 @@ class GradeSubmissionNotificationJobTest < ActiveJob::TestCase
 
   test "funciona fuera de una petición, sin universidad activa" do
     ActsAsTenant.current_tenant = nil
+    in_ucv = ->(&block) { ActsAsTenant.with_tenant(universities(:ucv), &block) }
 
-    assert_difference -> { Notification.count }, 1 do
+    # The job runs without an active university; the test reads what it created inside UCV (T7).
+    assert_difference -> { in_ucv.call { Notification.count } }, 1 do
       GradeSubmissionNotificationJob.perform_now(evaluations(:one), 1)
     end
-    assert_equal "1 nota de #{evaluations(:one).name} (ICC1001 · Sección 1) espera tu revisión.", Notification.order(:id).last.message
+    assert_equal "1 nota de #{evaluations(:one).name} (ICC1001 · Sección 1) espera tu revisión.",
+      in_ucv.call { Notification.order(:id).last.message }
   end
 end

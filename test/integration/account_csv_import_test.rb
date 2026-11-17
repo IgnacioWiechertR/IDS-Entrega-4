@@ -102,4 +102,64 @@ class AccountCsvImportTest < ActionDispatch::IntegrationTest
     assert_equal 1, result.created.size
     assert_equal @universities[:iusa], result.created.first[:account].university
   end
+
+  test "muestra la fila y el motivo de un duplicado dentro del CSV" do
+    sign_in @users[:administrativo]
+
+    content = CSV.generate do |csv|
+      csv << %w[nombre rut correo rol]
+      csv << [ "Ana Pérez", "12345678-5", "reporte@example.test", "alumno" ]
+      csv << [ "Ana Pérez", "12345678-5", "repetida@example.test", "alumno" ]
+    end
+
+    assert_difference -> { User.count }, 1 do
+      post import_accounts_path, params: { file: csv_file(content) }
+    end
+
+    assert_response :success
+
+    assert_select "section[aria-labelledby='import-errors-title']" do
+      assert_select "tbody tr", count: 1 do
+        assert_select "td:first-child", text: "3"
+        assert_select "li", text: /duplicado dentro del archivo/
+      end
+    end
+  end
+    test "reporta RUT correo y rol invalidos sin impedir las filas validas" do
+    sign_in @users[:administrativo]
+
+    content = CSV.generate do |csv|
+      csv << %w[nombre rut correo rol]
+      csv << [ "Persona Uno", "12345678-9", "uno@example.test", "alumno" ]
+      csv << [ "Persona Dos", "10000001-6", "sin-arroba", "alumno" ]
+      csv << [ "Persona Tres", "10000002-4", "tres@example.test", "director" ]
+      csv << [ "Persona Cuatro", "10000003-2", "cuatro@example.test", "alumno" ]
+    end
+
+    assert_difference -> { User.count }, 1 do
+      post import_accounts_path, params: { file: csv_file(content) }
+    end
+
+    assert_response :success
+    assert User.exists?(email: "cuatro@example.test")
+
+    assert_select "section[aria-labelledby='import-errors-title']" do
+      assert_select "tbody tr", count: 3
+
+      assert_select "tbody tr:nth-child(1)" do
+        assert_select "td:first-child", text: "2"
+        assert_select "li", text: /RUT/
+      end
+
+      assert_select "tbody tr:nth-child(2)" do
+        assert_select "td:first-child", text: "3"
+        assert_select "li", text: /Correo/
+      end
+
+      assert_select "tbody tr:nth-child(3)" do
+        assert_select "td:first-child", text: "4"
+        assert_select "li", text: /El rol debe ser/
+      end
+    end
+  end
 end

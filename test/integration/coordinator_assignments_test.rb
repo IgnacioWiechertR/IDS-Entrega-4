@@ -4,7 +4,11 @@ require_relative "../support/coordinator_assignment_data"
 class CoordinatorAssignmentsTest < ActionDispatch::IntegrationTest
   include CoordinatorAssignmentData
 
-  setup { prepare_coordinator_assignment_data }
+  setup do
+    prepare_coordinator_assignment_data
+    # This test builds its own universities: the code outside requests runs in the local one (T7).
+    ActsAsTenant.test_tenant = @university
+  end
   teardown { ActsAsTenant.current_tenant = nil }
 
   test "la consulta y asignación exigen iniciar sesión" do
@@ -70,7 +74,7 @@ class CoordinatorAssignmentsTest < ActionDispatch::IntegrationTest
     post course_coordinators_path,
       params: assignment_params(course: @other_course, term: @other_term, user: @other_professor)
     assert_redirected_to course_coordinators_path(term_id: @other_term.id)
-    assignment = CourseCoordinator.find_by!(course: @other_course, term: @other_term)
+    assignment = ActsAsTenant.with_tenant(@other_university) { CourseCoordinator.find_by!(course: @other_course, term: @other_term) }
     assert_equal @director, assignment.assigned_by
     assert_equal @other_university, assignment.university
   end

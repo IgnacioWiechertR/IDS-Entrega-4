@@ -218,8 +218,10 @@
       <% @materials.each do |material| %>
         <li class="px-4 py-3 text-sm">
           <% if material.file.attached? %>
+            <%# B2: the title opens the detail and preview; B5: the button next to it downloads the original. %>
             <%= link_to material.title.presence || material.file.filename.to_s, course_material_path(@course, material),
                   class: "font-medium text-indigo-700 hover:underline" %>
+            <span class="ml-3"><%= material_download_link(@course, material) %></span>
           <% else %>
             <%= link_to material_display_title(material), course_material_path(@course, material), class: "font-medium text-indigo-700 hover:underline" %>
           <% end %>

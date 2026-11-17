@@ -1,0 +1,22 @@
+<%# D2: GET form, so the dashboard stays read-only and a filtered summary can be bookmarked. %>
+<%= form_with url: dashboard_path, method: :get, id: "summary-filters", class: "mt-4 flex flex-wrap items-end gap-3" do |form| %>
+  <div>
+    <%= form.label :term_id, "Período", class: "block text-xs font-medium text-slate-500" %>
+    <%= form.select :term_id, options_from_collection_for_select(terms, :id, :name, summary.term&.id),
+          {}, class: "mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-700" %>
+  </div>
+  <div>
+    <%= form.label :faculty_id, "Facultad", class: "block text-xs font-medium text-slate-500" %>
+    <%= form.select :faculty_id, options_from_collection_for_select(faculties, :id, :name, summary.faculty&.id),
+          { include_blank: "Todas" }, class: "mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-700" %>
+  </div>
+  <div>
+    <%= form.label :course_id, "Asignatura", class: "block text-xs font-medium text-slate-500" %>
+    <%= form.select :course_id, courses.map { |course| [ "#{course.code} · #{course.name}", course.id ] },
+          { include_blank: "Todas", selected: summary.course&.id }, class: "mt-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-700" %>
+  </div>
+  <%= form.submit "Filtrar", name: nil, class: "cursor-pointer rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700" %>
+  <% if filters.any? %>
+    <%= link_to "Quitar filtros", dashboard_path, class: "py-1.5 text-sm font-medium text-indigo-700 hover:underline" %>
+  <% end %>
+<% end %>
