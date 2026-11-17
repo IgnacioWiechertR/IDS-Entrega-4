@@ -3,7 +3,11 @@ require "test_helper"
 class CourseCoordinatorTest < ActiveSupport::TestCase
   def next_term(university)
     ActsAsTenant.with_tenant(universities(university)) do
-      Term.create!(university: universities(university), name: "2027-1", starts_on: Date.new(2027, 3, 1), ends_on: Date.new(2027, 7, 15))
+      # Term names are unique per university: a test that asks twice gets the same term.
+      Term.find_or_create_by!(university: universities(university), name: "2027-1") do |term|
+        term.starts_on = Date.new(2027, 3, 1)
+        term.ends_on = Date.new(2027, 7, 15)
+      end
     end
   end
 

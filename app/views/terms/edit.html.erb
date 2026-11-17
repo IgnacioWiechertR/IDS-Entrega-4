@@ -1,10 +1,9 @@
-<% content_for :title, "Editing term" %>
+<% content_for :title, "Editar período · SGA" %>
 
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">Editing term</h1>
+<section class="py-8 md:w-2/3">
+  <h1 class="text-2xl font-bold text-slate-900">Editar período <%= @term.name_was %></h1>
 
   <%= render "form", term: @term %>
 
-  <%= link_to "Show this term", @term, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-  <%= link_to "Back to terms", terms_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-</div>
+  <%= link_to "Volver a períodos", terms_path, class: "mt-4 inline-block text-sm font-medium text-slate-600 hover:text-slate-900" %>
+</section>
