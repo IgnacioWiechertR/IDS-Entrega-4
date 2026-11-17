@@ -18,6 +18,29 @@ class EvaluationTest < ActiveSupport::TestCase
     assert build_evaluation(rubric: nil).valid?
   end
 
+  # C14: the maximum score is optional; with it, a score is converted to a grade with a 50 % passing threshold.
+  test "el puntaje máximo es opcional y mayor que 0" do
+    assert build_evaluation(max_points: nil).valid?
+    assert build_evaluation(max_points: 60).valid?
+    [ 0, -10 ].each { |points| assert_not build_evaluation(max_points: points).valid?, "#{points} no debería ser válido" }
+  end
+
+  test "convierte el puntaje a nota con 50 % de exigencia" do
+    evaluation = build_evaluation(max_points: 60)
+
+    { 0 => 1.0, 15 => 2.5, 30 => 4.0, 44 => 5.4, 60 => 7.0, 7 => 1.7, 52.5 => 6.3 }.each do |points, grade|
+      assert_equal BigDecimal(grade.to_s), evaluation.score_for(points), "#{points} de 60 debería ser #{grade}"
+    end
+    assert_equal 30, evaluation.passing_points
+  end
+
+  test "sin puntaje máximo no hay conversión" do
+    evaluation = build_evaluation(max_points: nil)
+
+    assert_nil evaluation.score_for(40)
+    assert_nil evaluation.passing_points
+  end
+
   test "la ponderación es mayor que 0 y hasta 100" do
     [ 0, -5, 100.01 ].each { |weight| assert_not build_evaluation(weight: weight).valid?, "#{weight} no debería ser válida" }
     assert build_evaluation(weight: 0.01).valid?
