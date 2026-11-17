@@ -29,5 +29,9 @@ class AnnouncementPolicy
       section.nil? || (section.course_id == course.id &&
         (coordinator || SectionStaff.exists?(section_id: section.id, user_id: user.id, role: "profesor")))
     end
+
+    can :destroy, Announcement do |announcement|
+      can?(:create, announcement)
+    end
   end
 end
