@@ -29,6 +29,9 @@ class User < ApplicationRecord
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
   has_many :uploaded_materials, class_name: "Material", foreign_key: :uploaded_by_id,
     inverse_of: :uploaded_by, dependent: :restrict_with_error
+  # The syllabus belongs to the course, not to whoever uploaded it: deleting that account keeps the file.
+  has_many :uploaded_syllabi, class_name: "Syllabus", foreign_key: :uploaded_by_id,
+    inverse_of: :uploaded_by, dependent: :nullify
   # B7 corrections had no association, so deleting their author failed on the foreign key.
   has_many :corrected_attendance_records, class_name: "AttendanceRecord", foreign_key: :corrected_by_id,
     inverse_of: :corrected_by, dependent: :restrict_with_error

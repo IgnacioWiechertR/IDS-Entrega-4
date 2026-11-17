@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -221,6 +221,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
     t.index ["university_id"], name: "index_sections_on_university_id"
   end
 
+  create_table "syllabi", force: :cascade do |t|
+    t.bigint "university_id", null: false
+    t.bigint "course_id", null: false
+    t.bigint "term_id", null: false
+    t.bigint "uploaded_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_id", "term_id"], name: "index_syllabi_on_course_id_and_term_id", unique: true
+    t.index ["course_id"], name: "index_syllabi_on_course_id"
+    t.index ["term_id"], name: "index_syllabi_on_term_id"
+    t.index ["university_id"], name: "index_syllabi_on_university_id"
+    t.index ["uploaded_by_id"], name: "index_syllabi_on_uploaded_by_id"
+  end
+
   create_table "terms", force: :cascade do |t|
     t.bigint "university_id", null: false
     t.string "name", null: false
@@ -305,6 +319,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_120000) do
   add_foreign_key "sections", "courses"
   add_foreign_key "sections", "terms"
   add_foreign_key "sections", "universities"
+  add_foreign_key "syllabi", "courses"
+  add_foreign_key "syllabi", "terms"
+  add_foreign_key "syllabi", "universities"
+  add_foreign_key "syllabi", "users", column: "uploaded_by_id"
   add_foreign_key "terms", "universities"
   add_foreign_key "users", "universities"
 end
