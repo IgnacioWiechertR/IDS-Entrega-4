@@ -34,6 +34,7 @@
             <% if can?(:index, :accounts) %><%= nav_link_to "Cuentas", accounts_path %><% end %>
             <% if can?(:assign_professor, Section) %><%= nav_link_to "Asignar profesores", teacher_assignments_path %><% end %>
             <% if can?(:index, CourseCoordinator) %><%= nav_link_to(can?(:create, CourseCoordinator) ? "Asignar coordinadores" : "Coordinadores", course_coordinators_path) %><% end %>
+            <% if can?(:index, Term) %><%= nav_link_to "Períodos", terms_path %><% end %>
             <% if can?(:index, Course) %><%= nav_link_to(catalog_view? ? "Cursos" : "Mis cursos", courses_path) %><% end %>
             <% if can?(:index, :announcements) %><%= nav_link_to "Anuncios", announcements_path %><% end %>
             <% if can?(:index, :attendance) %><%= nav_link_to "Asistencia", attendance_path %><% end %>

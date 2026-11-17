@@ -20,6 +20,12 @@
     <%# Term is scoped to the active university (A3): only its periods are listed, newest first. %>
     <%= form.collection_select :term_id, Term.order(starts_on: :desc), :id, :name,
           { prompt: "Selecciona un período" }, required: true, class: ApplicationHelper::INPUT_CLASSES %>
+    <% unless Term.exists? %>
+      <p id="no_terms" class="mt-1 text-sm text-amber-700">
+        Todavía no hay períodos.
+        <% if can?(:create, Term) %><%= link_to "Crea uno primero", new_term_path, class: "font-medium underline" %>.<% end %>
+      </p>
+    <% end %>
   </div>
 
   <div>

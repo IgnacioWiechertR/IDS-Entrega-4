@@ -3,10 +3,11 @@ require "test_helper"
 # The model scaffolds are closed by default: they require signing in, and nobody can use them
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
+  # /terms left this list: the administrativo manages them and the director reads them (terms_management_test).
   SCAFFOLD_PATHS = %w[
     /attendance_records /attendance_sessions
     /faculties /grades /materials
-    /terms /universities /users
+    /universities /users
   ].freeze
 
   # Evaluations only exist inside a section (C13): the unscoped scaffold route is gone.

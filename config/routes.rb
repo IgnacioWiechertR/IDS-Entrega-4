@@ -67,7 +67,7 @@ Rails.application.routes.draw do
        resources :enrollments, only: [ :index, :create, :destroy ]
     end
   end
-  resources :terms
+  resources :terms, except: :show
   resources :faculties
   resources :users
   resources :universities

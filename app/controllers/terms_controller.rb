@@ -1,31 +1,25 @@
+# The terms of the active university: the administrativo creates, edits and deletes them; the director only lists them.
 class TermsController < ApplicationController
   load_and_authorize_resource
-  before_action :set_term, only: %i[ show edit update destroy ]
 
   # GET /terms
   def index
-    @terms = Term.all
-  end
-
-  # GET /terms/1
-  def show
+    @terms = @terms.order(starts_on: :desc)
+    @section_counts = Section.where(term_id: @terms.map(&:id)).group(:term_id).count
   end
 
   # GET /terms/new
   def new
-    @term = Term.new
   end
 
   # GET /terms/1/edit
   def edit
   end
 
-  # POST /terms
+  # POST /terms. The university comes from the active tenant, never from the form.
   def create
-    @term = Term.new(term_params)
-
-    if @term.save
-      redirect_to @term, notice: "Term was successfully created."
+    if @term.save_marking_current
+      redirect_to terms_path, notice: "El período #{@term.name} fue creado.", status: :see_other
     else
       render :new, status: :unprocessable_content
     end
@@ -33,27 +27,28 @@ class TermsController < ApplicationController
 
   # PATCH/PUT /terms/1
   def update
-    if @term.update(term_params)
-      redirect_to @term, notice: "Term was successfully updated.", status: :see_other
+    @term.assign_attributes(term_params)
+    if @term.save_marking_current
+      redirect_to terms_path, notice: "El período #{@term.name} fue actualizado.", status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
   end
 
-  # DELETE /terms/1
+  # DELETE /terms/1: only a term without sections or coordinators.
   def destroy
-    @term.destroy!
-    redirect_to terms_path, notice: "Term was successfully destroyed.", status: :see_other
+    if @term.destroy
+      redirect_to terms_path, notice: "El período #{@term.name} fue eliminado.", status: :see_other
+    else
+      redirect_to terms_path, status: :see_other,
+        alert: "No se puede eliminar el período #{@term.name} #{@term.errors.full_messages.to_sentence}. " \
+               "Para mantener la trazabilidad, solo se eliminan períodos sin secciones ni coordinadores."
+    end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_term
-      @term = Term.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def term_params
-      params.expect(term: [ :university_id, :name, :starts_on, :ends_on, :current ])
-    end
+  def term_params
+    params.expect(term: [ :name, :starts_on, :ends_on, :current ])
+  end
 end
