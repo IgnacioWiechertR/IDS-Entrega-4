@@ -1,0 +1,4 @@
+<%= button_to "Reactivar", reactivate_account_path(account, **filters), method: :patch,
+              form: { class: "inline" },
+              aria: { label: "Reactivar la cuenta de #{account.name}" },
+              class: "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50" %>

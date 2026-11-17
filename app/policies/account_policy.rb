@@ -20,6 +20,24 @@ class AccountPolicy
       can :change_role, User, university_id: user.university_id, role: CREATABLE_ROLES
     end
 
+    # Editing the data of an account. Custom actions, like :create_account, so the users scaffold stays closed.
+    # The director edits the administrativos of the active university and its own data.
+    if user.director?
+      university_id = ActsAsTenant.current_tenant&.id
+      can :update_account, User, university_id: university_id, role: CREATABLE_ROLES + [ "administrativo" ] if university_id
+      can :update_account, User, id: user.id
+    elsif user.administrativo? && user.university_id.present?
+      can :update_account, User, university_id: user.university_id, role: CREATABLE_ROLES
+    end
+
+    # Deleting an account deactivates it: the person can no longer sign in and its history stays. Only the
+    # administrativo deletes, and only accounts of its own university; reactivating undoes a deletion by mistake.
+    if user.administrativo? && user.university_id.present?
+      can %i[destroy_account reactivate_account], User, university_id: user.university_id, role: CREATABLE_ROLES
+    end
+
+    cannot %i[destroy_account reactivate_account], User, id: user.id
+
     can :switch, University if user.director?
   end
 end

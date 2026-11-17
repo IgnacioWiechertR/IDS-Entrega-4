@@ -1,0 +1,6 @@
+<%# Deleting deactivates the account (AccountsController#destroy). Turbo asks for confirmation before sending it. %>
+<%= button_to "Eliminar", account_path(account, **filters), method: :delete,
+              form: { class: "inline", data: { turbo_confirm: "¿Eliminar la cuenta de #{account.name}? " \
+                                                              "Ya no podrá iniciar sesión. Sus notas y asistencia se conservan." } },
+              aria: { label: "Eliminar la cuenta de #{account.name}" },
+              class: "cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700" %>

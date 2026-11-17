@@ -1,0 +1,84 @@
+<% content_for :title, "Editar cuenta · SGA" %>
+<% filters = { q: params[:q].presence, role: params[:role].presence, page: params[:page].presence }.compact %>
+<% own_account = @account.id == current_user.id %>
+
+<section class="mx-auto max-w-xl py-8">
+  <% unless own_account %>
+    <%= link_to "← Volver a cuentas", accounts_path(**filters), class: "text-sm text-indigo-600 hover:underline" %>
+  <% end %>
+
+  <p class="mt-4 text-sm font-semibold text-indigo-600"><%= @account.university&.name || "Todas las universidades" %></p>
+  <h1 class="text-2xl font-bold text-slate-900"><%= own_account ? "Mi cuenta" : "Editar cuenta" %></h1>
+
+  <dl id="account_summary" class="mt-4 grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
+    <dt class="text-slate-500">Rol</dt>
+    <dd class="col-span-2 text-slate-900"><%= @account.role_name %></dd>
+    <dt class="text-slate-500">Estado</dt>
+    <dd class="col-span-2 text-slate-900"><%= @account.deactivated? ? "Eliminada (sin acceso)" : "Activa" %></dd>
+  </dl>
+
+  <%# The role is changed from the list (A17); the university of an account never changes. %>
+  <%= form_with model: @account, scope: :account, url: account_path(@account, **filters), method: :patch,
+                class: "mt-6 space-y-4" do |form| %>
+    <% if @account.errors.any? %>
+      <p class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+        No se pudo guardar la cuenta. Revisa los campos marcados.
+      </p>
+    <% end %>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <%= form.label :first_name, class: "block text-sm font-medium text-slate-700" %>
+        <%= form.text_field :first_name, required: true, autocomplete: "off", class: ApplicationHelper::INPUT_CLASSES %>
+        <%= field_errors(form, :first_name) %>
+      </div>
+
+      <div>
+        <%= form.label :last_name, class: "block text-sm font-medium text-slate-700" %>
+        <%= form.text_field :last_name, required: true, autocomplete: "off", class: ApplicationHelper::INPUT_CLASSES %>
+        <%= field_errors(form, :last_name) %>
+      </div>
+    </div>
+
+    <div>
+      <%= form.label :rut, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.text_field :rut, required: true, placeholder: "12.345.678-5", autocomplete: "off",
+                                class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(form, :rut) %>
+    </div>
+
+    <div>
+      <%= form.label :email, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.email_field :email, required: true, autocomplete: "off", aria: { describedby: "email_help" },
+                                   class: ApplicationHelper::INPUT_CLASSES %>
+      <p id="email_help" class="mt-1 text-sm text-slate-500">Es el correo con que la persona inicia sesión.</p>
+      <%= field_errors(form, :email) %>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <%= form.submit "Guardar cambios", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <% unless own_account %>
+        <%= link_to "Cancelar", accounts_path(**filters), class: "text-sm text-slate-600 hover:underline" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if can?(:destroy_account, @account) %>
+    <section id="account_danger_zone" class="mt-10 rounded-lg border border-red-200 bg-white p-5"
+             aria-labelledby="danger_zone_title">
+      <h2 id="danger_zone_title" class="text-lg font-semibold text-slate-900">Eliminar cuenta</h2>
+
+      <% if @account.deactivated? %>
+        <p class="mt-2 text-sm text-slate-600">
+          La cuenta está eliminada: no puede iniciar sesión, y sus notas, asistencia y asignaciones se conservan.
+        </p>
+        <div class="mt-3"><%= render "accounts/reactivate_button", account: @account, filters: filters %></div>
+      <% else %>
+        <p class="mt-2 text-sm text-slate-600">
+          La persona dejará de tener acceso al sistema. Sus notas, asistencia y asignaciones se conservan.
+        </p>
+        <div class="mt-3"><%= render "accounts/delete_button", account: @account, filters: filters %></div>
+      <% end %>
+    </section>
+  <% end %>
+</section>
