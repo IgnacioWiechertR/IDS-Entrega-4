@@ -37,6 +37,8 @@ Rails.application.routes.draw do
         post :approve
         post :reject
       end
+      # C8: the profesor who rejected the grades edits the rejection comment (:id is one grade of that rejection).
+      resources :rejection_comments, only: :update
     end
   end
 
