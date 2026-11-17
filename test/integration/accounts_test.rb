@@ -298,4 +298,117 @@ class AccountsTest < ActionDispatch::IntegrationTest
     assert_select "tbody td", text: accounts.first.email
     assert_select "tbody td", text: accounts.last.email, count: 0
   end
+
+  # A16 / A17: role assignment and validation against incompatible section/course assignments.
+  test "el administrativo y el director pueden cambiar el rol de una cuenta sin asignaciones" do
+    account = User.create!(
+      first_name: "Lucas", last_name: "Méndez", rut: "10000010-5",
+      email: "lucas.mendez@ucv.test", role: "alumno", university: universities(:ucv), password: "password123"
+    )
+    sign_in users(:administrativo)
+
+    patch role_account_path(account), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", account.reload.role
+    assert_match(/actualizado a Ayudante/, flash[:notice])
+
+    sign_out :user
+    sign_in users(:director)
+    patch university_selection_path, params: { university_id: universities(:ucv).id }
+
+    patch role_account_path(account), params: { account: { role: "profesor" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "profesor", account.reload.role
+  end
+
+  test "rechaza cambiar el rol de un profesor con secciones o coordinaciones activas" do
+    profesor = User.create!(
+      first_name: "Elena", last_name: "Rios", rut: "10000011-3",
+      email: "elena.rios@ucv.test", role: "profesor", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST101", name: "Curso Prueba")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    staff = SectionStaff.create!(
+      university: universities(:ucv), section: section, user: profesor,
+      role: "profesor", assigned_by: users(:administrativo)
+    )
+    coordinator = CourseCoordinator.create!(
+      university: universities(:ucv), course: course, term: terms(:one),
+      user: profesor, assigned_by: users(:administrativo)
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(profesor), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "profesor", profesor.reload.role
+    assert_match(/profesor de sección y coordinador de curso/, flash[:alert])
+
+    # Tras desvincularlo de la sección y la coordinación, el cambio sí procede.
+    staff.destroy!
+    coordinator.destroy!
+
+    patch role_account_path(profesor), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", profesor.reload.role
+  end
+
+  test "rechaza cambiar el rol de un ayudante asignado a una sección" do
+    ayudante = User.create!(
+      first_name: "Diego", last_name: "Pardo", rut: "10000012-1",
+      email: "diego.pardo@ucv.test", role: "ayudante", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST102", name: "Curso Ayudante")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    staff = SectionStaff.create!(
+      university: universities(:ucv), section: section, user: ayudante,
+      role: "ayudante", assigned_by: users(:administrativo)
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(ayudante), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", ayudante.reload.role
+    assert_match(/ayudante de sección/, flash[:alert])
+
+    staff.destroy!
+
+    patch role_account_path(ayudante), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", ayudante.reload.role
+  end
+
+  test "rechaza cambiar el rol de un alumno con inscripciones activas" do
+    alumno = User.create!(
+      first_name: "Carla", last_name: "Soto", rut: "10000014-8",
+      email: "carla.soto@ucv.test", role: "alumno", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST103", name: "Curso Alumno")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    enrollment = Enrollment.create!(
+      university: universities(:ucv), section: section, student: alumno, active: true
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(alumno), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", alumno.reload.role
+    assert_match(/alumno inscrito en secciones activas/, flash[:alert])
+
+    enrollment.update!(active: false)
+
+    patch role_account_path(alumno), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", alumno.reload.role
+  end
 end
