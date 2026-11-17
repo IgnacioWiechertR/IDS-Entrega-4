@@ -1,6 +1,7 @@
 # B11: professors publish to a course or one of their sections.
 # B12: professors and assistants read announcements from courses where they participate.
 class AnnouncementsController < ApplicationController
+  before_action :prevent_shared_caching
   before_action :set_course, only: %i[ new create ]
   before_action :set_announcement, only: %i[ edit update destroy ]
 
@@ -34,6 +35,7 @@ class AnnouncementsController < ApplicationController
     authorize! :create, @announcement
 
     if @announcement.save
+      AnnouncementPublishedNotificationJob.perform_later(@announcement.university_id, @announcement.id, @announcement.student_recipients.ids)
       redirect_to(@announcement.section ? course_section_path(@course, @announcement.section) : course_path(@course),
         notice: "El anuncio fue publicado.", status: :see_other)
     else
@@ -80,10 +82,10 @@ class AnnouncementsController < ApplicationController
   end
 
   def readable_announcements
-    staff_courses = SectionStaff.joins(:section).where(user_id: current_user.id).select("sections.course_id")
-    coordinated_courses = CourseCoordinator.where(user_id: current_user.id).select(:course_id)
-    course_ids = Course.where(id: staff_courses).or(Course.where(id: coordinated_courses)).select(:id)
+    Announcement.readable_by(current_user)
+  end
 
-    Announcement.where(course_id: course_ids)
+  def prevent_shared_caching
+    response.headers["Cache-Control"] = "private, no-store"
   end
 end

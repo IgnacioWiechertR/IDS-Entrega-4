@@ -12,7 +12,11 @@
       <% @notifications.each do |notification| %>
         <%# Unread ones (when the page was opened) are shown in bold; opening the inbox marks them as read. %>
         <li id="<%= dom_id notification %>" class="flex items-start justify-between gap-4 px-5 py-3 text-sm <%= notification.read_at ? 'text-slate-600' : 'font-semibold text-slate-900' %>">
-          <span><%= notification.message %></span>
+          <% if notification.announcement %>
+            <%= link_to notification.message, announcement_path(notification.announcement), class: "text-indigo-700 hover:underline" %>
+          <% else %>
+            <span><%= notification.message %></span>
+          <% end %>
           <time datetime="<%= notification.created_at.iso8601 %>" class="shrink-0 text-xs font-normal text-slate-500">
             <%= l(notification.created_at, format: "%d/%m %H:%M") %>
           </time>

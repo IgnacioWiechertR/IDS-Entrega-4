@@ -41,7 +41,7 @@
             <% if can?(:read_data_completeness, :reports) %><%= nav_link_to "Completitud", reports_data_completeness_path %><% end %>
             <% if can?(:read_grade_statuses, :reports) %><%= nav_link_to "Notas", reports_grade_statuses_path %><% end %>
             <% if can?(:read, :notifications) %>
-              <% unread = current_user.notifications.unread.count %>
+              <% unread = visible_notifications.unread.count %>
               <%= link_to notifications_path,
                           class: "inline-flex items-center gap-1 rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                           title: "Notificaciones",

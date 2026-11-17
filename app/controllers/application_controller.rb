@@ -15,6 +15,7 @@ class ApplicationController < ActionController::Base
   check_authorization unless: :devise_controller?
 
   helper_method :home_path_for, :current_university, :catalog_view?
+  helper_method :visible_notifications
 
   rescue_from CanCan::AccessDenied do |exception|
     Rails.logger.warn(
@@ -25,6 +26,10 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def visible_notifications
+    @visible_notifications ||= current_user.notifications.visible_to(current_user)
+  end
 
   # Regular users work in their own university. The director has none and picks the active one
   # with the selector in the top bar (stored in the session); by default, the first one.
