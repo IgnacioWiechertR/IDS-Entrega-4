@@ -48,11 +48,14 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
+  # B1 only enables uploads in the context of a course. B2-B5 keep their own scope.
   resources :materials, only: :index
+  # The public Active Storage direct-upload endpoint stays closed: see the B5 route below (rails_direct_uploads).
   # resources :enrollments
   # resources :section_staffs
   resources :course_coordinators, only: %i[ index create ]
   resources :courses do
+    resources :materials, only: %i[ new create ]
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
        resources :enrollments, only: [ :index, :create, :destroy ]
@@ -62,6 +65,20 @@ Rails.application.routes.draw do
   resources :faculties
   resources :users
   resources :universities
+
+  # B2: reading stays separate from B1's upload routes and controller.
+  resources :courses, only: [] do
+    resources :materials, only: %i[ index show ], controller: "course_materials" do
+      get :preview, on: :member
+    end
+  end
+
+  # D3/D4: indicadores flujo de notas
+  namespace :reports do
+    resource :grade_statuses, only: :show
+    resource :consolidated, only: :show
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -72,6 +89,17 @@ Rails.application.routes.draw do
   resources :courses, only: [] do
     resources :material_edits, only: %i[ index edit update ]
   end
+
+  # B5: download originals only after checking access to their course.
+  resources :courses, only: [] do
+    resources :material_downloads, only: :index
+    resources :materials, only: [] do
+      resource :download, only: :show, controller: "material_downloads"
+    end
+  end
+  # Keep the conventional direct-upload endpoint closed and its helper available
+  # for B1. Multipart uploads continue through B1's authorized course endpoint.
+  post "#{ActiveStorage.routes_prefix}/direct_uploads", to: "materials#index", as: :rails_direct_uploads
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
