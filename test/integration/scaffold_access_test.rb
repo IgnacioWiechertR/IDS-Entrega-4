@@ -4,7 +4,7 @@ require "test_helper"
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators
+    /attendance_records /attendance_sessions
     /faculties /grades /materials
     /terms /universities /users
   ].freeze
@@ -21,7 +21,7 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     seccion = ActsAsTenant.without_tenant { Section.first }
     curso = ActsAsTenant.without_tenant { seccion.course }
 
-    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
+    (SCAFFOLD_PATHS + [ "/announcements", "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end

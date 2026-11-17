@@ -7,8 +7,12 @@
     <span aria-hidden="true">›</span>
     <span>Sección <%= @section.number %></span>
   </nav>
+  <p class="mt-3"><%= link_to "Ver todo el material", course_materials_path(@course), class: "text-sm font-medium text-indigo-700 hover:underline" %></p>
   <h1 class="mt-2 text-2xl font-bold text-slate-900"><%= @course.name %> · Sección <%= @section.number %></h1>
   <p class="mt-1 text-sm text-slate-600"><%= term_period(@section.term) %></p>
+  <% if can?(:create, Announcement.new(course: @course, section: @section)) %>
+    <%= link_to "Publicar anuncio", new_announcement_path(course_id: @course.id, section_id: @section.id), class: "mt-4 inline-block #{ApplicationHelper::PRIMARY_BUTTON_CLASSES}" %>
+  <% end %>
 
   <% if @student_view %>
     <%# A student sees only their own published grades and attendance (C10, B10). %>
@@ -217,10 +221,12 @@
       <% @materials.each do |material| %>
         <li class="px-4 py-3 text-sm">
           <% if material.file.attached? %>
-            <%= link_to material.title.presence || material.file.filename.to_s, rails_blob_path(material.file, disposition: "attachment"),
+            <%# B2: the title opens the detail and preview; B5: the button next to it downloads the original. %>
+            <%= link_to material.title.presence || material.file.filename.to_s, course_material_path(@course, material),
                   class: "font-medium text-indigo-700 hover:underline" %>
+            <span class="ml-3"><%= material_download_link(@course, material) %></span>
           <% else %>
-            <span class="font-medium text-slate-900"><%= material.title %></span>
+            <%= link_to material_display_title(material), course_material_path(@course, material), class: "font-medium text-indigo-700 hover:underline" %>
           <% end %>
         </li>
       <% end %>

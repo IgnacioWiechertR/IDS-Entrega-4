@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vista previa de texto</title></head>
+  <body>
+    <% if @truncated %><p role="status">Se muestran los primeros 256 KB del archivo.</p><% end %>
+    <pre id="text_preview" style="white-space: pre-wrap; overflow-wrap: anywhere;"><%= @text %></pre>
+  </body>
+</html>

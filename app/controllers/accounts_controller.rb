@@ -100,9 +100,42 @@ class AccountsController < ApplicationController
               disposition: "attachment"
   end
 
+  # A17: cambia el rol de una cuenta de la universidad activa de inmediato.
+  def update_role
+    authorize! :index, :accounts
+    @university = current_university
+    @account = User.where(university_id: @university&.id).find(params[:id])
+
+    authorize! :change_role, @account
+
+    previous_role = @account.role
+    new_role = role_params[:role].to_s
+
+    if previous_role == new_role
+      redirect_to accounts_path(q: params[:q], role: params[:role], page: params[:page]),
+                  notice: "La cuenta ya tiene el rol seleccionado."
+      return
+    end
+
+    @account.role = new_role
+    authorize! :change_role, @account
+
+    if @account.save
+      redirect_to accounts_path(q: params[:q], role: params[:role], page: params[:page]),
+                  notice: "Rol de #{@account.name} actualizado a #{@account.role_name}."
+    else
+      redirect_to accounts_path(q: params[:q], role: params[:role], page: params[:page]),
+                  alert: @account.errors.full_messages.to_sentence
+    end
+  end
+
   private
 
   def account_params
     params.expect(account: [ :first_name, :last_name, :rut, :email, :role ])
+  end
+
+  def role_params
+    params.expect(account: [ :role ])
   end
 end

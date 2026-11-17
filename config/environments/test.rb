@@ -53,4 +53,9 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Integration tests set a default university for their own code (test/test_helper.rb). This middleware clears
+  # it during each request, so the app picks the university of the signed-in user, as in production (T7).
+  require "acts_as_tenant/test_tenant_middleware"
+  config.middleware.use ActsAsTenant::TestTenantMiddleware
 end

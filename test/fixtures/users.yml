@@ -61,3 +61,22 @@ profesor_iusa:
   role: profesor
   university: iusa
   encrypted_password: <%= password %>
+
+# IUSA staff, so the IUSA fixtures do not point to UCV accounts (T7).
+administrativo_iusa:
+  first_name: Administrativa
+  last_name: IUSA
+  rut: "88888888-8"
+  email: admin@iusa.test
+  role: administrativo
+  university: iusa
+  encrypted_password: <%= password %>
+
+ayudante_iusa:
+  first_name: Ayudante
+  last_name: IUSA
+  rut: "99999999-9"
+  email: ayudante@iusa.test
+  role: ayudante
+  university: iusa
+  encrypted_password: <%= password %>

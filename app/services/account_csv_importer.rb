@@ -57,6 +57,25 @@ class AccountCsvImporter
       return
     end
 
+    normalized_rut = Rut.normalize(row["rut"].to_s.strip)
+    normalized_email = row["correo"].to_s.strip.downcase
+
+    duplicate = result.created.any? do |entry|
+      existing = entry.fetch(:account)
+      existing.rut == normalized_rut ||
+        existing.email.downcase == normalized_email
+    end
+
+    if duplicate
+      result.errors << {
+        line: line,
+        messages: [
+          "RUT o correo duplicado dentro del archivo: una fila anterior ya creó esta cuenta."
+        ]
+      }
+      return
+    end
+
     password = SecureRandom.alphanumeric(12)
     account = User.new(first_name: first_name, last_name: last_name,
       rut: row["rut"].to_s.strip, email: row["correo"].to_s.strip.downcase,

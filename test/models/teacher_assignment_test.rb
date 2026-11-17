@@ -88,7 +88,69 @@ class TeacherAssignmentTest < ActiveSupport::TestCase
   test "universidades diferentes pueden tener cada una su profesor asignado" do
     professor_assignment.save!
 
-    assert professor_assignment(section: @other_section, user: @other_professor, assigned_by: @other_admin).save
+    ActsAsTenant.with_tenant(@other_university) do
+      assert professor_assignment(section: @other_section, user: @other_professor, assigned_by: @other_admin).save
+    end
+  end
+
+  test "el coordinador asigna un profesor en una sección de su asignatura y período" do
+    prepare_coordinator_data
+    assignment = professor_assignment(assigned_by: @coordinator)
+
+    assert assignment.save, assignment.errors.full_messages.join(", ")
+    assert_equal @coordinator, assignment.reload.assigned_by
+  end
+
+  test "el coordinador puede asignarse a sí mismo" do
+    prepare_coordinator_data
+
+    assert professor_assignment(user: @coordinator, assigned_by: @coordinator).save
+  end
+
+  test "el coordinador no asigna en otro período ni en otra asignatura" do
+    prepare_coordinator_data
+
+    [ @other_term_section, @other_course_section ].each do |section|
+      assignment = professor_assignment(section: section, assigned_by: @coordinator)
+
+      assert_not assignment.valid?
+      assert_includes assignment.errors[:assigned_by],
+        "debe ser un administrativo de la universidad o el coordinador de la asignatura"
+    end
+  end
+
+  test "una coordinación que cruza universidades no autoriza a asignar" do
+    prepare_coordinator_data
+    create_cross_university_coordination
+
+    ActsAsTenant.with_tenant(@other_university) do
+      assignment = professor_assignment(section: @other_section, user: @other_professor, assigned_by: @coordinator)
+
+      assert_not assignment.valid?
+      assert assignment.errors[:assigned_by].any?
+    end
+  end
+
+  test "las secciones coordinadas son las de la asignatura en el período que coordina" do
+    prepare_coordinator_data
+
+    assert_equal [ @section ], Section.coordinated_by(@coordinator).to_a
+    assert_empty Section.coordinated_by(@professor)
+    assert_empty Section.coordinated_by(@director)
+    assert @section.coordinated_by?(@coordinator)
+    assert_not @other_term_section.coordinated_by?(@coordinator)
+    assert_not @other_course_section.coordinated_by?(@coordinator)
+    assert_not @section.coordinated_by?(@professor)
+  end
+
+  test "las secciones coordinadas ignoran coordinaciones que cruzan universidades" do
+    prepare_coordinator_data
+    create_cross_university_coordination
+
+    ActsAsTenant.with_tenant(@other_university) do
+      assert_empty Section.coordinated_by(@coordinator)
+      assert_not @other_section.coordinated_by?(@coordinator)
+    end
   end
 
   test "la base de datos impide dos profesores aunque se omitan las validaciones" do

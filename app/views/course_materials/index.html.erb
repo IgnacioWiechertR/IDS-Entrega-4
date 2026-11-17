@@ -1,0 +1,9 @@
+<% content_for :title, "Material del curso · #{@course.code} · SGA" %>
+
+<section class="py-8">
+  <%= link_to "← Volver al curso", course_path(@course), class: "text-sm font-medium text-indigo-700 hover:underline" %>
+  <p class="mt-4 text-sm text-indigo-700"><%= @course.university.name %> · <%= @course.code %></p>
+  <h1 class="mt-2 text-2xl font-bold text-slate-900">Material del curso</h1>
+  <p class="mt-2 text-slate-600"><%= @course.name %></p>
+  <%= render "list", course: @course, materials: @materials %>
+</section>

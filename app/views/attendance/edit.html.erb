@@ -23,7 +23,7 @@
 
   <% if @session %>
     <p id="already-recorded" class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-      El <%= l(@held_on) %> ya tiene asistencia registrada (última vez por <%= @session.recorded_by.name %>). Al guardar se corrigen las marcas.
+      El <%= l(@held_on) %> ya tiene asistencia registrada (por <%= @session.recorded_by.name %>). Al guardar se corrigen las marcas que cambies y queda registrado quién las corrigió.
     </p>
   <% end %>
 
@@ -48,8 +48,14 @@
           <tbody class="divide-y divide-slate-100">
             <% @calculator.students.each do |student| %>
               <% status = @calculator.status(student, @session) || "presente" %>
+              <% correction = @calculator.correction(student, @session) %>
               <tr>
-                <th scope="row" class="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-900"><%= student.name %></th>
+                <th scope="row" class="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-900">
+                  <%= student.name %>
+                  <% if correction %>
+                    <span class="correction-note block text-xs font-normal text-amber-800"><%= attendance_correction_note(correction) %></span>
+                  <% end %>
+                </th>
                 <% AttendanceRecord.statuses.each_key do |option| %>
                   <td class="px-3 py-2 text-center">
                     <%= radio_button_tag "attendance[statuses][#{student.id}]", option, status == option,

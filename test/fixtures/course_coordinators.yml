@@ -11,5 +11,5 @@ two:
   university: iusa
   course: two
   term: two
-  user: profesor
-  assigned_by: administrativo
+  user: profesor_iusa
+  assigned_by: administrativo_iusa
