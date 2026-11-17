@@ -47,16 +47,18 @@
                     <p class="mt-1 max-w-xs whitespace-normal text-xs font-normal text-amber-800">
                       Rechazada por el profesor: «<%= grade.rejection_comment %>»
                     </p>
+                  <% elsif grade&.pendiente? %>
+                    <p class="mt-1 text-xs font-normal text-slate-500">Pendiente de revisión: puedes editarla hasta que el profesor la revise.</p>
                   <% end %>
                   <% row_errors.each do |message| %>
                     <p class="mt-1 text-xs font-normal text-red-700"><%= message %></p>
                   <% end %>
                 </th>
-                <% if grade && !grade.rechazada? %>
+                <% if grade&.publicada? %>
                   <td class="px-4 py-2 font-semibold"><%= grade_score(grade) %></td>
                   <td colspan="2" class="px-4 py-2 text-slate-600"><%= grade_status_label(grade) %></td>
                 <% else %>
-                  <%# New grade, or a rejected one to correct (C7), prefilled with its current values. %>
+                  <%# New grade, or a preliminary one to edit (C3: pending, C7: rejected), prefilled with its current values. %>
                   <% score = entry.fetch("score") { grade && grade_score(grade) } %>
                   <% feedback = entry.fetch("feedback") { grade&.feedback } %>
                   <% points = entry.fetch("points") { grade&.points && number_with_precision(grade.points, precision: 2, strip_insignificant_zeros: true) } %>
