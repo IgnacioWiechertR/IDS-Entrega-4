@@ -7,11 +7,18 @@ class DemoSeedsTest < ActionDispatch::IntegrationTest
   setup do
     @previous_password = ENV["SEED_PASSWORD"]
     ENV["SEED_PASSWORD"] = "demo-test-password"
+    # The volume data (db/seeds/demo_volume.rb) is tested in DemoVolumeSeedsTest; here it only has to stay small.
+    @previous_students = ENV["SEED_ALUMNOS"]
+    ENV["SEED_ALUMNOS"] = "20"
+    @previous_demo = ENV["SEED_DEMO"]
+    ENV["SEED_DEMO"] = "1"
     travel_to Time.zone.local(2026, 10, 30, 12)
   end
 
   teardown do
     ENV["SEED_PASSWORD"] = @previous_password
+    ENV["SEED_ALUMNOS"] = @previous_students
+    ENV["SEED_DEMO"] = @previous_demo
     ActsAsTenant.current_tenant = nil
     travel_back
   end
