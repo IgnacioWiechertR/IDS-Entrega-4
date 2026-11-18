@@ -11,7 +11,7 @@ Cada sección tiene:
 - Nueve notas: tres por evaluación. Las rechazadas tienen comentario; las publicadas tienen profesor revisor.
 - Pauta en texto y retroalimentación de ejemplo; no se crean archivos adjuntos.
 
-En una base nueva, el conjunto completo tiene 14 cuentas (incluido el director), 18 notas y 48 marcas de asistencia una vez transcurridas las ocho fechas. Queda 40 % libre en cada sección para crear otra evaluación en la demo.
+En las dos secciones de T8 hay 18 notas y 48 marcas de asistencia una vez transcurridas las ocho fechas, y queda 40 % libre en cada sección para crear otra evaluación en la demo. Los seeds de volumen (`db/seeds/demo_volume.rb`) agregan cientos de cuentas y otras secciones, pero no tocan estas dos: sus cifras siguen siendo exactas.
 
 ## Cargar en Ubuntu
 

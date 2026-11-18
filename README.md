@@ -19,13 +19,17 @@ Todas usan la misma contraseña, que se entrega junto con el informe (no se guar
 | Director | `director@sga.test` | Ambas (elige la universidad con el selector de la barra superior) |
 | Administrativo | `admin@ucv.test` | UCV |
 | Administrativo | `admin@iusa.test` | IUSA |
-| Profesor | `profesor@ucv.test` | UCV (coordina ICC4204 y dicta ICC4204-1 e ICC1001-1) |
-| Ayudante | `ayudante@ucv.test` | UCV (ayudante de ICC1001-1) |
-| Alumno | `alumno@ucv.test` | UCV (inscrito en ICC1001-1) |
+| Profesor | `profesor@ucv.test` | UCV (coordina ICC4204 e ICC1001; dicta ICC4204-1, ICC1001-1 e ICC2002-1) |
+| Ayudante | `ayudante@ucv.test` | UCV (ayudante de ICC1001-1 e ICC2002-1; alumno de MAT1001) |
+| Alumno | `alumno@ucv.test` | UCV (ICC1001-1, MAT1001-1, ICC2002-1 y ECO1001-1) |
 | Ayudante | `ayudante@iusa.test` | IUSA (ayudante de ANAT101-1) |
 | Alumnos adicionales | `sofia@ucv.test`, `tomas@ucv.test` | UCV (ICC1001-1) |
 | Alumnos | `alumno@iusa.test`, `lucas@iusa.test`, `isidora@iusa.test` | IUSA (ANAT101-1) |
 | Profesora en ambas sedes | `camila.torres@ucv.test` y `camila.torres@iusa.test` | Una cuenta por universidad, con el mismo RUT |
+| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor12`, `ayudante01`–`ayudante10`, `alumno001`–`alumno150` `@ucv.test` | UCV |
+| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor10`, `ayudante01`–`ayudante08`, `alumno001`–`alumno120` `@iusa.test` | IUSA |
+
+Los seeds también generan volumen en ambas universidades (`db/seeds/demo_volume.rb`): 8 asignaturas en 3 facultades por universidad, secciones en 2026-2 y una sección cerrada en 2026-1 en cuatro asignaturas, evaluaciones con notas publicadas, pendientes y rechazadas, asistencia semanal con correcciones, anuncios del curso y de sección, material (archivos `.txt` de un carácter) y notificaciones. Algunas secciones quedan incompletas a propósito para el reporte de completitud (por ejemplo, ICC4204-2 sin profesor y HUM1001-2 sin alumnos). Uno de cada quince alumnos generados tiene la cuenta eliminada (`alumno015`, `alumno030`, ...): no entra, pero conserva su historial de 2026-1. `SEED_ALUMNOS` cambia cuántos alumnos se generan por universidad. No existen entregas de tareas: las tareas son evaluaciones con nota.
 
 ### Recorrido sugerido: el flujo de notas
 

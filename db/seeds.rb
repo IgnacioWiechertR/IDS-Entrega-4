@@ -195,4 +195,10 @@ scenarios.each do |university, data|
   end
 end
 
+# Volumen para recorrer todas las funcionalidades: cientos de cuentas, decenas de secciones, notas, asistencia,
+# anuncios, material y notificaciones en ambas universidades. Detalle en db/seeds/demo_volume.rb.
+puts "Creando datos de volumen..."
+require_relative "seeds/demo_volume"
+DemoVolumeSeeds.new(password: password, students: ENV["SEED_ALUMNOS"].presence&.to_i).call
+
 puts "Datos académicos demo listos: #{academic_structure.values.flat_map { |data| data[:courses].map { |code, (name, _)| "#{code} #{name}" } }.join(', ')}"
