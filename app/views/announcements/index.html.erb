@@ -1,29 +1,30 @@
-<% content_for :title, "Announcements" %>
+<% content_for :title, "Anuncios · SGA" %>
 
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
+<section class="py-8">
+  <h1 class="text-2xl font-bold text-slate-900">Anuncios de mis cursos</h1>
 
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Announcements</h1>
-    <%= link_to "New announcement", new_announcement_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
-  </div>
-
-  <div id="announcements" class="min-w-full divide-y divide-gray-200 space-y-5">
-    <% if @announcements.any? %>
+  <% if @announcements.any? %>
+    <div id="announcements" class="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
       <% @announcements.each do |announcement| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
-          <%= render announcement %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", announcement, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_announcement_path(announcement), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", announcement, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
-          </div>
-        </div>
+        <article id="<%= dom_id(announcement) %>" class="p-5">
+          <p class="text-sm font-semibold text-indigo-600"><%= announcement.course.code %> · <%= announcement.course.name %></p>
+          <h2 class="mt-1 text-lg font-semibold">
+            <%= link_to announcement.subject, announcement_path(announcement), class: "text-slate-900 hover:text-indigo-700 hover:underline" %>
+          </h2>
+          <dl class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
+            <div><dt class="inline font-medium">Destino:</dt> <dd class="inline"><%= announcement.section ? "Sección #{announcement.section.number}" : "Toda la asignatura" %></dd></div>
+            <div><dt class="inline font-medium">Autor:</dt> <dd class="inline"><%= announcement.author.name %></dd></div>
+            <div><dt class="inline font-medium">Publicado:</dt> <dd class="inline"><%= l(announcement.created_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+            <% if announcement.updated_at > announcement.created_at %>
+              <div><dt class="inline font-medium">Editado:</dt> <dd class="inline"><%= l(announcement.updated_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+            <% end %>
+          </dl>
+        </article>
       <% end %>
-    <% else %>
-      <p class="text-center my-10">No announcements found.</p>
-    <% end %>
-  </div>
-</div>
+    </div>
+  <% else %>
+    <p id="announcements_empty" class="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-slate-600">
+      Aún no hay anuncios en tus cursos.
+    </p>
+  <% end %>
+</section>

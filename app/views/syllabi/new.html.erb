@@ -1,0 +1,40 @@
+<% replacing = @syllabus.persisted? %>
+<% content_for :title, "#{replacing ? 'Reemplazar' : 'Subir'} syllabus · #{@course.code} · SGA" %>
+
+<section class="mx-auto max-w-2xl py-8">
+  <p class="text-sm text-indigo-700"><%= @course.university.name %> · <%= @course.code %></p>
+  <h1 class="mt-2 text-2xl font-bold text-slate-900"><%= replacing ? "Reemplazar syllabus" : "Subir syllabus" %></h1>
+  <p class="mt-2 text-slate-600">Curso: <%= @course.name %> · Período: <%= term_period(@term) %></p>
+  <% if replacing && @syllabus.file.attached? && @syllabus.attachment_changes.empty? %>
+    <p class="mt-1 text-sm text-slate-600">Archivo actual: <%= @syllabus.file.filename %>. El nuevo archivo lo reemplaza.</p>
+  <% end %>
+
+  <%= form_with model: @syllabus, url: course_syllabus_path(@course), method: :post, class: "mt-6 space-y-5" do |form| %>
+    <% if @syllabus.errors.any? %>
+      <div class="rounded-md border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
+        <p class="font-semibold">No se pudo subir el syllabus.</p>
+        <ul class="mt-2 list-disc pl-5">
+          <% @syllabus.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= form.hidden_field :term_id, value: @term.id %>
+
+    <div>
+      <%= form.label :file, "Archivo PDF", class: "block text-sm font-medium text-slate-700" %>
+      <%= form.file_field :file, required: true, accept: ".pdf,application/pdf",
+            aria: { describedby: "syllabus_file_help" }, class: "mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2" %>
+      <p id="syllabus_file_help" class="mt-2 text-sm text-slate-600">
+        Solo PDF, máximo 50 MB. El contenido del syllabus se prepara fuera de la plataforma; aquí solo se sube el archivo.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <%= form.submit (replacing ? "Reemplazar syllabus" : "Subir syllabus"), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <%= link_to "Volver al curso", course_path(@course, term_id: @term.id), class: "text-sm font-medium text-indigo-700 hover:underline" %>
+    </div>
+  <% end %>
+</section>

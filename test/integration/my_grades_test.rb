@@ -33,7 +33,8 @@ class MyGradesTest < ActionDispatch::IntegrationTest
   end
 
   test "sin notas publicadas se muestra un mensaje" do
-    @published.destroy!
+    # An official grade cannot be deleted (C4), so the student is left without official grades this way.
+    @published.update_columns(status: "pendiente")
     sign_in users(:alumno)
     get my_grades_path
 
@@ -52,6 +53,27 @@ class MyGradesTest < ActionDispatch::IntegrationTest
     assert_select "#grade-feedback", text: /Muy buen desarrollo/
     assert_select "#evaluation-rubric", text: /Pregunta 1: 3 puntos/
     assert_select "main form", count: 0 # read only (the top bar has the sign-out form)
+  end
+
+  # C14: the "Detalle de entrega" shows the score over the maximum and the scale used to convert it.
+  test "el detalle de entrega muestra el puntaje sobre el máximo y la escala" do
+    @evaluation.update!(max_points: 60)
+    sign_in users(:alumno)
+    get my_grade_path(@published)
+
+    assert_select "h1", text: "Detalle de entrega: Control 2"
+    assert_select "#grade-points", text: "52 de 60"
+    assert_select "#grading-scale", text: /Escala de 50 % de exigencia: 4,0 con 30 puntos/
+    assert_select "#grade-score", text: /6,2/
+  end
+
+  test "sin puntaje máximo el puntaje se muestra solo y no hay escala" do
+    sign_in users(:alumno)
+    get my_grade_path(@published)
+
+    assert_select "h1", text: "Detalle de entrega: Control 2"
+    assert_select "#grade-points", text: "52"
+    assert_select "#grading-scale", count: 0
   end
 
   test "sin pauta ni comentario se muestra un mensaje predeterminado" do

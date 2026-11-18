@@ -1,0 +1,47 @@
+<% if summary.term? %>
+  <p class="text-sm text-slate-500">Período: <%= term_period(summary.term) %></p>
+  <% if summary.filtered? %>
+    <p class="summary-scope text-sm text-slate-500">
+      <%= [ ("Facultad: #{summary.faculty.name}" if summary.faculty),
+            ("Asignatura: #{summary.course.code} · #{summary.course.name}" if summary.course) ].compact.join(" · ") %>
+    </p>
+  <% end %>
+
+  <% if summary.empty? %>
+    <p class="summary-empty mt-3 rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-600">
+      <% if summary.filtered? %>
+        No hay datos para los filtros seleccionados: ninguna sección tiene alumnos inscritos.
+      <% else %>
+        Este período todavía no tiene alumnos inscritos.
+      <% end %>
+    </p>
+  <% else %>
+    <% unless summary.records_closed? %>
+      <p class="records-open-alert mt-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="alert">
+        Las actas de este período aún no están cerradas: hay notas sin publicar. El promedio es parcial y las tasas
+        de aprobación y reprobación se mostrarán cuando todas las notas estén publicadas.
+      </p>
+    <% end %>
+
+    <dl class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="rounded-md bg-slate-50 p-3">
+        <dt class="text-xs text-slate-500">Promedio general</dt>
+        <dd class="summary-average text-xl font-semibold text-slate-900"><%= grade_average(summary.average) %></dd>
+      </div>
+      <div class="rounded-md bg-slate-50 p-3">
+        <dt class="text-xs text-slate-500">Aprobación</dt>
+        <dd class="summary-approval text-xl font-semibold text-slate-900"><%= summary_rate(summary, summary.approval_rate) %></dd>
+      </div>
+      <div class="rounded-md bg-slate-50 p-3">
+        <dt class="text-xs text-slate-500">Reprobación</dt>
+        <dd class="summary-failure text-xl font-semibold text-slate-900"><%= summary_rate(summary, summary.failure_rate) %></dd>
+      </div>
+      <div class="rounded-md bg-slate-50 p-3">
+        <dt class="text-xs text-slate-500">Asistencia global</dt>
+        <dd class="summary-attendance text-xl font-semibold text-slate-900"><%= attendance_percentage(summary.attendance_percentage) %></dd>
+      </div>
+    </dl>
+  <% end %>
+<% else %>
+  <p class="summary-no-term text-sm text-slate-600">Esta universidad todavía no tiene períodos.</p>
+<% end %>

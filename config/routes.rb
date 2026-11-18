@@ -4,7 +4,19 @@ Rails.application.routes.draw do
 
   # Landing panel of each role (A1). Their content arrives with D1, A5 and the course cards.
   get "dashboard" => "dashboard#index", as: :dashboard
-  resources :accounts, only: %i[index new create]
+
+  resources :accounts, only: %i[index new create edit update destroy] do
+    member do
+      patch :role, action: :update_role
+      patch :reactivate
+    end
+
+    collection do
+      get :import, action: :import_form
+      post :import, action: :import_csv
+      get :sample_csv
+    end
+  end
   resources :teacher_assignments, only: %i[ index create ]
 
   # The director's active university (A3).
@@ -20,11 +32,16 @@ Rails.application.routes.draw do
     resources :evaluations, only: %i[ index new create ] do
       # C1: the ayudante enters the preliminary grades of the evaluation.
       resource :grade_sheet, only: %i[ edit update ]
+      # C4: the ayudante deletes a preliminary grade entered by mistake.
+      resources :preliminary_grades, only: :destroy
       # C2, C5, C6: the profesor reviews the pending grades and approves or rejects them.
       resource :grade_review, only: :show do
         post :approve
         post :reject
       end
+      # C8, C9: the profesor who rejected the grades edits or deletes the rejection comment (:id is one grade of
+      # that rejection). Deleting it withdraws the rejection.
+      resources :rejection_comments, only: %i[ update destroy ]
     end
   end
 
@@ -37,25 +54,73 @@ Rails.application.routes.draw do
   resources :attendance_records
   resources :attendance_sessions
   resources :grades
-  resources :materials
+  # B1 only enables uploads in the context of a course. B2-B5 keep their own scope.
+  resources :materials, only: :index
+  # The public Active Storage direct-upload endpoint stays closed: see the B5 route below (rails_direct_uploads).
   # resources :enrollments
   # resources :section_staffs
-  resources :course_coordinators
+  resources :course_coordinators, only: %i[ index create ]
   resources :courses do
+    resources :materials, only: %i[ new create ]
     resources :sections do
        resources :assistant_assignments, only: [ :index, :create, :destroy ]
        resources :enrollments, only: [ :index, :create, :destroy ]
     end
   end
-  resources :terms
-  resources :faculties
+  resources :terms, except: :show
+  resources :faculties, except: :show
   resources :users
   resources :universities
+
+  # B2: reading stays separate from B1's upload routes and controller.
+  resources :courses, only: [] do
+    resources :materials, only: %i[ index show ], controller: "course_materials" do
+      get :preview, on: :member
+    end
+  end
+
+  # Syllabus of the course in one term (?term_id=): view it in the page, download it, and upload or replace it
+  # (Entregas 2 y 3).
+  resources :courses, only: [] do
+    resource :syllabus, only: %i[ show new create ] do
+      get :preview
+      get :download
+    end
+  end
+
+  # D3/D4: indicadores flujo de notas
+  namespace :reports do
+    resource :data_completeness, only: :show, controller: "data_completeness"
+    resource :grade_statuses, only: :show
+    resource :consolidated, only: :show
+  end
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # B4: only the uploader can confirm and delete a material within its course.
+  resources :courses, only: [] do
+    resources :material_deletions, only: %i[ index show destroy ]
+  end
+
+  # B3: editing is restricted to the original uploader and stays separate from B1/B2/B5.
+  resources :courses, only: [] do
+    resources :material_edits, only: %i[ index edit update ]
+  end
+
+  # B5: download originals only after checking access to their course.
+  resources :courses, only: [] do
+    resources :material_downloads, only: :index
+    resources :materials, only: [] do
+      resource :download, only: :show, controller: "material_downloads"
+    end
+  end
+  # Keep the conventional direct-upload endpoint closed and its helper available
+  # for B1. Multipart uploads continue through B1's authorized course endpoint.
+  post "#{ActiveStorage.routes_prefix}/direct_uploads", to: "materials#index", as: :rails_direct_uploads
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

@@ -33,14 +33,13 @@ class AccountsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "el administrativo ve el botón para crear una cuenta; el director no" do
-    sign_in users(:administrativo)
-    get accounts_path
-    assert_select "a[href='#{new_account_path}']", text: "Crear cuenta"
-
-    sign_in users(:director)
-    get accounts_path
-    assert_select "a[href='#{new_account_path}']", count: 0
+  test "el administrativo y el director ven el botón para crear una cuenta" do
+    %i[administrativo director].each do |fixture|
+      sign_in users(fixture)
+      get accounts_path
+      assert_select "a[href='#{new_account_path}']", text: "Crear cuenta"
+      sign_out :user
+    end
   end
 
   test "el formulario ofrece alumno, ayudante y profesor, con alumno por defecto" do
@@ -149,8 +148,9 @@ class AccountsTest < ActionDispatch::IntegrationTest
     assert_select "#account_email_error"
   end
 
+  # The director creates only administrativos: DirectorReadOnlyTest covers it.
   test "los demás roles no crean cuentas" do
-    %i[director profesor ayudante alumno].each do |fixture|
+    %i[profesor ayudante alumno].each do |fixture|
       sign_in users(fixture)
 
       get new_account_path
@@ -163,5 +163,252 @@ class AccountsTest < ActionDispatch::IntegrationTest
 
       sign_out :user
     end
+  end
+
+  test "busca por nombre completo sin distinguir mayusculas ni mezclar universidades" do
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { q: "  pRoFeSoR uCv  " }
+
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:profesor).email
+    assert_select "tbody td", text: users(:profesor_iusa).email, count: 0
+  end
+
+  test "busca el RUT con puntos guion o sin formato dentro de su universidad" do
+    sign_in users(:administrativo)
+
+    %w[33.333.333-3 33333333-3 333333333].each do |query|
+      get accounts_path, params: { q: query }
+
+      assert_response :success
+      assert_select "tbody tr", count: 1
+      assert_select "tbody td", text: users(:profesor).email
+      assert_select "tbody td", text: users(:profesor_iusa).email, count: 0
+    end
+  end
+
+  test "filtra por rol y lo combina con la busqueda" do
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { role: "profesor" }
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:profesor).email
+
+    get accounts_path, params: { q: "UCV", role: "alumno" }
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: users(:alumno).email
+    assert_select "input[name=q][value=UCV]"
+    assert_select "select[name=role] option[selected][value=alumno]"
+  end
+
+  test "explica que no hay coincidencias cuando los filtros no encuentran cuentas" do
+    sign_in users(:administrativo)
+
+    [ { q: "zzzz" }, { role: "director" }, { q: "Profesor", role: "alumno" } ].each do |filters|
+      get accounts_path, params: filters
+
+      assert_response :success
+      assert_select "tbody tr", count: 0
+      assert_select "p", text: "No hay cuentas que coincidan con los filtros seleccionados en esta universidad."
+      assert_select "p", text: "No hay cuentas registradas en esta universidad.", count: 0
+    end
+  end
+
+  test "trata los comodines SQL como texto literal en la busqueda" do
+    sign_in users(:administrativo)
+
+    %w[% _].each do |query|
+      get accounts_path, params: { q: query }
+
+      assert_response :success
+      assert_select "tbody tr", count: 0
+    end
+  end
+
+  test "limpiar elimina la busqueda y el filtro de rol" do
+    sign_in users(:administrativo)
+    get accounts_path, params: { q: "Profesor", role: "alumno" }
+
+    link = css_select("a").find { |element| element.text.strip == "Limpiar" }
+    assert_not_nil link
+    assert_equal accounts_path, link["href"]
+
+    get link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 4
+    assert_select "input[name=q]" do |inputs|
+      assert_equal "", inputs.first["value"].to_s
+    end
+  end
+
+  test "una universidad sin cuentas muestra el mensaje de listado vacio" do
+    university = University.create!(name: "Universidad sin cuentas", slug: "sin-cuentas")
+    sign_in users(:director)
+    patch university_selection_path, params: { university_id: university.id }
+
+    get accounts_path
+
+    assert_response :success
+    assert_select "tbody tr", count: 0
+    assert_select "p", text: "No hay cuentas registradas en esta universidad."
+  end
+
+  test "pagina diez cuentas y conserva los filtros al avanzar y retroceder" do
+    accounts = 11.times.map do |index|
+      User.create!(
+        first_name: "Pagina", last_name: format("Cuenta%02d", index),
+        rut: Rut.build(20000000 + index), email: "pagina#{index}@ucv.test",
+        role: "alumno", university: universities(:ucv), password: "password123"
+      )
+    end
+    sign_in users(:administrativo)
+
+    get accounts_path, params: { q: "Pagina", role: "alumno" }
+
+    assert_response :success
+    assert_select "tbody tr", count: 10
+    accounts.first(10).each { |account| assert_select "tbody td", text: account.email }
+    assert_select "tbody td", text: accounts.last.email, count: 0
+    assert_select "nav[aria-label='Paginación de cuentas'] a", text: "Anterior", count: 0
+
+    next_link = css_select("nav[aria-label='Paginación de cuentas'] a").find { |link| link.text == "Siguiente" }
+    assert_not_nil next_link
+    assert_equal({ "q" => "Pagina", "role" => "alumno", "page" => "2" },
+                 Rack::Utils.parse_query(URI.parse(next_link["href"]).query))
+    get next_link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 1
+    assert_select "tbody td", text: accounts.last.email
+    assert_select "nav[aria-label='Paginación de cuentas'] a", text: "Siguiente", count: 0
+
+    previous_link = css_select("nav[aria-label='Paginación de cuentas'] a").find { |link| link.text == "Anterior" }
+    assert_not_nil previous_link
+    assert_equal({ "q" => "Pagina", "role" => "alumno", "page" => "1" },
+                 Rack::Utils.parse_query(URI.parse(previous_link["href"]).query))
+    get previous_link["href"]
+
+    assert_response :success
+    assert_select "tbody tr", count: 10
+    assert_select "tbody td", text: accounts.first.email
+    assert_select "tbody td", text: accounts.last.email, count: 0
+  end
+
+  # A16 / A17: role assignment and validation against incompatible section/course assignments.
+  test "el administrativo cambia el rol de una cuenta sin asignaciones; el director no" do
+    account = User.create!(
+      first_name: "Lucas", last_name: "Méndez", rut: "10000010-5",
+      email: "lucas.mendez@ucv.test", role: "alumno", university: universities(:ucv), password: "password123"
+    )
+    sign_in users(:administrativo)
+
+    patch role_account_path(account), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", account.reload.role
+    assert_match(/actualizado a Ayudante/, flash[:notice])
+
+    sign_out :user
+    sign_in users(:director)
+    patch university_selection_path, params: { university_id: universities(:ucv).id }
+
+    patch role_account_path(account), params: { account: { role: "profesor" } }
+
+    assert_equal DENIED, flash[:alert]
+    assert_equal "ayudante", account.reload.role
+  end
+
+  test "rechaza cambiar el rol de un profesor con secciones o coordinaciones activas" do
+    profesor = User.create!(
+      first_name: "Elena", last_name: "Rios", rut: "10000011-3",
+      email: "elena.rios@ucv.test", role: "profesor", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST101", name: "Curso Prueba")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    staff = SectionStaff.create!(
+      university: universities(:ucv), section: section, user: profesor,
+      role: "profesor", assigned_by: users(:administrativo)
+    )
+    coordinator = CourseCoordinator.create!(
+      university: universities(:ucv), course: course, term: terms(:one),
+      user: profesor, assigned_by: users(:administrativo)
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(profesor), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "profesor", profesor.reload.role
+    assert_match(/profesor de sección y coordinador de curso/, flash[:alert])
+
+    # Tras desvincularlo de la sección y la coordinación, el cambio sí procede.
+    staff.destroy!
+    coordinator.destroy!
+
+    patch role_account_path(profesor), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", profesor.reload.role
+  end
+
+  test "rechaza cambiar el rol de un ayudante asignado a una sección" do
+    ayudante = User.create!(
+      first_name: "Diego", last_name: "Pardo", rut: "10000012-1",
+      email: "diego.pardo@ucv.test", role: "ayudante", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST102", name: "Curso Ayudante")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    staff = SectionStaff.create!(
+      university: universities(:ucv), section: section, user: ayudante,
+      role: "ayudante", assigned_by: users(:administrativo)
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(ayudante), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", ayudante.reload.role
+    assert_match(/ayudante de sección/, flash[:alert])
+
+    staff.destroy!
+
+    patch role_account_path(ayudante), params: { account: { role: "alumno" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", ayudante.reload.role
+  end
+
+  test "rechaza cambiar el rol de un alumno con inscripciones activas" do
+    alumno = User.create!(
+      first_name: "Carla", last_name: "Soto", rut: "10000014-8",
+      email: "carla.soto@ucv.test", role: "alumno", university: universities(:ucv), password: "password123"
+    )
+    course = Course.create!(university: universities(:ucv), faculty: faculties(:one), code: "TEST103", name: "Curso Alumno")
+    section = Section.create!(university: universities(:ucv), course: course, term: terms(:one), number: 99)
+    enrollment = Enrollment.create!(
+      university: universities(:ucv), section: section, student: alumno, active: true
+    )
+
+    sign_in users(:administrativo)
+
+    patch role_account_path(alumno), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "alumno", alumno.reload.role
+    assert_match(/alumno inscrito en secciones activas/, flash[:alert])
+
+    enrollment.update!(active: false)
+
+    patch role_account_path(alumno), params: { account: { role: "ayudante" } }
+
+    assert_redirected_to accounts_path
+    assert_equal "ayudante", alumno.reload.role
   end
 end

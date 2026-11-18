@@ -13,7 +13,9 @@
         <%= link_to "Ver todas las notas", section_gradebook_path(@section),
               class: "inline-flex rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" %>
       <% end %>
-      <%= link_to "Nueva evaluación", new_section_evaluation_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <% if can?(:create, Evaluation.new(section: @section)) %>
+        <%= link_to "Nueva evaluación", new_section_evaluation_path(@section), class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
+      <% end %>
     </div>
   </div>
 
@@ -51,7 +53,7 @@
                   <% pending = evaluation.grades.pendiente.count %>
                   <%= link_to "Revisar notas (#{pending} #{pending == 1 ? 'pendiente' : 'pendientes'})",
                         section_evaluation_grade_review_path(@section, evaluation),
-                        class: "text-sm font-semibold text-indigo-700 hover:underline" %>
+                        class: "text-sm #{pending.positive? ? 'font-bold' : 'font-normal'} text-indigo-700 hover:underline" %>
                 <% end %>
               </td>
             </tr>

@@ -54,6 +54,15 @@ class GradeReviewsController < ApplicationController
       .order("users.last_name", "users.first_name")
     @rejected_count = @evaluation.grades.rechazada.count
     @published_count = @evaluation.grades.publicada.count
+    @rejections = rejections
+  end
+
+  # C8: the rejections waiting for the ayudante's correction. Each one is the group of rejected grades with the
+  # same reviewer and comment (a rejection copies them into every grade, C6).
+  def rejections
+    @evaluation.grades.rechazada.includes(:student, :reviewed_by).joins(:student)
+      .order("users.last_name", "users.first_name")
+      .group_by { |grade| [ grade.reviewed_by_id, grade.rejection_comment ] }.values
   end
 
   def review_path = section_evaluation_grade_review_path(@section, @evaluation)

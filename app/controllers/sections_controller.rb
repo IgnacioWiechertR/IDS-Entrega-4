@@ -9,15 +9,32 @@ class SectionsController < ApplicationController
     @sections = @sections.eager_load(:term).order("terms.starts_on DESC", :number)
   end
 
+  STAFF_TABS = %w[asistencia notas].freeze
+  # C15, B18, B19: the student's own tabs inside the course.
+  STUDENT_TABS = %w[notas asistencia anuncios].freeze
+
   # The section overview. Its staff, the coordinator, the administrativo and the director see the summary, the
   # attendance list and (if they can read the grades) the grades; a student sees only their own grades and
-  # attendance, and the course material. Tabs: ?tab=asistencia, ?tab=notas.
+  # attendance, and the course material. Tabs: ?tab=asistencia, ?tab=notas; an unknown tab is the summary.
   def show
+    @pending_grade_count = if can?(:review_grades, Evaluation.new(section: @section))
+      Grade.pendiente.where(evaluation_id: @section.evaluations.select(:id)).count
+    else
+      0
+    end
     @stats = SectionStatsService.new(@section)
     @student_view = !can?(:read_attendance_sheet, @section)
-    @tab = %w[asistencia notas].include?(params[:tab]) && !@student_view ? params[:tab] : "resumen"
-    @tab = "resumen" if @tab == "notas" && !can?(:read_gradebook, @section)
-    @materials = @course.materials.with_attached_file.order(:title)
+    tabs = @student_view ? STUDENT_TABS : STAFF_TABS
+    @tab = tabs.include?(params[:tab]) ? params[:tab] : "resumen"
+    @tab = "resumen" if !@student_view && @tab == "notas" && !can?(:read_gradebook, @section)
+    @calculator = AttendanceCalculatorService.new(@section) if @student_view && @tab == "asistencia"
+    # B19: the announcements of the whole course and of this section (B16), never another section's. The student
+    # view is only reached with an active enrollment in this section, so these are the ones they may read.
+    if @student_view && @tab == "anuncios"
+      @announcements = @course.announcements.where(section_id: [ nil, @section.id ]).includes(:section, :author)
+        .order(created_at: :desc, id: :desc)
+    end
+    @materials = @course.materials.with_attached_file.order(created_at: :desc, id: :desc)
     # Profesores, ayudantes and students go from the course straight to their section, so their way back is the list.
     @course_overview = catalog_view? || @course.course_coordinators.exists?(user: current_user)
   end

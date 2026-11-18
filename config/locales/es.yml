@@ -9,6 +9,11 @@ es:
   authorization:
     denied: No tienes permiso para ver esa página.
 
+  # User#inactive_message: the account was deactivated from the accounts panel.
+  devise:
+    failure:
+      deactivated: Tu cuenta está desactivada. Contacta a la administración de tu universidad.
+
   university_selection:
     changed: Ahora estás viendo %{name}.
 
@@ -20,6 +25,7 @@ es:
           association_invalid: debe pertenecer a la misma universidad
         must_match_parent: debe ser la misma del registro al que pertenece
         must_match_university: debe ser de la misma universidad
+        must_match_course: debe pertenecer a la asignatura
         only_one_current: ya hay otro período vigente en la universidad
         before_start: debe ser posterior a la fecha de inicio
         exceeds_section_total: supera el 100 % de la sección (queda %{available} % disponible)
@@ -29,6 +35,8 @@ es:
         in_the_future: no puede ser una fecha futura
         invalid_rut: no es válido, revisa el número y el dígito verificador
         taken_by_account: ya pertenece a la cuenta de %{account}
+        above_max_points: no puede superar el puntaje máximo (%{max})
+        published_grade_cannot_be_deleted: Una nota oficial no se puede eliminar
       models:
         course:
           restrict_dependent_destroy:
@@ -36,7 +44,16 @@ es:
         section:
           restrict_dependent_destroy:
             has_many: porque tiene %{record}
+        term:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
+        faculty:
+          restrict_dependent_destroy:
+            has_many: porque tiene %{record}
     models:
+      faculty:
+        one: Facultad
+        other: Facultades
       course:
         one: Curso
         other: Cursos
@@ -55,7 +72,17 @@ es:
       evaluation:
         one: Evaluación
         other: Evaluaciones
+      announcement:
+        one: Anuncio
+        other: Anuncios
     attributes:
+      announcement:
+        subject: Asunto
+        body: Mensaje
+        section: Destinatarios
+        course: Asignatura
+        author: Autor
+        university: Universidad
       attendance_session:
         held_on: Fecha
       evaluation:
@@ -63,6 +90,7 @@ es:
         weight: Ponderación
         due_on: Fecha
         rubric: Pauta
+        max_points: Puntaje máximo
       grade:
         score: Nota
         feedback: Comentario
@@ -77,6 +105,7 @@ es:
         course_coordinators: Coordinadores
         materials: Materiales
         announcements: Avisos
+        syllabi: syllabus
       section:
         number: Número
         term: Período
@@ -90,6 +119,17 @@ es:
       university:
         name: Nombre
         slug: Identificador
+      term:
+        name: Nombre
+        starts_on: Fecha de inicio
+        ends_on: Fecha de término
+        current: Vigente
+        sections: secciones
+        course_coordinators: coordinadores asignados
+        syllabi: syllabus
+      faculty:
+        name: Nombre
+        courses: cursos
       user:
         first_name: Nombre
         last_name: Apellido
@@ -98,3 +138,4 @@ es:
         password: Contraseña
         role: Rol
         university: Universidad
+        active: Activa

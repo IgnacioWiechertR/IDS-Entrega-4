@@ -9,6 +9,33 @@ class GradeTest < ActiveSupport::TestCase
     Grade.new({ evaluation: evaluation, student: users(:alumno), score: 5.0, entered_by: users(:ayudante) }.merge(attributes))
   end
 
+  # C4: an official grade is never deleted from the application (DOMAIN §3).
+  test "una nota publicada no se puede eliminar, una preliminar sí" do
+    published = build_grade(status: "publicada").tap(&:save!)
+
+    assert_not published.destroy
+    assert published.errors.added?(:base, :published_grade_cannot_be_deleted)
+    assert Grade.exists?(published.id)
+
+    pending = build_grade(student: users(:ayudante)).tap(&:save!)
+    assert pending.destroy
+    assert_not Grade.exists?(pending.id)
+  end
+
+  # C14: with a maximum score, the score of a grade cannot exceed it.
+  test "el puntaje no supera el máximo de la evaluación" do
+    evaluation.update!(max_points: 60)
+
+    assert build_grade(points: 60).valid?
+    grade = build_grade(points: 61)
+    assert_not grade.valid?
+    assert grade.errors.of_kind?(:points, :above_max_points)
+    assert_includes grade.errors.full_messages, "Puntaje no puede superar el puntaje máximo (60)"
+
+    evaluation.update!(max_points: nil)
+    assert build_grade(points: 61).valid?, "sin máximo, cualquier puntaje no negativo vale"
+  end
+
   test "una nota nueva queda pendiente" do
     assert_equal "pendiente", Grade.new.status
     assert build_grade.valid?
@@ -61,8 +88,12 @@ class GradeTest < ActiveSupport::TestCase
     publicada = build_grade(status: "publicada").tap(&:save!)
 
     assert_includes Grade.preliminares, grades(:one)
-    assert_includes Grade.preliminares, grades(:two)
     assert_not_includes Grade.preliminares, publicada
     assert_equal [ publicada ], Grade.publicadas.to_a
+
+    # grades(:two), rechazada, is from IUSA.
+    ActsAsTenant.with_tenant(universities(:iusa)) do
+      assert_includes Grade.preliminares, grades(:two)
+    end
   end
 end

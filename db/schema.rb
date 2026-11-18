@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,9 +50,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.bigint "author_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "university_id", null: false
     t.index ["author_id"], name: "index_announcements_on_author_id"
     t.index ["course_id"], name: "index_announcements_on_course_id"
     t.index ["section_id"], name: "index_announcements_on_section_id"
+    t.index ["university_id"], name: "index_announcements_on_university_id"
   end
 
   create_table "attendance_records", force: :cascade do |t|
@@ -62,8 +64,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.bigint "corrected_by_id"
+    t.datetime "corrected_at"
     t.index ["attendance_session_id", "student_id"], name: "index_attendance_records_on_session_and_student", unique: true
     t.index ["attendance_session_id"], name: "index_attendance_records_on_attendance_session_id"
+    t.index ["corrected_by_id"], name: "index_attendance_records_on_corrected_by_id"
     t.index ["student_id"], name: "index_attendance_records_on_student_id"
     t.index ["university_id"], name: "index_attendance_records_on_university_id"
   end
@@ -131,6 +136,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "university_id", null: false
+    t.decimal "max_points", precision: 6, scale: 2
     t.index ["section_id"], name: "index_evaluations_on_section_id"
     t.index ["university_id"], name: "index_evaluations_on_university_id"
   end
@@ -169,7 +175,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.string "title"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "uploaded_by_id"
     t.index ["course_id"], name: "index_materials_on_course_id"
+    t.index ["uploaded_by_id"], name: "index_materials_on_uploaded_by_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -211,6 +219,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
     t.index ["course_id"], name: "index_sections_on_course_id"
     t.index ["term_id"], name: "index_sections_on_term_id"
     t.index ["university_id"], name: "index_sections_on_university_id"
+  end
+
+  create_table "syllabi", force: :cascade do |t|
+    t.bigint "university_id", null: false
+    t.bigint "course_id", null: false
+    t.bigint "term_id", null: false
+    t.bigint "uploaded_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_id", "term_id"], name: "index_syllabi_on_course_id_and_term_id", unique: true
+    t.index ["course_id"], name: "index_syllabi_on_course_id"
+    t.index ["term_id"], name: "index_syllabi_on_term_id"
+    t.index ["university_id"], name: "index_syllabi_on_university_id"
+    t.index ["uploaded_by_id"], name: "index_syllabi_on_uploaded_by_id"
   end
 
   create_table "terms", force: :cascade do |t|
@@ -259,9 +281,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "announcements", "courses"
   add_foreign_key "announcements", "sections"
+  add_foreign_key "announcements", "universities"
   add_foreign_key "announcements", "users", column: "author_id"
   add_foreign_key "attendance_records", "attendance_sessions"
   add_foreign_key "attendance_records", "universities"
+  add_foreign_key "attendance_records", "users", column: "corrected_by_id"
   add_foreign_key "attendance_records", "users", column: "student_id"
   add_foreign_key "attendance_sessions", "sections"
   add_foreign_key "attendance_sessions", "universities"
@@ -285,6 +309,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
   add_foreign_key "grades", "users", column: "reviewed_by_id"
   add_foreign_key "grades", "users", column: "student_id"
   add_foreign_key "materials", "courses"
+  add_foreign_key "materials", "users", column: "uploaded_by_id"
   add_foreign_key "notifications", "universities"
   add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "section_staffs", "sections"
@@ -294,6 +319,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230900) do
   add_foreign_key "sections", "courses"
   add_foreign_key "sections", "terms"
   add_foreign_key "sections", "universities"
+  add_foreign_key "syllabi", "courses"
+  add_foreign_key "syllabi", "terms"
+  add_foreign_key "syllabi", "universities"
+  add_foreign_key "syllabi", "users", column: "uploaded_by_id"
   add_foreign_key "terms", "universities"
   add_foreign_key "users", "universities"
 end

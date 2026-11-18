@@ -1,59 +1,45 @@
 class MaterialsController < ApplicationController
-  load_and_authorize_resource
-  before_action :set_material, only: %i[ show edit update destroy ]
+  before_action :set_upload_course, only: %i[ new create ]
 
-  # GET /materials
+  # The old global scaffold stays closed until B2 defines how materials are listed.
   def index
-    @materials = Material.all
+    authorize! :index, Material
   end
 
-  # GET /materials/1
-  def show
-  end
-
-  # GET /materials/new
   def new
-    @material = Material.new
   end
 
-  # GET /materials/1/edit
-  def edit
-  end
-
-  # POST /materials
   def create
-    @material = Material.new(material_params)
+    attributes = params.expect(material: [ :title, :file ])
+    @material.title = attributes[:title]
+    # B3: the author is the signed-in user, never a parameter.
+    @material.uploaded_by = current_user
+    upload = attributes[:file]
 
-    if @material.save
-      redirect_to @material, notice: "Material was successfully created."
+    # B1 accepts a fresh multipart upload, never an existing blob's signed ID.
+    if upload.is_a?(ActionDispatch::Http::UploadedFile)
+      @material.file = upload
+      if @material.save
+        redirect_to new_course_material_path(@course),
+          notice: "Material subido correctamente.", status: :see_other
+        return
+      end
     else
-      render :new, status: :unprocessable_content
+      @material.valid?
+      @material.errors.add(:file, "debe seleccionarse desde tu equipo") if upload.present?
     end
-  end
 
-  # PATCH/PUT /materials/1
-  def update
-    if @material.update(material_params)
-      redirect_to @material, notice: "Material was successfully updated.", status: :see_other
-    else
-      render :edit, status: :unprocessable_content
-    end
-  end
-
-  # DELETE /materials/1
-  def destroy
-    @material.destroy!
-    redirect_to materials_path, notice: "Material was successfully destroyed.", status: :see_other
+    render :new, status: :unprocessable_content
+  rescue MaterialStorageService::UniversityNotConfigured
+    @material.errors.add(:file, "no se pudo guardar porque el almacenamiento de esta universidad no está configurado")
+    render :new, status: :unprocessable_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_material
-      @material = Material.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def material_params
-      params.expect(material: [ :course_id, :title, :file ])
-    end
+  def set_upload_course
+    @course = Course.find(params.expect(:course_id))
+    @material = @course.materials.new
+    authorize! :create, @material
+  end
 end

@@ -35,8 +35,10 @@ class TeacherAssignmentsController < ApplicationController
     authorize! :assign_professor, Section
   end
 
+  # All the sections of the university for the administrativo; for a coordinator, the ones of the courses they
+  # coordinate in that term (A22).
   def assignable_sections
-    Section.joins(:course, :term).where(
+    Section.accessible_by(current_ability, :assign_professor).joins(:course, :term).where(
       university_id: current_user.university_id,
       courses: { university_id: current_user.university_id },
       terms: { university_id: current_user.university_id }
@@ -48,7 +50,7 @@ class TeacherAssignmentsController < ApplicationController
   end
 
   def load_assignment_options
-    @sections = assignable_sections.includes(:course, :term, section_staffs: :user)
+    @sections = assignable_sections.includes(:course, :term, section_staffs: %i[user assigned_by])
       .order(:course_id, :number, :id)
     @professors = available_professors.order(:first_name, :last_name, :id)
   end

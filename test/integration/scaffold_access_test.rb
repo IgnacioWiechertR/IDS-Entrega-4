@@ -3,10 +3,12 @@ require "test_helper"
 # The model scaffolds are closed by default: they require signing in, and nobody can use them
 # until the card that needs each one adds its rule to the corresponding policy.
 class ScaffoldAccessTest < ActionDispatch::IntegrationTest
+  # /terms and /faculties left this list: the administrativo manages them and the director reads them
+  # (terms_management_test, faculties_management_test).
   SCAFFOLD_PATHS = %w[
-    /announcements /attendance_records /attendance_sessions /course_coordinators
-    /faculties /grades /materials
-    /terms /universities /users
+    /attendance_records /attendance_sessions
+    /grades /materials
+    /universities /users
   ].freeze
 
   # Evaluations only exist inside a section (C13): the unscoped scaffold route is gone.
@@ -21,7 +23,7 @@ class ScaffoldAccessTest < ActionDispatch::IntegrationTest
     seccion = ActsAsTenant.without_tenant { Section.first }
     curso = ActsAsTenant.without_tenant { seccion.course }
 
-    (SCAFFOLD_PATHS + [ "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
+    (SCAFFOLD_PATHS + [ "/announcements", "/courses/new", "/courses/#{curso.id}/sections", "/courses/#{curso.id}/sections/#{seccion.id}/enrollments" ]).each do |path|
       get path
       assert_redirected_to new_user_session_path, "#{path} debería exigir sesión"
     end

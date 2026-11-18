@@ -11,14 +11,14 @@ class AttendanceController < ApplicationController
   end
 
   def show
-    @calculator = AttendanceCalculatorService.new(@section)
-
     if can?(:read_attendance_sheet, @section)
       authorize! :read_attendance_sheet, @section
+      @calculator = AttendanceCalculatorService.new(@section)
       render :section
     else
       authorize! :read_own_attendance, @section
-      render :student
+      # B18: a student's own attendance is the Asistencia tab of their section.
+      redirect_to course_section_path(@section.course, @section, tab: "asistencia")
     end
   end
 

@@ -10,8 +10,8 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     Enrollment.create!(section: sections(:one), student: @second)
   end
 
-  def enter(entries, evaluation: @evaluation)
-    GradeEntryService.new(evaluation: evaluation, author: users(:ayudante), entries: entries).call
+  def enter(entries, evaluation: @evaluation, author: users(:ayudante))
+    GradeEntryService.new(evaluation: evaluation, author: author, entries: entries).call
   end
 
   test "guarda las notas como preliminares, con el ayudante como autor" do
@@ -63,13 +63,70 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     assert_nil @evaluation.grades.find_by(student: @first)
   end
 
-  test "no toca la nota que un alumno ya tiene en la evaluación" do
-    # grades(:one) is the pending grade of users(:alumno) in evaluations(:one).
+  # C3: the ayudante edits a pending grade before the profesor reviews it. grades(:one) is the pending 5.5 of
+  # users(:alumno) in evaluations(:one).
+  def pending_values(**changes)
+    grade = grades(:one)
+    { score: "5,5", feedback: grade.feedback, points: "" }.merge(changes)
+  end
+
+  test "edita una nota pendiente: sigue pendiente y queda como autor quien la editó" do
+    other_assistant = User.create!(first_name: "Otro", last_name: "Ayudante", rut: "10000012-1", email: "otro.ayudante@ucv.test",
+      password: "password123", role: "ayudante", university: universities(:ucv))
+    SectionStaff.create!(section: sections(:one), user: other_assistant, role: "ayudante", assigned_by: users(:administrativo))
+
+    result = enter({ @first.id.to_s => pending_values(score: "6,2") }, evaluation: evaluations(:one), author: other_assistant)
+
+    assert result.success?
+    assert_equal 1, result.saved_count
+    grade = grades(:one).reload
+    assert grade.pendiente?
+    assert_equal 6.2, grade.score
+    assert_equal other_assistant, grade.entered_by
+  end
+
+  test "cambiar solo el comentario o el puntaje también es una edición" do
+    result = enter({ @first.id.to_s => pending_values(feedback: "Revisado de nuevo", points: "30") }, evaluation: evaluations(:one))
+
+    assert_equal 1, result.saved_count
+    assert_equal "Revisado de nuevo", grades(:one).reload.feedback
+    assert_equal 30, grades(:one).points
+  end
+
+  test "una nota pendiente reenviada sin cambios no se toca ni cuenta" do
+    before = grades(:one).updated_at
+
+    result = enter({ @first.id.to_s => pending_values }, evaluation: evaluations(:one))
+
+    assert result.success?
+    assert_equal 0, result.saved_count
+    assert_equal before, grades(:one).reload.updated_at
+  end
+
+  test "editar una pendiente fuera de 1.0–7.0 no guarda nada" do
+    result = enter({ @first.id.to_s => pending_values(score: "0,5") }, evaluation: evaluations(:one))
+
+    assert_not result.success?
+    assert_equal 5.5, grades(:one).reload.score
+  end
+
+  test "dejar vacía la nota de una pendiente no la borra ni la cambia" do
     assert_no_difference -> { Grade.count } do
-      result = enter({ @first.id.to_s => { score: "2.0" } }, evaluation: evaluations(:one))
+      result = enter({ @first.id.to_s => pending_values(score: "") }, evaluation: evaluations(:one))
       assert_equal 0, result.saved_count
     end
     assert_equal 5.5, grades(:one).reload.score
+  end
+
+  test "una nota publicada no se modifica aunque venga en el envío" do
+    grades(:one).update_columns(status: "publicada")
+
+    result = enter({ @first.id.to_s => pending_values(score: "2,0") }, evaluation: evaluations(:one))
+
+    assert_equal 0, result.saved_count
+    grade = grades(:one).reload
+    assert grade.publicada?
+    assert_equal 5.5, grade.score
   end
 
   # C7: the ayudante corrects the grades the profesor rejected and sends them again.
@@ -92,6 +149,17 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     assert_equal "Revisa la pregunta 2", grade.rejection_comment
   end
 
+  # C3 (decided on 17-nov): the sheet comes prefilled, so a rejected grade sent back unchanged is not a correction.
+  test "una nota rechazada reenviada sin cambios se queda rechazada" do
+    grade = rejected_grade
+
+    result = enter({ @first.id.to_s => { score: "4,0", feedback: "Sin justificar", points: "" } })
+
+    assert result.success?
+    assert_equal 0, result.saved_count
+    assert grade.reload.rechazada?
+  end
+
   test "una nota rechazada que no viene en el envío se queda rechazada" do
     grade = rejected_grade
 
@@ -110,6 +178,45 @@ class GradeEntryServiceTest < ActiveSupport::TestCase
     assert grade.reload.rechazada?
     assert_equal 4.0, grade.score
     assert_nil @evaluation.grades.find_by(student: @second)
+  end
+
+  # C14: with a maximum score, a row with a score and no grade gets the grade converted with a 50 % threshold.
+  test "con puntaje máximo, una fila con puntaje y sin nota guarda la nota calculada" do
+    @evaluation.update!(max_points: 60)
+
+    result = enter({ @first.id.to_s => { score: "", points: "44" }, @second.id.to_s => { score: " ", points: "30" } })
+
+    assert result.success?
+    assert_equal 2, result.saved_count
+    assert_equal 5.4, @evaluation.grades.find_by!(student: @first).score
+    assert_equal 44, @evaluation.grades.find_by!(student: @first).points
+    assert_equal 4.0, @evaluation.grades.find_by!(student: @second).score
+  end
+
+  test "si la fila trae nota y puntaje, se guarda la nota escrita" do
+    @evaluation.update!(max_points: 60)
+
+    enter({ @first.id.to_s => { score: "5,0", points: "44" } })
+
+    assert_equal 5.0, @evaluation.grades.find_by!(student: @first).score
+  end
+
+  test "un puntaje mayor que el máximo no guarda ninguna nota del envío" do
+    @evaluation.update!(max_points: 60)
+
+    assert_no_difference -> { Grade.count } do
+      result = enter({ @first.id.to_s => { score: "6,0", points: "50" }, @second.id.to_s => { score: "", points: "61" } })
+
+      assert_not result.success?
+      assert_includes result.errors[@second.id], "Puntaje no puede superar el puntaje máximo (60)"
+    end
+  end
+
+  test "sin puntaje máximo, una fila con puntaje y sin nota se ignora como antes" do
+    result = enter({ @first.id.to_s => { score: "", points: "44" } })
+
+    assert_equal 0, result.saved_count
+    assert_nil @evaluation.grades.find_by(student: @first)
   end
 
   test "ignora a quien no está inscrito en la sección" do

@@ -1,7 +1,7 @@
 <% content_for :title, "Crear cuenta · SGA" %>
 
 <section class="mx-auto max-w-xl py-8">
-  <p class="text-sm font-semibold text-indigo-600"><%= current_user.university.name %></p>
+  <p class="text-sm font-semibold text-indigo-600"><%= @account.university.name %></p>
   <h1 class="text-2xl font-bold text-slate-900">Crear cuenta</h1>
   <p class="mt-2 text-sm text-slate-600">
     Al guardar, el sistema genera una contraseña temporal que se muestra una sola vez.
@@ -44,7 +44,7 @@
 
     <div>
       <%= form.label :role, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.select :role, AccountPolicy::CREATABLE_ROLES.map { |role| [ t("roles.#{role}"), role ] }, {},
+      <%= form.select :role, creatable_roles.map { |role| [ t("roles.#{role}"), role ] }, {},
                       class: ApplicationHelper::INPUT_CLASSES %>
       <%= field_errors(form, :role) %>
     </div>

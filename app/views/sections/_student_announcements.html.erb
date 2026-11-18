@@ -1,0 +1,22 @@
+<h2 class="mt-6 text-lg font-semibold text-slate-900">Anuncios</h2>
+
+<% if @announcements.any? %>
+  <div id="section_announcements" class="mt-3 divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+    <% @announcements.each do |announcement| %>
+      <article id="<%= dom_id(announcement) %>" class="p-5">
+        <h3 class="text-base font-semibold">
+          <%= link_to announcement.subject, announcement_path(announcement), class: "text-slate-900 hover:text-indigo-700 hover:underline" %>
+        </h3>
+        <dl class="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
+          <div><dt class="inline font-medium">Destino:</dt> <dd class="inline"><%= announcement.section ? "Sección #{announcement.section.number}" : "Toda la asignatura" %></dd></div>
+          <div><dt class="inline font-medium">Autor:</dt> <dd class="inline"><%= announcement.author.name %></dd></div>
+          <div><dt class="inline font-medium">Publicado:</dt> <dd class="inline"><%= l(announcement.created_at, format: "%d/%m/%Y %H:%M") %></dd></div>
+        </dl>
+      </article>
+    <% end %>
+  </div>
+<% else %>
+  <p id="no_section_announcements" class="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-slate-600">
+    Aún no hay anuncios en este curso.
+  </p>
+<% end %>

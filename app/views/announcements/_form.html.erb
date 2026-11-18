@@ -1,9 +1,10 @@
-<%= form_with(model: announcement, class: "contents") do |form| %>
-  <% if announcement.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-      <h2><%= pluralize(announcement.errors.count, "error") %> prohibited this announcement from being saved:</h2>
+<%= form_with(model: announcement, class: "mt-6 space-y-5") do |form| %>
+  <%= form.hidden_field :course_id if announcement.new_record? %>
 
-      <ul class="list-disc ml-6">
+  <% if announcement.errors.any? %>
+    <div id="error_explanation" class="rounded-lg bg-red-50 p-4 text-red-800" role="alert">
+      <p class="font-semibold">Revisa el anuncio:</p>
+      <ul class="mt-2 list-disc pl-5">
         <% announcement.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -11,32 +12,22 @@
     </div>
   <% end %>
 
-  <div class="my-5">
-    <%= form.label :course_id %>
-    <%= form.text_field :course_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": announcement.errors[:course_id].none?, "border-red-400 focus:outline-red-600": announcement.errors[:course_id].any?}] %>
+  <% if announcement.new_record? %>
+    <div>
+      <%= form.label :section_id, "Destinatarios", class: "block text-sm font-semibold text-slate-700" %>
+      <%= form.select :section_id, [[ "Toda la asignatura", "" ]] + sections.map { |section| [ "Sección #{section.number} · #{section.term.name}", section.id ] }, {},
+            class: "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2" %>
+    </div>
+  <% else %>
+    <p class="text-sm text-slate-600">Destinatarios: <%= announcement.section ? "Sección #{announcement.section.number}" : "Toda la asignatura" %></p>
+  <% end %>
+  <div>
+    <%= form.label :subject, "Asunto", class: "block text-sm font-semibold text-slate-700" %>
+    <%= form.text_field :subject, required: true, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2" %>
   </div>
-
-  <div class="my-5">
-    <%= form.label :section_id %>
-    <%= form.text_field :section_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": announcement.errors[:section_id].none?, "border-red-400 focus:outline-red-600": announcement.errors[:section_id].any?}] %>
+  <div>
+    <%= form.label :body, "Mensaje", class: "block text-sm font-semibold text-slate-700" %>
+    <%= form.text_area :body, rows: 7, required: true, class: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2" %>
   </div>
-
-  <div class="my-5">
-    <%= form.label :subject %>
-    <%= form.text_field :subject, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": announcement.errors[:subject].none?, "border-red-400 focus:outline-red-600": announcement.errors[:subject].any?}] %>
-  </div>
-
-  <div class="my-5">
-    <%= form.label :body %>
-    <%= form.textarea :body, rows: 4, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": announcement.errors[:body].none?, "border-red-400 focus:outline-red-600": announcement.errors[:body].any?}] %>
-  </div>
-
-  <div class="my-5">
-    <%= form.label :author_id %>
-    <%= form.text_field :author_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": announcement.errors[:author_id].none?, "border-red-400 focus:outline-red-600": announcement.errors[:author_id].any?}] %>
-  </div>
-
-  <div class="inline">
-    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
-  </div>
+  <%= form.submit announcement.new_record? ? "Publicar anuncio" : "Guardar cambios", class: ApplicationHelper::PRIMARY_BUTTON_CLASSES %>
 <% end %>

@@ -1,17 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
   university: ucv
   section: one
-  name: MyString
+  name: Control 1
   weight: 9.99
   due_on: 2026-10-18
-  rubric: MyText
+  rubric: "Pregunta 1: 2 puntos. Pregunta 2: 2 puntos. Pregunta 3: 2 puntos."
 
 two:
   university: iusa
   section: two
-  name: MyString
+  name: Prueba de laboratorio 1
   weight: 9.99
   due_on: 2026-10-18
-  rubric: MyText
+  rubric: "Identificación de estructuras: 4 puntos. Pregunta 2: 2 puntos."

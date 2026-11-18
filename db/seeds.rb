@@ -1,5 +1,12 @@
-# Datos simulados para la demo. Es idempotente: se puede correr varias veces.
-# Nombres y RUT son ficticios. La contraseña común viene de SEED_PASSWORD y no se escribe en el código.
+# Datos iniciales. Es idempotente: se puede correr varias veces.
+# Nombres y RUT son ficticios. La contraseña viene de SEED_PASSWORD y no se escribe en el código.
+#
+# - Siempre: las dos universidades y, si hay SEED_PASSWORD, la cuenta del director (correo en DIRECTOR_EMAIL, por
+#   defecto director@sga.test). Es lo único que recibe el cliente: desde el director se crean los administrativos,
+#   y ellos crean facultades, períodos, cursos, secciones y cuentas.
+# - Solo con SEED_DEMO=1: la estructura académica, las cuentas demo, los escenarios de T8 y el volumen. Nunca se
+#   activa en la base de producción.
+demo = ENV["SEED_DEMO"] == "1"
 
 ucv = University.find_or_create_by!(slug: "ucv") do |university|
   university.name = "Universidad Central del Valle"
@@ -11,7 +18,7 @@ end
 
 # Estructura académica de cada universidad, creada dentro de su universidad (A3).
 # Solo puede haber un período vigente por universidad: 2026-1 queda cerrado y 2026-2 es el vigente.
-puts "Creando períodos, facultades, asignaturas y secciones..."
+puts "Creando períodos, facultades, asignaturas y secciones..." if demo
 academic_structure = {
   ucv => { faculty: "Facultad de Ingeniería",
            courses: { "ICC4204" => [ "Ingeniería de Software", 2 ], "ICC1001" => [ "Programación", 1 ] } },
@@ -20,6 +27,8 @@ academic_structure = {
 }
 
 academic_structure.each do |university, data|
+  next unless demo
+
   ActsAsTenant.with_tenant(university) do
     Term.find_or_create_by!(name: "2026-1") do |term|
       term.starts_on = Date.new(2026, 3, 2)
@@ -46,12 +55,22 @@ end
 password = ENV["SEED_PASSWORD"]
 
 if password.blank?
-  puts "SEED_PASSWORD no está definida: se creó la estructura académica, pero no los usuarios demo."
+  puts "SEED_PASSWORD no está definida: no se crearon cuentas."
+  return
+end
+
+director = User.find_or_create_by!(email: ENV["DIRECTOR_EMAIL"].presence || "director@sga.test") do |user|
+  user.assign_attributes(first_name: "Carolina", last_name: "Fuentes", rut: "12345678-5", role: "director", university: nil)
+  user.password = password
+end
+puts "Cuenta del director lista: #{director.email}"
+
+unless demo
+  puts "SEED_DEMO no está activado: no se cargan datos de demostración."
   return
 end
 
 demo_users = [
-  { email: "director@sga.test",  first_name: "Carolina", last_name: "Fuentes", rut: "12345678-5", role: "director",       university: nil },
   { email: "admin@ucv.test",     first_name: "Andrés",   last_name: "Molina",   rut: "15678234-3", role: "administrativo", university: ucv },
   { email: "admin@iusa.test",    first_name: "Paula",    last_name: "Rivas",    rut: "17234561-1", role: "administrativo", university: iusa },
   { email: "profesor@ucv.test",  first_name: "Ricardo",  last_name: "Soto",     rut: "18452397-3", role: "profesor",       university: ucv },
@@ -61,6 +80,19 @@ demo_users = [
   { email: "camila.torres@ucv.test",  first_name: "Camila", last_name: "Torres", rut: "16789012-1", role: "profesor", university: ucv },
   { email: "camila.torres@iusa.test", first_name: "Camila", last_name: "Torres", rut: "16789012-1", role: "profesor", university: iusa }
 ]
+
+# Más alumnos para comparar resultados; cada universidad tiene su propio equipo.
+[
+  [ ucv, "sofia@ucv.test", "Sofía", "Vega", 21000001, "alumno" ],
+  [ ucv, "tomas@ucv.test", "Tomás", "Silva", 21000002, "alumno" ],
+  [ iusa, "ayudante@iusa.test", "Diego", "Pérez", 22000001, "ayudante" ],
+  [ iusa, "alumno@iusa.test", "Antonia", "Díaz", 22000002, "alumno" ],
+  [ iusa, "lucas@iusa.test", "Lucas", "Reyes", 22000003, "alumno" ],
+  [ iusa, "isidora@iusa.test", "Isidora", "León", 22000004, "alumno" ]
+].each do |university, email, first_name, last_name, number, role|
+  demo_users << { university: university, email: email, first_name: first_name, last_name: last_name,
+                  rut: Rut.build(number), role: role }
+end
 
 users = demo_users.to_h do |attributes|
   user = User.find_or_create_by!(email: attributes[:email]) do |new_user|
@@ -80,17 +112,20 @@ assignments = {
            staff: [ [ "ICC4204", 1, "profesor@ucv.test", "profesor" ],
                     [ "ICC1001", 1, "profesor@ucv.test", "profesor" ],
                     [ "ICC1001", 1, "ayudante@ucv.test", "ayudante" ] ],
-           students: [ [ "ICC1001", 1, "alumno@ucv.test" ] ],
+           students: [ [ "ICC1001", 1, "alumno@ucv.test" ], [ "ICC1001", 1, "sofia@ucv.test" ],
+                       [ "ICC1001", 1, "tomas@ucv.test" ] ],
            coordinators: [ [ "ICC4204", "profesor@ucv.test" ] ] },
   iusa => { admin: "admin@iusa.test",
-            staff: [ [ "ANAT101", 1, "camila.torres@iusa.test", "profesor" ] ],
-            students: [],
-            coordinators: [] }
+            staff: [ [ "ANAT101", 1, "camila.torres@iusa.test", "profesor" ],
+                     [ "ANAT101", 1, "ayudante@iusa.test", "ayudante" ] ],
+            students: [ [ "ANAT101", 1, "alumno@iusa.test" ], [ "ANAT101", 1, "lucas@iusa.test" ],
+                        [ "ANAT101", 1, "isidora@iusa.test" ] ],
+            coordinators: [ [ "ANAT101", "camila.torres@iusa.test" ] ] }
 }
 
 assignments.each do |university, data|
   ActsAsTenant.with_tenant(university) do
-    current_term = Term.find_by!(current: true)
+    current_term = Term.find_by!(name: "2026-2")
     admin = users.fetch(data[:admin])
     section_of = ->(code, number) { Section.find_by!(course: Course.find_by!(code: code), term: current_term, number: number) }
 
@@ -112,24 +147,77 @@ assignments.each do |university, data|
   end
 end
 
-# Asistencia semanal de las primeras 8 semanas del período vigente en las secciones con alumnos (B6),
-# para que la demo muestre porcentajes. Fechas y marcas son fijas: correr los seeds de nuevo no cambia nada.
-puts "Registrando asistencia..."
-class_dates = (0...8).map { |week| Date.new(2026, 8, 10) + week.weeks }
+# Los escenarios solo añaden datos: una nueva carga conserva contraseñas, notas y asistencia editadas.
+puts "Creando escenarios de asistencia y notas..."
+scenarios = {
+  ucv => { course: "ICC1001", professor: "profesor@ucv.test", assistant: "ayudante@ucv.test",
+           students: %w[alumno@ucv.test sofia@ucv.test tomas@ucv.test], scores: [ 5.5, 6.2, 4.0 ] },
+  iusa => { course: "ANAT101", professor: "camila.torres@iusa.test", assistant: "ayudante@iusa.test",
+            students: %w[alumno@iusa.test lucas@iusa.test isidora@iusa.test], scores: [ 6.0, 4.8, 3.5 ] }
+}
+class_dates = (0...8).map { |week| Date.new(2026, 8, 10) + week.weeks }.reject(&:future?)
+evaluation_examples = [
+  [ "Demo T8 · Control publicado", "publicada", Date.new(2026, 9, 7) ],
+  [ "Demo T8 · Control pendiente", "pendiente", Date.new(2026, 9, 14) ],
+  [ "Demo T8 · Control rechazado", "rechazada", Date.new(2026, 9, 21) ]
+]
 
-[ ucv, iusa ].each do |university|
+scenarios.each do |university, data|
   ActsAsTenant.with_tenant(university) do
-    SectionStaff.where(university: university, role: "profesor").includes(:user).each do |staff|
-      students = staff.section.active_students.to_a
-      next if students.empty?
+    section = Section.find_by!(course: Course.find_by!(code: data[:course]),
+                               term: Term.find_by!(name: "2026-2"), number: 1)
+    professor = users.fetch(data[:professor])
+    assistant = users.fetch(data[:assistant])
+    students = data[:students].map { |email| users.fetch(email) }
 
-      class_dates.each_with_index do |held_on, week|
-        statuses = students.each_with_index.to_h { |student, index| [ student.id.to_s, (index + week) % 4 == 0 ? "ausente" : "presente" ] }
-        recorder = AttendanceRecorderService.new(section: staff.section, held_on: held_on, recorded_by: staff.user)
-        raise "No se pudo registrar la asistencia del #{held_on}: #{recorder.session.errors.full_messages.to_sentence}" unless recorder.call(statuses)
+    class_dates.each_with_index do |held_on, week|
+      session = section.attendance_sessions.find_or_create_by!(held_on: held_on) do |record|
+        record.recorded_by = professor
+      end
+      students.each_with_index do |student, index|
+        next unless section.enrollments.exists?(student: student, active: true)
+
+        session.attendance_records.find_or_create_by!(student: student) do |record|
+          record.status = (index + week) % 4 == 0 ? "ausente" : "presente"
+        end
+      end
+    end
+
+    # No se reducen ponderaciones existentes para hacer espacio a los ejemplos.
+    missing = evaluation_examples.count { |name, _status, _date| !section.evaluations.exists?(name: name) }
+    if section.evaluations.sum(:weight) + missing * 20 > 100
+      puts "Se omiten las notas demo de #{data[:course]}: no queda ponderación disponible."
+      next
+    end
+
+    Evaluation.transaction do
+      evaluation_examples.each do |name, status, date|
+        evaluation = section.evaluations.find_or_create_by!(name: name) do |record|
+          record.weight = 20
+          record.due_on = date
+          record.rubric = "Pauta demo: comprensión del contenido y aplicación correcta del procedimiento."
+        end
+        students.each_with_index do |student, index|
+          next unless section.enrollments.exists?(student: student, active: true)
+
+          evaluation.grades.find_or_create_by!(student: student) do |grade|
+            grade.score = data[:scores][index]
+            grade.status = status
+            grade.entered_by = assistant
+            grade.reviewed_by = professor unless status == "pendiente"
+            grade.feedback = "Retroalimentación de ejemplo: revisa el procedimiento de la segunda pregunta."
+            grade.rejection_comment = "Revisar la suma de puntajes antes de reenviar." if status == "rechazada"
+          end
+        end
       end
     end
   end
 end
+
+# Volumen para recorrer todas las funcionalidades: cientos de cuentas, decenas de secciones, notas, asistencia,
+# anuncios, material y notificaciones en ambas universidades. Detalle en db/seeds/demo_volume.rb.
+puts "Creando datos de volumen..."
+require_relative "seeds/demo_volume"
+DemoVolumeSeeds.new(password: password, students: ENV["SEED_ALUMNOS"].presence&.to_i).call
 
 puts "Datos académicos demo listos: #{academic_structure.values.flat_map { |data| data[:courses].map { |code, (name, _)| "#{code} #{name}" } }.join(', ')}"

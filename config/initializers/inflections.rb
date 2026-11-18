@@ -14,3 +14,8 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+# The syllabus of a course: table syllabi, controller SyllabiController.
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular "syllabus", "syllabi"
+end
