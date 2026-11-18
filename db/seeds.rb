@@ -1,5 +1,12 @@
-# Datos simulados para la demo. Es idempotente: se puede correr varias veces.
-# Nombres y RUT son ficticios. La contraseña común viene de SEED_PASSWORD y no se escribe en el código.
+# Datos iniciales. Es idempotente: se puede correr varias veces.
+# Nombres y RUT son ficticios. La contraseña viene de SEED_PASSWORD y no se escribe en el código.
+#
+# - Siempre: las dos universidades y, si hay SEED_PASSWORD, la cuenta del director (correo en DIRECTOR_EMAIL, por
+#   defecto director@sga.test). Es lo único que recibe el cliente: desde el director se crean los administrativos,
+#   y ellos crean facultades, períodos, cursos, secciones y cuentas.
+# - Solo con SEED_DEMO=1: la estructura académica, las cuentas demo, los escenarios de T8 y el volumen. Nunca se
+#   activa en la base de producción.
+demo = ENV["SEED_DEMO"] == "1"
 
 ucv = University.find_or_create_by!(slug: "ucv") do |university|
   university.name = "Universidad Central del Valle"
@@ -11,7 +18,7 @@ end
 
 # Estructura académica de cada universidad, creada dentro de su universidad (A3).
 # Solo puede haber un período vigente por universidad: 2026-1 queda cerrado y 2026-2 es el vigente.
-puts "Creando períodos, facultades, asignaturas y secciones..."
+puts "Creando períodos, facultades, asignaturas y secciones..." if demo
 academic_structure = {
   ucv => { faculty: "Facultad de Ingeniería",
            courses: { "ICC4204" => [ "Ingeniería de Software", 2 ], "ICC1001" => [ "Programación", 1 ] } },
@@ -20,6 +27,8 @@ academic_structure = {
 }
 
 academic_structure.each do |university, data|
+  next unless demo
+
   ActsAsTenant.with_tenant(university) do
     Term.find_or_create_by!(name: "2026-1") do |term|
       term.starts_on = Date.new(2026, 3, 2)
@@ -46,12 +55,22 @@ end
 password = ENV["SEED_PASSWORD"]
 
 if password.blank?
-  puts "SEED_PASSWORD no está definida: se creó la estructura académica, pero no los usuarios demo."
+  puts "SEED_PASSWORD no está definida: no se crearon cuentas."
+  return
+end
+
+director = User.find_or_create_by!(email: ENV["DIRECTOR_EMAIL"].presence || "director@sga.test") do |user|
+  user.assign_attributes(first_name: "Carolina", last_name: "Fuentes", rut: "12345678-5", role: "director", university: nil)
+  user.password = password
+end
+puts "Cuenta del director lista: #{director.email}"
+
+unless demo
+  puts "SEED_DEMO no está activado: no se cargan datos de demostración."
   return
 end
 
 demo_users = [
-  { email: "director@sga.test",  first_name: "Carolina", last_name: "Fuentes", rut: "12345678-5", role: "director",       university: nil },
   { email: "admin@ucv.test",     first_name: "Andrés",   last_name: "Molina",   rut: "15678234-3", role: "administrativo", university: ucv },
   { email: "admin@iusa.test",    first_name: "Paula",    last_name: "Rivas",    rut: "17234561-1", role: "administrativo", university: iusa },
   { email: "profesor@ucv.test",  first_name: "Ricardo",  last_name: "Soto",     rut: "18452397-3", role: "profesor",       university: ucv },

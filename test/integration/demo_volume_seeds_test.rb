@@ -8,15 +8,16 @@ class DemoVolumeSeedsTest < ActionDispatch::IntegrationTest
   PASSWORD = "demo-test-password".freeze
 
   setup do
-    @previous = ENV.to_h.slice("SEED_PASSWORD", "SEED_ALUMNOS")
+    @previous = ENV.to_h.slice("SEED_PASSWORD", "SEED_ALUMNOS", "SEED_DEMO")
     ENV["SEED_PASSWORD"] = PASSWORD
     ENV["SEED_ALUMNOS"] = "30"
+    ENV["SEED_DEMO"] = "1"
     travel_to Time.zone.local(2026, 11, 17, 12)
     start_from_empty_database
   end
 
   teardown do
-    %w[SEED_PASSWORD SEED_ALUMNOS].each { |key| ENV[key] = @previous[key] }
+    %w[SEED_PASSWORD SEED_ALUMNOS SEED_DEMO].each { |key| ENV[key] = @previous[key] }
     ActsAsTenant.current_tenant = nil
     travel_back
   end

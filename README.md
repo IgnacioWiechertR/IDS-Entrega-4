@@ -63,9 +63,11 @@ Requisitos: Ruby 3.4.5, PostgreSQL y Docker (para Redis, que usa Sidekiq).
 bundle install
 docker compose up -d                          # Redis (Valkey) para los trabajos en segundo plano
 bin/rails db:prepare
-SEED_PASSWORD=una-clave bin/rails db:seed     # crea las universidades, cursos y cuentas demo con esa contraseña
+SEED_DEMO=1 SEED_PASSWORD=una-clave bin/rails db:seed   # universidades, director y todos los datos demo con esa contraseña
 bin/dev                                       # servidor, Tailwind y Sidekiq
 ```
+
+Sin `SEED_DEMO=1` los seeds crean solo las dos universidades y la cuenta del director (`director@sga.test`, o el correo de `DIRECTOR_EMAIL`), con la contraseña de `SEED_PASSWORD`. Es lo que recibe el cliente en producción: desde el director se crean los administrativos, y ellos crean facultades, períodos, cursos, secciones y cuentas.
 
 La aplicación queda en http://localhost:3000. Los datos de demostración se pueden volver a cargar sin duplicarse. Las cuentas existentes conservan su contraseña y se respetan las notas y marcas de asistencia editadas. La contraseña indicada solo se asigna a cuentas nuevas.
 

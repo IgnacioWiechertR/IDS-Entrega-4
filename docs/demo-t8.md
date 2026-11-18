@@ -23,7 +23,7 @@ bin/rails db:prepare
 read -s -p "Contraseña para las cuentas demo nuevas: " SEED_PASSWORD
 echo
 export SEED_PASSWORD
-bin/rails db:seed
+SEED_DEMO=1 bin/rails db:seed
 unset SEED_PASSWORD
 ```
 
