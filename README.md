@@ -6,30 +6,15 @@ Proyecto del curso Introducción a la Ingeniería de Software, Universidad de lo
 
 ## Probar la aplicación
 
-**Aplicación en producción:** <URL_DE_RENDER>
+**Aplicación en producción:** https://sga-web-0yoo.onrender.com/
 
 La aplicación corre en el plan gratuito de Render, que la suspende cuando no se usa: la primera carga puede tardar alrededor de un minuto.
 
-### Cuentas de demostración
+### Cuenta de acceso
 
-Todas usan la misma contraseña, que se entrega junto con el informe (no se guarda en el repositorio).
+En producción la aplicación se entrega vacía: solo existen las dos universidades y la cuenta del **director** (`director@sga.test`). Su contraseña está en el *Manual de uso del SGA* (no se guarda en el repositorio). Desde esa cuenta se crean los administrativos, y ellos crean facultades, períodos, cursos, secciones y el resto de las cuentas; el manual describe la puesta en marcha paso a paso.
 
-| Rol | Correo | Universidad |
-|---|---|---|
-| Director | `director@sga.test` | Ambas (elige la universidad con el selector de la barra superior) |
-| Administrativo | `admin@ucv.test` | UCV |
-| Administrativo | `admin@iusa.test` | IUSA |
-| Profesor | `profesor@ucv.test` | UCV (coordina ICC4204 e ICC1001; dicta ICC4204-1, ICC1001-1 e ICC2002-1) |
-| Ayudante | `ayudante@ucv.test` | UCV (ayudante de ICC1001-1 e ICC2002-1; alumno de MAT1001) |
-| Alumno | `alumno@ucv.test` | UCV (ICC1001-1, MAT1001-1, ICC2002-1 y ECO1001-1) |
-| Ayudante | `ayudante@iusa.test` | IUSA (ayudante de ANAT101-1) |
-| Alumnos adicionales | `sofia@ucv.test`, `tomas@ucv.test` | UCV (ICC1001-1) |
-| Alumnos | `alumno@iusa.test`, `lucas@iusa.test`, `isidora@iusa.test` | IUSA (ANAT101-1) |
-| Profesora en ambas sedes | `camila.torres@ucv.test` y `camila.torres@iusa.test` | Una cuenta por universidad, con el mismo RUT |
-| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor12`, `ayudante01`–`ayudante10`, `alumno001`–`alumno150` `@ucv.test` | UCV |
-| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor10`, `ayudante01`–`ayudante08`, `alumno001`–`alumno120` `@iusa.test` | IUSA |
-
-Los seeds también generan volumen en ambas universidades (`db/seeds/demo_volume.rb`): 8 asignaturas en 3 facultades por universidad, secciones en 2026-2 y una sección cerrada en 2026-1 en cuatro asignaturas, evaluaciones con notas publicadas, pendientes y rechazadas, asistencia semanal con correcciones, anuncios del curso y de sección, material (archivos `.txt` de un carácter) y notificaciones. Algunas secciones quedan incompletas a propósito para el reporte de completitud (por ejemplo, ICC4204-2 sin profesor y HUM1001-2 sin alumnos). Uno de cada quince alumnos generados tiene la cuenta eliminada (`alumno015`, `alumno030`, ...): no entra, pero conserva su historial de 2026-1. `SEED_ALUMNOS` cambia cuántos alumnos se generan por universidad. No existen entregas de tareas: las tareas son evaluaciones con nota.
+Los recorridos de abajo usan las cuentas y datos de demostración, que solo existen al correr la aplicación en local con `SEED_DEMO=1` (ver [Datos de demostración](#datos-de-demostración-solo-en-local)).
 
 ### Recorrido sugerido: el flujo de notas
 
@@ -38,21 +23,24 @@ La sección **ICC1001 · Programación, sección 1** (período 2026-2) tiene pro
 T8 añade tres evaluaciones de ejemplo por sección: publicada, pendiente y rechazada, de 20 % cada una. Consulta la [guía de datos y demostración T8](docs/demo-t8.md) para cargar los datos y probar ambos roles.
 
 1. **Ayudante** (`ayudante@ucv.test`): Mis cursos → Programación → **Evaluaciones** → **Nueva evaluación** (por ejemplo, "Control 1", 20 %). Luego **Ingresar notas**, escribe una nota entre 1.0 y 7.0 y un comentario, y presiona **Subir a revisión**.
-2. **Profesor** (`profesor@ucv.test`): recibe el aviso en las notificaciones. En la sección → Evaluaciones → **Revisar notas**. Puede **Aceptar notas** (se publican) o **Rechazar notas** con un comentario obligatorio. Si las rechaza, el ayudante ve el comentario, corrige y vuelve a subirlas.
-3. **Alumno** (`alumno@ucv.test`): en **Mis notas** ve solo sus notas publicadas, con ponderación, comentario y pauta. Las notas pendientes o rechazadas no se le muestran.
+2. **Profesor** (`profesor@ucv.test`): recibe el aviso en las notificaciones, y en la sección el botón **Evaluaciones** muestra una campana con la cantidad de notas pendientes de aprobación. En Evaluaciones → **Revisar notas** puede **Aceptar notas** (se publican) o **Rechazar notas** con un comentario obligatorio. Si las rechaza, el ayudante ve el comentario, corrige y vuelve a subirlas.
+3. **Alumno** (`alumno@ucv.test`): en la pestaña **Notas** del curso, o en **Mis notas**, ve solo sus notas publicadas, con ponderación, comentario y pauta. Las notas pendientes o rechazadas no se le muestran.
 
 ### Qué probar con cada rol
 
 - **Administrativo** (`admin@ucv.test`):
   - **Cuentas**: listar, buscar por nombre o RUT y filtrar por rol; **Crear cuenta** de alumno, ayudante o profesor. El RUT se valida con su dígito verificador, y el sistema muestra una contraseña temporal una sola vez.
   - **Editar** una cuenta (nombre, apellido, RUT y correo) y **Eliminar** una cuenta de su universidad, con confirmación. Eliminar la desactiva: la persona ya no puede iniciar sesión, pero la cuenta y sus notas siguen en la base de datos. **Reactivar** deshace una eliminación por error.
+  - **Facultades** y **Períodos**: crear, editar y eliminar. Son la base de todo: un curso necesita una facultad y una sección necesita un período. Solo hay un período vigente por universidad, y una facultad con cursos o un período con secciones no se elimina.
   - **Cursos**: crear, editar y eliminar asignaturas y secciones.
+  - **Syllabus**: en un curso, **Subir syllabus** (PDF, uno por curso y período). Desde que comienza el período ya no se puede reemplazar; si el curso no tenía, se puede subir una vez. Los datos demo no traen syllabus.
   - En una sección: **Gestionar alumnos** (inscribir) y **Gestionar ayudantes** (asignar).
-  - **Asignar profesores** a secciones.
-- **Profesor** (`profesor@ucv.test`): en su sección, **Marcar asistencia de hoy** y ver la tabla de asistencia; revisar y aprobar notas; ver todas las notas de la sección.
+  - **Asignar profesores** a secciones y **Asignar coordinadores** a cada asignatura por período.
+  - Reportes: **Completitud** (qué le falta a cada sección) y **Notas** (estado de notas por sección, con el reporte consolidado y su exportación a CSV).
+- **Profesor** (`profesor@ucv.test`): en su sección, **Marcar asistencia de hoy** y ver la tabla de asistencia; revisar notas (la campana del botón **Evaluaciones** indica cuántas hay pendientes) y aceptarlas o rechazarlas con comentario; ver todas las notas de la sección; subir, editar y eliminar su material; publicar, editar y eliminar anuncios. Como coordinador de ICC4204 e ICC1001 además sube el syllabus, crea secciones, gestiona ayudantes y asigna profesores en esas asignaturas.
 - **Ayudante** (`ayudante@ucv.test`): crear evaluaciones e ingresar notas; ver la asistencia de su sección (no la marca).
-- **Alumno** (`alumno@ucv.test`): **Mis notas** y **Asistencia** (porcentaje y detalle por clase).
-- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y **ve todo en solo lectura**: dashboard, cuentas, cursos, secciones (promedio y asistencia), evaluaciones, anuncios, coordinadores y los reportes de completitud, estado de notas y consolidado. No edita, asigna ni elimina nada. Lo único que crea son **cuentas de administrativo** en la universidad activa (**Cuentas → Crear cuenta**).
+- **Alumno** (`alumno@ucv.test`): en **Mis cursos**, cada curso muestra el syllabus y cuatro pestañas: **Resumen** (su promedio, su asistencia y el material), **Notas** (sus notas publicadas), **Asistencia** (porcentaje y detalle por clase) y **Anuncios** (los de la asignatura y los de su sección). También tiene **Mis notas** con todas sus notas.
+- **Director** (`director@sga.test`): alterna entre UCV e IUSA con el selector y **ve todo en solo lectura**: dashboard, cuentas, cursos, syllabus, secciones (promedio y asistencia), evaluaciones, anuncios, coordinadores, facultades, períodos y los reportes de completitud, estado de notas y consolidado. No edita, asigna ni elimina nada, y no tiene notificaciones. Lo único que crea son **cuentas de administrativo** en la universidad activa (**Cuentas → Crear cuenta**).
 - **Aislamiento entre universidades**: con `admin@iusa.test` no aparece nada de la UCV, y un enlace a un recurso de la otra universidad responde "no encontrado".
 
 ## Ejecutar en local
@@ -70,6 +58,27 @@ bin/dev                                       # servidor, Tailwind y Sidekiq
 Sin `SEED_DEMO=1` los seeds crean solo las dos universidades y la cuenta del director (`director@sga.test`, o el correo de `DIRECTOR_EMAIL`), con la contraseña de `SEED_PASSWORD`. Es lo que recibe el cliente en producción: desde el director se crean los administrativos, y ellos crean facultades, períodos, cursos, secciones y cuentas.
 
 La aplicación queda en http://localhost:3000. Los datos de demostración se pueden volver a cargar sin duplicarse. Las cuentas existentes conservan su contraseña y se respetan las notas y marcas de asistencia editadas. La contraseña indicada solo se asigna a cuentas nuevas.
+
+### Datos de demostración (solo en local)
+
+Con `SEED_DEMO=1` los seeds crean estas cuentas, todas con la contraseña de `SEED_PASSWORD`:
+
+| Rol | Correo | Universidad |
+|---|---|---|
+| Director | `director@sga.test` | Ambas (elige la universidad con el selector de la barra superior) |
+| Administrativo | `admin@ucv.test` | UCV |
+| Administrativo | `admin@iusa.test` | IUSA |
+| Profesor | `profesor@ucv.test` | UCV (coordina ICC4204 e ICC1001; dicta ICC4204-1, ICC1001-1 e ICC2002-1) |
+| Ayudante | `ayudante@ucv.test` | UCV (ayudante de ICC1001-1 e ICC2002-1; alumno de MAT1001) |
+| Alumno | `alumno@ucv.test` | UCV (ICC1001-1, MAT1001-1, ICC2002-1 y ECO1001-1) |
+| Ayudante | `ayudante@iusa.test` | IUSA (ayudante de ANAT101-1) |
+| Alumnos adicionales | `sofia@ucv.test`, `tomas@ucv.test` | UCV (ICC1001-1) |
+| Alumnos | `alumno@iusa.test`, `lucas@iusa.test`, `isidora@iusa.test` | IUSA (ANAT101-1) |
+| Profesora en ambas sedes | `camila.torres@ucv.test` y `camila.torres@iusa.test` | Una cuenta por universidad, con el mismo RUT |
+| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor12`, `ayudante01`–`ayudante10`, `alumno001`–`alumno150` `@ucv.test` | UCV |
+| Cuentas generadas | `admin01`–`admin02`, `profesor01`–`profesor10`, `ayudante01`–`ayudante08`, `alumno001`–`alumno120` `@iusa.test` | IUSA |
+
+También generan volumen en ambas universidades (`db/seeds/demo_volume.rb`): 8 asignaturas en 3 facultades por universidad, secciones en 2026-2 y una sección cerrada en 2026-1 en cuatro asignaturas, evaluaciones con notas publicadas, pendientes y rechazadas, asistencia semanal con correcciones, anuncios del curso y de sección, material (archivos `.txt` de un carácter) y notificaciones. Algunas secciones quedan incompletas a propósito para el reporte de completitud (por ejemplo, ICC4204-2 sin profesor y HUM1001-2 sin alumnos). Uno de cada quince alumnos generados tiene la cuenta eliminada (`alumno015`, `alumno030`, ...): no entra, pero conserva su historial de 2026-1. `SEED_ALUMNOS` cambia cuántos alumnos se generan por universidad. No existen entregas de tareas: las tareas son evaluaciones con nota.
 
 ## Tests y cobertura
 
