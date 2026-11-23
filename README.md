@@ -88,7 +88,7 @@ La aplicación envía correos para recuperar la contraseña. En producción sale
 | Variable | Ejemplo | Para qué |
 |---|---|---|
 | `BREVO_API_KEY` | `xkeysib-...` | Clave de la API de Brevo. Solo en producción. |
-| `MAILER_FROM` | `SGA <sga.grupo3@gmail.com>` | Remitente de los correos. Debe ser un *sender* verificado en Brevo. |
+| `MAILER_FROM` | `SGA <sga.g3.noreply@gmail.com>` | Remitente de los correos. Debe ser un *sender* verificado en Brevo. |
 | `APP_HOST` | `sga-web-0yoo.onrender.com` | Dominio de los enlaces de los correos, sin `https://`. Si falta, se usa el que Render asigna al servicio (`RENDER_EXTERNAL_HOSTNAME`). |
 
 Las tres están en `render.yaml` con `sync: false`: se cargan a mano en Render (**sga-web → Environment**). En desarrollo y en test no hacen falta.
@@ -98,7 +98,7 @@ Las tres están en `render.yaml` con `sync: false`: se cargan a mano en Render (
 1. Crea una cuenta gratuita en https://www.brevo.com (300 correos diarios).
 2. **Verifica el remitente**: en **Senders, Domains & Dedicated IPs → Senders → Add a sender**, ingresa el nombre (`SGA`) y el correo que usarás como remitente. Brevo envía un código a ese correo; ingrésalo para verificarlo. Sin dominio propio, este es el único paso de verificación.
 3. **Genera la clave de API**: en **SMTP & API → API Keys → Generate a new API key**. Cópiala al crearla, porque Brevo no la vuelve a mostrar. Es una clave de API (`xkeysib-...`), no la clave SMTP.
-4. En Render, define `BREVO_API_KEY` con esa clave, `MAILER_FROM` con el remitente verificado (por ejemplo `SGA <sga.grupo3@gmail.com>`) y `APP_HOST` con el dominio del servicio. Guardar redespliega la aplicación.
+4. En Render, define `BREVO_API_KEY` con esa clave, `MAILER_FROM` con el remitente verificado (por ejemplo `SGA <sga.g3.noreply@gmail.com>`) y `APP_HOST` con el dominio del servicio. Guardar redespliega la aplicación.
 5. Prueba con **¿Olvidaste tu contraseña?** en el login. Los envíos y sus errores se ven en Brevo, en **Transactional → Logs**. Si Brevo rechaza un correo (clave inválida, remitente sin verificar), el error queda en los logs del servicio y Sidekiq lo reintenta.
 
 Sin dominio propio algunos correos pueden llegar a spam: conviene revisar esa carpeta en la primera prueba.

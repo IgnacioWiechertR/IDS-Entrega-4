@@ -54,7 +54,7 @@ services:
       # Host of the links in emails, e.g. sga-web-0yoo.onrender.com (without https://).
       - key: APP_HOST
         sync: false
-      # Sender verified in Brevo, e.g. "SGA <cuenta@gmail.com>".
+      # Sender verified in Brevo, e.g. "SGA <sga.g3.noreply@gmail.com>".
       - key: MAILER_FROM
         sync: false
 
