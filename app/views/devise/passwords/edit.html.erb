@@ -1,0 +1,33 @@
+<% content_for :title, "Nueva contraseña · SGA" %>
+
+<section class="mx-auto max-w-sm py-12">
+  <h1 class="text-2xl font-bold text-slate-900">Crea una contraseña nueva</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    Debe tener al menos <%= @minimum_password_length || Devise.password_length.min %> caracteres.
+  </p>
+
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: "mt-6 space-y-4" }) do |f| %>
+    <%= f.hidden_field :reset_password_token %>
+
+    <% if resource.errors[:reset_password_token].any? %>
+      <p class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+        El enlace no es válido o ya expiró.
+        <%= link_to "Pide uno nuevo", new_password_path(resource_name), class: "font-medium underline" %>.
+      </p>
+    <% end %>
+
+    <div>
+      <%= f.label :password, "Nueva contraseña", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.password_field :password, autofocus: true, autocomplete: "new-password", required: true, class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(f, :password) %>
+    </div>
+
+    <div>
+      <%= f.label :password_confirmation, "Confirma la nueva contraseña", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true, class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(f, :password_confirmation) %>
+    </div>
+
+    <%= f.submit "Cambiar contraseña", class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} w-full" %>
+  <% end %>
+</section>

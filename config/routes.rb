@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
-  # Only sign in / sign out: accounts are created by staff and locks expire on their own.
-  devise_for :users, only: :sessions
+  # Sign in / sign out and password recovery (A2). Accounts are created by staff and locks expire on their own.
+  devise_for :users, only: %i[sessions passwords]
+
+  # Emails sent in development, instead of delivering them.
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   # Landing panel of each role (A1). Their content arrives with D1, A5 and the course cards.
   get "dashboard" => "dashboard#index", as: :dashboard

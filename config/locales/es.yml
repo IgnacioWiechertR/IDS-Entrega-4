@@ -13,6 +13,15 @@ es:
   devise:
     failure:
       deactivated: Tu cuenta está desactivada. Contacta a la administración de tu universidad.
+    # A2: password recovery. With config.paranoid the message never says whether the email has an account.
+    passwords:
+      send_paranoid_instructions: Si el correo pertenece a una cuenta, en unos minutos recibirás un enlace para crear una contraseña nueva.
+      no_token: Para cambiar tu contraseña abre el enlace del correo de recuperación completo.
+      updated: Tu contraseña fue cambiada. Ya iniciaste sesión.
+      updated_not_active: Tu contraseña fue cambiada.
+    mailer:
+      reset_password_instructions:
+        subject: Recupera tu contraseña del SGA
 
   university_selection:
     changed: Ahora estás viendo %{name}.
@@ -136,6 +145,7 @@ es:
         rut: RUT
         email: Correo
         password: Contraseña
+        password_confirmation: Confirmación de contraseña
         role: Rol
         university: Universidad
         active: Activa

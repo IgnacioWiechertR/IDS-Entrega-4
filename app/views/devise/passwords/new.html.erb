@@ -1,0 +1,22 @@
+<% content_for :title, "Recuperar contraseña · SGA" %>
+
+<section class="mx-auto max-w-sm py-12">
+  <h1 class="text-2xl font-bold text-slate-900">¿Olvidaste tu contraseña?</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    Escribe el correo de tu cuenta y te enviaremos un enlace para crear una contraseña nueva.
+  </p>
+
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "mt-6 space-y-4" }) do |f| %>
+    <div>
+      <%= f.label :email, "Correo", class: "block text-sm font-medium text-slate-700" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", required: true, class: ApplicationHelper::INPUT_CLASSES %>
+      <%= field_errors(f, :email) %>
+    </div>
+
+    <%= f.submit "Enviar enlace", class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} w-full" %>
+  <% end %>
+
+  <p class="mt-6 text-center text-sm">
+    <%= link_to "Volver a iniciar sesión", new_session_path(resource_name), class: "font-medium text-indigo-600 hover:text-indigo-500" %>
+  </p>
+</section>
