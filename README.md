@@ -93,13 +93,14 @@ La aplicación envía correos para recuperar la contraseña. En producción sale
 
 Las tres están en `render.yaml` con `sync: false`: se cargan a mano en Render (**sga-web → Environment**). En desarrollo y en test no hacen falta.
 
-**Configurar Brevo** (una sola vez):
+**Configurar Brevo** (una sola vez; los menús están en **Settings**, con la interfaz en español):
 
-1. Crea una cuenta gratuita en https://www.brevo.com (300 correos diarios).
-2. **Verifica el remitente**: en **Senders, Domains & Dedicated IPs → Senders → Add a sender**, ingresa el nombre (`SGA`) y el correo que usarás como remitente. Brevo envía un código a ese correo; ingrésalo para verificarlo. Sin dominio propio, este es el único paso de verificación.
-3. **Genera la clave de API**: en **SMTP & API → API Keys → Generate a new API key**. Cópiala al crearla, porque Brevo no la vuelve a mostrar. Es una clave de API (`xkeysib-...`), no la clave SMTP.
-4. En Render, define `BREVO_API_KEY` con esa clave, `MAILER_FROM` con el remitente verificado (por ejemplo `SGA <sga.g3.noreply@gmail.com>`) y `APP_HOST` con el dominio del servicio. Guardar redespliega la aplicación.
-5. Prueba con **¿Olvidaste tu contraseña?** en el login. Los envíos y sus errores se ven en Brevo, en **Transactional → Logs**. Si Brevo rechaza un correo (clave inválida, remitente sin verificar), el error queda en los logs del servicio y Sidekiq lo reintenta.
+1. Crea una cuenta gratuita en https://www.brevo.com (300 correos diarios) y completa el perfil.
+2. **Verifica el remitente**: en **Remitentes, dominio, IP**, agrega un remitente con el nombre `SGA` y el correo `sga.g3.noreply@gmail.com`. Brevo envía un código a ese correo; ingrésalo para verificarlo. Sin dominio propio, este es el único paso de verificación.
+3. **Genera la clave de API**: en **SMTP y API**, pestaña de claves API, genera una clave nueva (por ejemplo `sga-render`). Cópiala al crearla, porque Brevo no la vuelve a mostrar. Es una clave de API (`xkeysib-...`), no la clave SMTP.
+4. **Deja desactivado el bloqueo de IP**: en **Seguridad → IP autorizadas**, "Bloqueando direcciones IP no autorizadas" debe quedar **Desactivada** para **Claves API**. Render (plan gratuito) no tiene una IP de salida fija: con el bloqueo activo, Brevo rechaza los envíos con un error 401.
+5. En Render, define `BREVO_API_KEY` con esa clave, `MAILER_FROM` con el remitente verificado (`SGA <sga.g3.noreply@gmail.com>`) y `APP_HOST` con el dominio del servicio. Guardar redespliega la aplicación.
+6. Prueba con **¿Olvidaste tu contraseña?** en el login, con una cuenta cuyo correo exista de verdad. Los envíos y sus errores se ven en los registros de correos transaccionales de Brevo. Si Brevo rechaza un correo, el error (`BrevoDelivery::Error` con el código de respuesta) queda en los logs del servicio y Sidekiq lo reintenta: un 401 suele ser la clave o el bloqueo de IP, y un 400, un remitente sin verificar o distinto de `MAILER_FROM`.
 
 Sin dominio propio algunos correos pueden llegar a spam: conviene revisar esa carpeta en la primera prueba.
 
