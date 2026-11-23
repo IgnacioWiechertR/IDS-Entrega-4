@@ -48,6 +48,15 @@ services:
         sync: false
       - key: S3_BUCKET_U2
         sync: false
+      # Email through Brevo's HTTP API (A2, password recovery). See the README, "Correo".
+      - key: BREVO_API_KEY
+        sync: false
+      # Host of the links in emails, e.g. sga-web-0yoo.onrender.com (without https://).
+      - key: APP_HOST
+        sync: false
+      # Sender verified in Brevo, e.g. "SGA <cuenta@gmail.com>".
+      - key: MAILER_FROM
+        sync: false
 
   - type: keyvalue
     name: sga-redis

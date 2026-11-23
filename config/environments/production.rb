@@ -50,21 +50,16 @@ Rails.application.configure do
   # Single instance on Render, so an in-process cache is enough (also backs Rack::Attack).
   config.cache_store = :memory_store
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # Emails go out through Brevo's HTTP API (lib/brevo_delivery.rb): Render's free plan blocks SMTP ports.
+  # Delivery errors raise so Sidekiq retries the job (see docs/decisiones.md).
+  config.action_mailer.delivery_method = :brevo
+  config.action_mailer.raise_delivery_errors = true
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Host of the links in emails (password recovery). Render sets RENDER_EXTERNAL_HOSTNAME on its own.
+  config.action_mailer.default_url_options = {
+    host: ENV["APP_HOST"].presence || ENV.fetch("RENDER_EXTERNAL_HOSTNAME", "example.com"),
+    protocol: "https"
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

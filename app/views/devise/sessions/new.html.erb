@@ -15,9 +15,12 @@
       <%= f.password_field :password, autocomplete: "current-password", required: true, class: ApplicationHelper::INPUT_CLASSES %>
     </div>
 
-    <div class="flex items-center gap-2">
-      <%= f.check_box :remember_me, class: "h-4 w-4 rounded border-slate-300 text-indigo-600" %>
-      <%= f.label :remember_me, "Recordarme", class: "text-sm text-slate-700" %>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <%= f.check_box :remember_me, class: "h-4 w-4 rounded border-slate-300 text-indigo-600" %>
+        <%= f.label :remember_me, "Recordarme", class: "text-sm text-slate-700" %>
+      </div>
+      <%= link_to "¿Olvidaste tu contraseña?", new_password_path(resource_name), class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
     </div>
 
     <%= f.submit "Entrar", class: "#{ApplicationHelper::PRIMARY_BUTTON_CLASSES} w-full" %>

@@ -1,6 +1,6 @@
 class User < ApplicationRecord
-  # Accounts are created by staff (no :registerable). Password recovery (A2) is not enabled yet.
-  devise :database_authenticatable, :rememberable, :validatable, :lockable
+  # Accounts are created by staff (no :registerable). A2: the user recovers a forgotten password by email.
+  devise :database_authenticatable, :rememberable, :validatable, :lockable, :recoverable
 
   # One role per account. The role in each course lives in section_staffs (profesor/ayudante) and enrollments (alumno).
   enum :role, {
@@ -109,6 +109,25 @@ class User < ApplicationRecord
 
   def inactive_message
     deactivated? ? :deactivated : super
+  end
+
+  # A2: a deactivated account could not sign in with the new password, so it gets no email. With
+  # config.paranoid the page answers the same either way.
+  def send_reset_password_instructions
+    deactivated? ? nil : super
+  end
+
+  # A2: Devise only unlocks on reset when the unlock strategy includes :email, and ours is :time. Whoever
+  # proves they own the email address gets back in right away instead of waiting for the lock to expire.
+  def reset_password(new_password, new_password_confirmation)
+    super.tap do |reset|
+      unlock_access! if reset && (access_locked? || failed_attempts.positive?)
+    end
+  end
+
+  # Devise emails (A2) go out through Sidekiq instead of inside the request.
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
   end
 
   private
