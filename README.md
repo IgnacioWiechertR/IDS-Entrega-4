@@ -46,7 +46,7 @@ T8 añade tres evaluaciones de ejemplo por sección: publicada, pendiente y rech
 
 ## Ejecutar en local
 
-Requisitos: Ruby 3.4.5, PostgreSQL y Docker (para Redis, que usa Sidekiq).
+Requisitos: Ruby 3.4.13, PostgreSQL y Docker (para Redis, que usa Sidekiq).
 
 ```bash
 bundle install
@@ -106,7 +106,7 @@ Sin dominio propio algunos correos pueden llegar a spam: conviene revisar esa ca
 
 ## Tests y cobertura
 
-Los tests usan Minitest (el framework de Rails) y la cobertura se mide con [SimpleCov](https://github.com/simplecov-ruby/simplecov). Requisitos: los mismos de "Ejecutar en local" (Ruby 3.4.5, `bundle install` y PostgreSQL corriendo). No hace falta Redis: los trabajos en segundo plano usan el adaptador de pruebas.
+Los tests usan Minitest (el framework de Rails) y la cobertura se mide con [SimpleCov](https://github.com/simplecov-ruby/simplecov). Requisitos: los mismos de "Ejecutar en local" (Ruby 3.4.13, `bundle install` y PostgreSQL corriendo). No hace falta Redis: los trabajos en segundo plano usan el adaptador de pruebas.
 
 ```bash
 bin/rails db:test:prepare   # crea o actualiza la base de datos de pruebas (solo la primera vez o tras una migración)
@@ -133,4 +133,4 @@ La integración continua (GitHub Actions) corre los tests, RuboCop y Brakeman en
 
 ## Stack
 
-Rails 8.1 · Ruby 3.4.5 · PostgreSQL · Devise (inicio de sesión y recuperación de contraseña) · Brevo (correo) · CanCanCan (permisos por rol) · acts_as_tenant (aislamiento por universidad) · Tailwind CSS · Turbo · Active Job con Sidekiq y Redis · Docker · Render.
+Rails 8.1 · Ruby 3.4.13 · PostgreSQL · Devise (inicio de sesión y recuperación de contraseña) · Brevo (correo) · CanCanCan (permisos por rol) · acts_as_tenant (aislamiento por universidad) · Tailwind CSS · Turbo · Active Job con Sidekiq y Redis · Docker · Render.
